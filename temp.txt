@@ -1,0 +1,20 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import logoSrc from "../Imágenes/Logos/Tripoli Media Logo WEB.png";
+
+const navItems = [
+  { key: "consumo", href: "#consumo", label: "Consumo y Retail" },
+  { key: "entretenimiento", href: "#entretenimiento", label: "Entretenimiento y Cultura" },
+  { key: "industria-ti", href: "#industria-ti", label: "Industria TI" },
+  { key: "infraestructura", href: "#infraestructura", label: "Infraestructura Social" },
+  { key: "politica", href: "#politica", label: "Política y Leyes" },
+  { key: "salud", href: "#salud", label: "Sector Salud" },
+];
+
+export default function Header() {
+  const [isDark, setIsDark] = useState(false);
+  const [language, setLanguage] = useState("ES");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);

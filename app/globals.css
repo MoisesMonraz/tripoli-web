@@ -1,42 +1,181 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&family=Sora:wght@400;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply min-h-screen bg-white text-slate-900 antialiased transition-colors duration-300;
+    font-family: "Space Grotesk", "Sora", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --tm-banner-bg: #ffffff;
+    --tm-banner-card: #ffffff;
+  }
+
+  .dark body {
+    @apply bg-slate-950 text-slate-50;
+    --tm-banner-bg: #020617;
+    --tm-banner-card: #020617;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Category bar styling */
+  @property --cat-bar-grad-pos {
+    syntax: "<percentage>";
+    inherits: true;
+    initial-value: 0%;
+  }
+  .cat-bar {
+    --cat-bar-base: #f39200;
+    --cat-bar-mid: #fdc652;
+    --cat-bar-light: #fee5c8;
+    --text: #f39200;
+    --text-hover: #d67d00;
+    --text-active: #d67d00;
+  }
+  .cat-bar[data-cat-theme="default"] {
+    --cat-bar-base: #f39200;
+    --cat-bar-mid: #fdc652;
+    --cat-bar-light: #fee5c8;
+    --text: #f39200;
+    --text-hover: #d67d00;
+    --text-active: #d67d00;
+  }
+  .cat-bar[data-cat-theme="consumo-y-retail"] {
+    --cat-bar-base: #f39200;
+    --cat-bar-mid: #fdc652;
+    --cat-bar-light: #fee5c8;
+    --text: #f39200;
+    --text-hover: #d67d00;
+    --text-active: #d67d00;
+  }
+  .cat-bar[data-cat-theme="entretenimiento-y-cultura"] {
+    --cat-bar-base: #009640;
+    --cat-bar-mid: #cce5ce;
+    --cat-bar-light: #cce5ce;
+    --text: #009640;
+    --text-hover: #007a33;
+    --text-active: #007a33;
+  }
+  .cat-bar[data-cat-theme="industria-ti"] {
+    --cat-bar-base: #0069b4;
+    --cat-bar-mid: #c8d5ef;
+    --cat-bar-light: #c8d5ef;
+    --text: #0069b4;
+    --text-hover: #004070;
+    --text-active: #004070;
+  }
+  .cat-bar[data-cat-theme="infraestructura-social"] {
+    --cat-bar-base: #5d514c;
+    --cat-bar-mid: #958b87;
+    --cat-bar-light: #d8d4d3;
+    --text: #5d514c;
+    --text-hover: #3a332f;
+    --text-active: #3a332f;
+  }
+  .cat-bar[data-cat-theme="politica-y-leyes"] {
+    --cat-bar-base: #312783;
+    --cat-bar-mid: #9185be;
+    --cat-bar-light: #c8c1e1;
+    --text: #312783;
+    --text-hover: #211452;
+    --text-active: #211452;
+  }
+  .cat-bar[data-cat-theme="sector-salud"] {
+    --cat-bar-base: #e6007e;
+    --cat-bar-mid: #f29fc5;
+    --cat-bar-light: #f9d3e6;
+    --text: #e6007e;
+    --text-hover: #8d004c;
+    --text-active: #8d004c;
+  }
+  .cat-bar-left {
+    background: var(--cat-bar-base, #f39200);
+    background-image: none;
+    animation: cat-bar-pulse 12s linear infinite;
+  }
+  .cat-bar-right {
+    --cat-bar-grad-pos: 0%;
+    background: linear-gradient(
+      90deg,
+      var(--cat-bar-base, #f39200),
+      var(--cat-bar-mid, #fdc652),
+      var(--cat-bar-light, #fee5c8)
+    );
+    background-size: 300% 100%;
+    background-position: var(--cat-bar-grad-pos, 0%) 0;
+    animation: cat-bar-move 12s ease-in-out infinite;
+  }
+  @keyframes cat-bar-move {
+    0% {
+      --cat-bar-grad-pos: 0%;
+    }
+    50% {
+      --cat-bar-grad-pos: 100%;
+    }
+    100% {
+      --cat-bar-grad-pos: 0%;
+    }
+  }
+  @keyframes cat-bar-pulse {
+    0% {
+      background-color: var(--cat-bar-base, #f39200);
+    }
+    50% {
+      background-color: var(--cat-bar-light, #fee5c8);
+    }
+    100% {
+      background-color: var(--cat-bar-base, #f39200);
+    }
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+/* Hide horizontal scrollbar for the news carousel */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+@keyframes servicesTitleSweep {
+  0% {
+    background-position: 0% 0;
   }
+  50% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+.animate-servicesTitleSweep {
+  animation: servicesTitleSweep 10s ease-in-out infinite;
 }

@@ -1,0 +1,478 @@
+﻿"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
+import { useLanguage } from "./LanguageProvider";
+
+const navItems = [
+  { key: "home", href: "/", path: "/", labels: { ES: "Inicio", EN: "Home" } },
+  {
+    key: "consumo",
+    href: "/categoria/consumo-y-retail",
+    path: "/categoria/consumo-y-retail",
+    categorySlug: "consumo-y-retail",
+    labels: { ES: "Consumo y Retail", EN: "Consumer & Retail" },
+    subcategories: [
+      { slug: "fabricantes-y-proveedores", labels: { ES: "Fabricantes y Proveedores", EN: "Manufacturers & Suppliers" } },
+      { slug: "cadenas-comerciales", labels: { ES: "Cadenas Comerciales", EN: "Retail Chains" } },
+      { slug: "tiendas-de-conveniencia", labels: { ES: "Tiendas de Conveniencia", EN: "Convenience Stores" } },
+    ],
+  },
+  {
+    key: "entretenimiento",
+    href: "/categoria/entretenimiento-y-cultura",
+    path: "/categoria/entretenimiento-y-cultura",
+    categorySlug: "entretenimiento-y-cultura",
+    labels: { ES: "Entretenimiento y Cultura", EN: "Entertainment & Culture" },
+    subcategories: [
+      { slug: "productoras-de-contenido", labels: { ES: "Productoras de Contenido", EN: "Content Producers" } },
+      { slug: "recintos-culturales", labels: { ES: "Recintos Culturales", EN: "Cultural Venues" } },
+      { slug: "festivales-eventos-artistas", labels: { ES: "Festivales, Eventos y Artistas", EN: "Festivals, Events & Artists" } },
+    ],
+  },
+  {
+    key: "industria-ti",
+    href: "/categoria/industria-ti",
+    path: "/categoria/industria-ti",
+    categorySlug: "industria-ti",
+    labels: { ES: "Industria TI", EN: "IT Industry" },
+    subcategories: [
+      { slug: "fabricantes-de-tecnologia", labels: { ES: "Fabricantes de Tecnología", EN: "Technology Manufacturers" } },
+      { slug: "mayoristas-ti", labels: { ES: "Mayoristas TI", EN: "IT Wholesalers" } },
+      { slug: "canales-de-distribucion", labels: { ES: "Canales de Distribuci\u00f3n", EN: "Distribution Channels" } },
+    ],
+  },
+  {
+    key: "infraestructura",
+    href: "/categoria/infraestructura-social",
+    path: "/categoria/infraestructura-social",
+    categorySlug: "infraestructura-social",
+    labels: { ES: "Infraestructura Social", EN: "Social Infrastructure" },
+    subcategories: [
+      { slug: "proveedores-de-materiales", labels: { ES: "Proveedores de Materiales", EN: "Materials Suppliers" } },
+      { slug: "desarrolladores-de-proyectos", labels: { ES: "Desarrolladores de Proyectos", EN: "Project Developers" } },
+      { slug: "promotores-inmobiliarios", labels: { ES: "Promotores Inmobiliarios", EN: "Real Estate Developers" } },
+    ],
+  },
+  {
+    key: "politica",
+    href: "/categoria/politica-y-leyes",
+    path: "/categoria/politica-y-leyes",
+    categorySlug: "politica-y-leyes",
+    labels: { ES: "Pol\u00edtica y Leyes", EN: "Politics & Law" },
+    subcategories: [
+      { slug: "organismos-publicos", labels: { ES: "Organismos P\u00fablicos", EN: "Public Agencies" } },
+      { slug: "administracion-estatal-local", labels: { ES: "Administraci\u00f3n Estatal y Local", EN: "State & Local Administration" } },
+      { slug: "servicios-juridicos", labels: { ES: "Servicios Jur\u00eddicos", EN: "Legal Services" } },
+    ],
+  },
+  {
+    key: "salud",
+    href: "/categoria/sector-salud",
+    path: "/categoria/sector-salud",
+    categorySlug: "sector-salud",
+    labels: { ES: "Sector Salud", EN: "Health Sector" },
+    subcategories: [
+      { slug: "fabricantes-equipo-insumos", labels: { ES: "Fabricantes de Equipo e Insumos", EN: "Equipment & Supplies Manufacturers" } },
+      { slug: "instituciones-de-salud", labels: { ES: "Instituciones de Salud", EN: "Healthcare Institutions" } },
+      { slug: "especialistas-medicos", labels: { ES: "Especialistas M\u00e9dicos", EN: "Medical Specialists" } },
+    ],
+  },
+];
+
+export default function Header() {
+  const [isDark, setIsDark] = useState(false);
+  const { language, setLanguage } = useLanguage();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isStickyVisible, setIsStickyVisible] = useState(false);
+  const [dateDisplay, setDateDisplay] = useState("");
+  const [timeDisplay, setTimeDisplay] = useState("");
+  const timeOffsetRef = useRef(0);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialDark = storedTheme ? storedTheme === "dark" : prefersDark;
+    setIsDark(initialDark);
+    document.documentElement.classList.toggle("dark", initialDark);
+    document.documentElement.classList.toggle("light", !initialDark);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle("light", !isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setIsMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setIsStickyVisible(window.scrollY > 80);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const computeDisplays = (baseDate) => {
+      const locale = language === "EN" ? "en-US" : "es-MX";
+      const month = baseDate.toLocaleString(locale, { month: "2-digit" });
+      const day = baseDate.toLocaleString(locale, { day: "2-digit" });
+      const year = baseDate.toLocaleString(locale, { year: "numeric" });
+      const formattedDate = `${day}/${month}/${year}`;
+      const formattedTime = baseDate.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        hourCycle: "h23",
+      });
+      setDateDisplay(formattedDate);
+      setTimeDisplay(`${formattedTime} hrs`);
+    };
+
+    const tickWithOffset = () => {
+      const adjustedNow = new Date(Date.now() + timeOffsetRef.current);
+      computeDisplays(adjustedNow);
+    };
+
+    const syncNetworkTime = async () => {
+      try {
+        const response = await fetch("https://worldtimeapi.org/api/ip");
+        if (!response.ok) throw new Error("Network time fetch failed");
+        const data = await response.json();
+        const remoteDate = new Date(data.datetime);
+        timeOffsetRef.current = remoteDate.getTime() - Date.now();
+        if (active) computeDisplays(remoteDate);
+      } catch (error) {
+        if (active) tickWithOffset();
+      }
+    };
+
+    tickWithOffset(); // initial paint
+    const tickInterval = setInterval(tickWithOffset, 60 * 1000);
+    syncNetworkTime();
+    const syncInterval = setInterval(syncNetworkTime, 5 * 60 * 1000);
+
+    return () => {
+      active = false;
+      clearInterval(tickInterval);
+      clearInterval(syncInterval);
+    };
+  }, [language]);
+
+  const navLinkStyles =
+    "relative px-1.5 py-2 text-[0.74rem] md:text-[0.82rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
+
+  const renderNav = () => (
+    <nav className="flex flex-1 items-center justify-center">
+      {navItems.map((item, idx) => {
+        const hoverTextClass =
+          item.key === "consumo"
+            ? "hover:text-[#f39200] dark:hover:text-[#f39200]"
+            : item.key === "entretenimiento"
+            ? "hover:text-[#009640] dark:hover:text-[#009640]"
+            : item.key === "industria-ti"
+            ? "hover:text-[#0069b4] dark:hover:text-[#0069b4]"
+            : item.key === "infraestructura"
+            ? "hover:text-[#5d514c] dark:hover:text-[#5d514c]"
+            : item.key === "politica"
+            ? "hover:text-[#2e2c7e] dark:hover:text-[#2e2c7e]"
+            : item.key === "salud"
+            ? "hover:text-[#e6007e] dark:hover:text-[#e6007e]"
+            : "hover:text-[#00BFFF] dark:hover:text-[#33ceff]";
+        const groupHoverTextClass =
+          item.key === "consumo"
+            ? "group-hover:text-[#f39200] dark:group-hover:text-[#f39200]"
+            : item.key === "entretenimiento"
+            ? "group-hover:text-[#009640] dark:group-hover:text-[#009640]"
+            : item.key === "industria-ti"
+            ? "group-hover:text-[#0069b4] dark:group-hover:text-[#0069b4]"
+            : item.key === "infraestructura"
+            ? "group-hover:text-[#5d514c] dark:group-hover:text-[#5d514c]"
+            : item.key === "politica"
+            ? "group-hover:text-[#2e2c7e] dark:group-hover:text-[#2e2c7e]"
+            : item.key === "salud"
+            ? "group-hover:text-[#e6007e] dark:group-hover:text-[#e6007e]"
+            : "group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]";
+        const activeTextClass =
+          item.key === "consumo"
+            ? "text-[#f39200] dark:text-[#f39200]"
+            : item.key === "entretenimiento"
+            ? "text-[#009640] dark:text-[#009640]"
+            : item.key === "industria-ti"
+            ? "text-[#0069b4] dark:text-[#0069b4]"
+            : item.key === "infraestructura"
+            ? "text-[#5d514c] dark:text-[#5d514c]"
+            : item.key === "politica"
+            ? "text-[#2e2c7e] dark:text-[#2e2c7e]"
+            : item.key === "salud"
+            ? "text-[#e6007e] dark:text-[#e6007e]"
+            : "text-[#00BFFF] dark:text-[#33ceff]";
+        const underlineClass =
+          item.key === "consumo"
+            ? "bg-[#f39200]"
+            : item.key === "entretenimiento"
+            ? "bg-[#009640]"
+            : item.key === "industria-ti"
+            ? "bg-[#0069b4]"
+            : item.key === "infraestructura"
+            ? "bg-[#5d514c]"
+            : item.key === "politica"
+            ? "bg-[#2e2c7e]"
+            : item.key === "salud"
+            ? "bg-[#e6007e]"
+            : "bg-gradient-to-r from-[#00BFFF] to-[#33ceff]";
+        const hasDropdown = Array.isArray(item.subcategories) && item.subcategories.length > 0;
+        const matchPath = item.path ?? item.href ?? "";
+        const isActive =
+          item.key === "home"
+            ? pathname === "/"
+            : pathname === matchPath || pathname.startsWith(`${matchPath}/`);
+
+        return (
+          <span key={item.key} className="flex items-center">
+            {idx > 0 && <span className="mx-1.5 h-5 w-px bg-slate-300/80 dark:bg-slate-600/80" aria-hidden="true" />}
+            <div className="relative group flex items-center">
+              <Link
+                href={item.href}
+                className={`${navLinkStyles} ${hoverTextClass} ${groupHoverTextClass} ${isActive ? activeTextClass : ""}`}
+                aria-label={item.labels[language]}
+              >
+                <span>{item.labels[language] ?? item.labels.ES}</span>
+                <span
+                  className={`absolute left-2.5 right-2.5 bottom-[6px] h-[1.5px] origin-left transition duration-200 ease-out ${
+                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                  } ${underlineClass}`}
+                />
+              </Link>
+
+              {hasDropdown && (
+                <div className="absolute top-full left-0 z-[60] hidden w-max translate-y-2 rounded-md border border-slate-200 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 ease-out pointer-events-none group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto dark:border-slate-700 dark:bg-slate-800 md:block space-y-1">
+                  {item.subcategories.map((sub) => (
+                    <Link
+                      key={sub.slug}
+                      href={`/categoria/${item.categorySlug}/${sub.slug}`}
+                      className="block px-4 py-1.5 text-sm text-slate-700 whitespace-nowrap transition-colors hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-700"
+                    >
+                      {sub.labels?.[language] ?? sub.labels?.ES ?? sub.slug}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </span>
+        );
+      })}
+    </nav>
+  );
+
+  const renderRightControls = () => (
+    <>
+      <button
+        type="button"
+        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        aria-pressed={isDark}
+        onClick={() => setIsDark((prev) => !prev)}
+        className="group flex h-10 items-center gap-1 rounded-full border border-slate-200 bg-white/80 pl-3 pr-2 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+      >
+        <span className="relative flex h-6 w-11 items-center rounded-full bg-slate-100 transition dark:bg-slate-800">
+          <span
+            className={`absolute left-1 h-4 w-4 rounded-full bg-gradient-to-br from-[#00BFFF] to-[#33ceff] shadow-md shadow-sky-400/40 transition ${
+              isDark ? "translate-x-5 bg-gradient-to-br from-[#33ceff] to-[#66deff]" : ""
+            }`}
+          />
+        </span>
+        <span className="hidden sm:inline-flex w-6 items-center justify-center" aria-hidden="true">
+          {isDark ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14.5 2.5A9 9 0 1 0 21.5 15 A7 7 0 0 1 14.5 2.5Z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          )}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        aria-label="Cambiar idioma"
+        onClick={() => setLanguage((prev) => (prev === "ES" ? "EN" : "ES"))}
+        className="flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-3 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+      >
+        {language}
+      </button>
+    </>
+  );
+
+  return (
+    <>
+      <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-30">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+            >
+              {isMenuOpen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+              )}
+            </button>
+
+            <Link
+              href="/calendario"
+              className="hidden sm:flex items-center gap-2 text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] text-slate-700 dark:text-slate-200 ml-4 transition hover:text-[#00BFFF] dark:hover:text-[#33ceff]"
+              style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
+              aria-label="Ir al calendario editorial"
+            >
+              <span>{dateDisplay}</span>
+              <span className="h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
+              <span>{timeDisplay}</span>
+            </Link>
+          </div>
+
+          <div className="col-start-2 col-end-3 flex items-center justify-center">
+            <Link href="/" className="group flex items-center gap-5 text-[#00BFFF] transition hover:opacity-95 dark:text-[#33ceff]" aria-label="Ir a la pagina principal">
+              <span className="flex h-8 w-8 items-center justify-center">
+                <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" priority />
+              </span>
+              <span className="text-base font-semibold tracking-[0.12em] uppercase text-[#00BFFF] transition-colors duration-300 group-hover:text-[#33ceff] dark:text-[#33ceff] dark:group-hover:text-[#66deff]">
+                Tripoli Media
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 sm:gap-2.5 md:gap-3 pr-4 sm:pr-5 lg:pr-6 translate-x-2">
+            {renderRightControls()}
+          </div>
+        </div>
+
+        <div className="hidden w-full items-center justify-center pb-3 md:mx-auto md:flex md:max-w-6xl">
+          {renderNav()}
+        </div>
+
+        {isMenuOpen && (
+          <nav className="md:hidden">
+            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
+              {navItems.map((item) => (
+                <li key={item.key}>
+                  <a
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+                  >
+                    {item.labels[language]}
+                    <span className="h-[1px] w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </header>
+
+      <div data-header-line="main" className="h-[4px] w-full tm-header-line" />
+
+      <div
+        data-header="sticky"
+        data-visible={isStickyVisible ? "true" : "false"}
+        className={`fixed inset-x-0 top-0 z-40 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${
+          isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="relative w-full flex items-center gap-3 px-0 py-2 sm:px-1 lg:px-2">
+          <div className="flex items-center justify-start ml-12 sm:ml-[5rem] flex-shrink-0 gap-3">
+            <Link href="/" className="flex items-center" aria-label="Ir a la pagina principal">
+              <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
+            </Link>
+          </div>
+          <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            {renderNav()}
+          </div>
+          <div className="flex items-center justify-end gap-2 sm:gap-2.5 flex-shrink-0 ml-auto pr-0 sm:pr-0 lg:pr-0 -translate-x-2">
+            {renderRightControls()}
+          </div>
+        </div>
+      </div>
+      <style jsx>{`
+        .tm-header-line {
+          position: relative;
+          z-index: 5;
+          background-image: linear-gradient(
+            90deg,
+            #c9e8fb,
+            #9cd8f6,
+            #6cc6f0,
+            #36b3e8,
+            #009fe3,
+            #36b3e8,
+            #6cc6f0,
+            #9cd8f6,
+            #c9e8fb
+          );
+          background-size: 300% 100%;
+          animation: tmHeaderFlow 10s linear infinite;
+          box-shadow:
+            0 6px 12px rgba(0, 0, 0, 0.09),
+            0 10px 18px rgba(0, 0, 0, 0.07),
+            0 12px 20px rgba(0, 0, 0, 0.06);
+          filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.1));
+        }
+        @keyframes tmHeaderFlow {
+          0% {
+            background-position: 0% 0;
+          }
+          50% {
+            background-position: 100% 0;
+          }
+          100% {
+            background-position: 0% 0;
+          }
+        }
+      `}</style>
+    </>
+  );
+}
