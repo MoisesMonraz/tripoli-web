@@ -1,0 +1,168 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+
+    /**
+     * Validates email format
+     */
+    function isValidEmail(email) {
+      return email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+    }
+
+    /**
+     * Validates phone number (flexible format)
+     */
+    function isValidPhone(phone) {
+      return phone == null || phone == '' || phone.matches('^[+]?[0-9\\s\\-\\(\\)]{7,20}$');
+    }
+
+    /**
+     * Validates string length
+     */
+    function isValidLength(str, minLen, maxLen) {
+      return str.size() >= minLen && str.size() <= maxLen;
+    }
+
+    /**
+     * Checks if request has all required fields
+     */
+    function hasRequiredLeadFields() {
+      return request.resource.data.keys().hasAll(['name', 'email', 'createdAt', 'source']);
+    }
+
+    /**
+     * Validates lead data types and formats
+     */
+    function isValidLeadData() {
+      let data = request.resource.data;
+      return data.name is string &&
+             data.email is string &&
+             data.createdAt is string &&
+             data.source is string &&
+             isValidLength(data.name, 2, 100) &&
+             isValidEmail(data.email) &&
+             isValidLength(data.email, 5, 100) &&
+             (data.source == 'contact-agenda' || data.source == 'test') &&
+             (!('phone' in data) || (data.phone is string && isValidPhone(data.phone))) &&
+             (!('service' in data) || (data.service is string && isValidLength(data.service, 0, 200))) &&
+             (!('date' in data) || data.date is string) &&
+             (!('time' in data) || data.time is string) &&
+             (!('message' in data) || (data.message is string && isValidLength(data.message, 0, 5000)));
+    }
+
+    /**
+     * Validates registered user data
+     */
+    function isValidRegisteredUser() {
+      let data = request.resource.data;
+      return data.uid is string &&
+             data.email is string &&
+             isValidEmail(data.email) &&
+             data.displayName is string &&
+             data.photoURL is string &&
+             data.accountStatus == 'active' &&
+             data.marketingConsent == true &&
+             data.lastLogin is timestamp &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             data.uid == request.auth.uid;
+    }
+
+    /**
+     * Validates guest lead data
+     */
+    function isValidGuestLead() {
+      let data = request.resource.data;
+      return data.email is string &&
+             isValidEmail(data.email) &&
+             data.acceptedTermsAt is timestamp &&
+             data.marketingConsent == false &&
+             data.isGuest == true &&
+             (!('ip_location' in data) || data.ip_location == null || data.ip_location is map);
+    }
+
+    // ========================================
+    // LEADS COLLECTION
+    // ========================================
+
+    /**
+     * Leads collection - Write-only from API, Admin read access
+     *
+     * Security model:
+     * - CREATE: Allowed for all authenticated requests (from API routes)
+     * - READ: Denied to public (use Firebase Admin SDK server-side)
+     * - UPDATE: Denied (leads are immutable)
+     * - DELETE: Denied (use Admin SDK or Firebase Console)
+     */
+    match /leads/{leadId} {
+      // Allow create if data is valid
+      allow create: if hasRequiredLeadFields() && isValidLeadData();
+
+      // Deny all reads (use Admin SDK server-side)
+      allow read: if false;
+
+      // Deny updates (leads should be immutable)
+      allow update: if false;
+
+      // Deny deletes (use Admin SDK or Firebase Console)
+      allow delete: if false;
+    }
+
+    // ========================================
+    // ACCESS GATE COLLECTIONS
+    // ========================================
+
+    match /registered_users_db/{userId} {
+      allow create, update: if request.auth != null &&
+        request.auth.uid == userId &&
+        isValidRegisteredUser();
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    match /guest_leads_db/{leadId} {
+      allow read, write: if false;
+    }
+
+    // ========================================
+    // FUTURE COLLECTIONS
+    // ========================================
+
+    /**
+     * Example: Posts collection (for Contentful migration)
+     * Uncomment when ready to use Firestore for content
+     */
+    // match /posts/{postId} {
+    //   // Public read access
+    //   allow read: if true;
+    //
+    //   // Write access only for authenticated admin users
+    //   allow write: if request.auth != null && request.auth.token.admin == true;
+    // }
+
+    /**
+     * Example: Analytics collection
+     * Uncomment when implementing analytics tracking
+     */
+    // match /analytics/{document=**} {
+    //   allow read: if false;
+    //   allow write: if true;
+    // }
+
+    // ========================================
+    // DEFAULT DENY ALL
+    // ========================================
+
+    /**
+     * Default rule: Deny all access to any other collections
+     * This ensures new collections require explicit rules
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

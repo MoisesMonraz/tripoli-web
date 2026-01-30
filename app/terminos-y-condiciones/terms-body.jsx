@@ -23,18 +23,18 @@ export default function TermsBody() {
   const paragraphs = useMemo(() => (isEN ? content.EN : content.ES), [isEN]);
 
   return (
-    <main className="flex flex-col gap-10 pb-16 pt-12 font-raleway bg-white dark:bg-slate-950">
-      <section className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
-        <div className="flex flex-col gap-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">
+    <main className="flex flex-col gap-8 sm:gap-10 pb-12 sm:pb-16 pt-8 sm:pt-12 font-raleway bg-white dark:bg-slate-950">
+      <section className="max-w-[70rem] mx-auto w-full px-5 sm:px-7 md:px-5">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">
             {isEN ? "Terms and Conditions" : "Términos y Condiciones"}
           </p>
-          <h1 className="text-2xl lg:text-[28px] font-semibold uppercase bg-gradient-to-r from-[#0082b9] via-[#00b6ed] to-[#0082b9] bg-[length:200%_100%] bg-clip-text text-transparent animate-servicesTitleSweep">
+          <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold uppercase bg-gradient-to-r from-[#0082b9] via-[#00b6ed] to-[#0082b9] bg-[length:200%_100%] bg-clip-text text-transparent animate-servicesTitleSweep">
             {isEN ? "Legal term" : "Término legal"}
           </h1>
-          <div className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-4 text-justify">
+          <div className="text-[10px] sm:text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-3 sm:space-y-4">
             {paragraphs.map((paragraph, idx) => (
-              <p key={idx}>{paragraph}</p>
+              <p key={idx} className="text-justify">{paragraph}</p>
             ))}
           </div>
         </div>

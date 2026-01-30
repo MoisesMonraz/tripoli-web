@@ -17,16 +17,44 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId
+);
+
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
 let analytics: Analytics | undefined;
+let firebaseClientReady = false;
 
-if (typeof window !== "undefined") {
-  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  analytics = getAnalytics(app);
+if (typeof window !== "undefined" && isFirebaseConfigured) {
+  try {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    firebaseClientReady = true;
+  } catch (error) {
+    console.error("Failed to initialize Firebase client:", error);
+    firebaseClientReady = false;
+  }
+} else if (typeof window !== "undefined" && !isFirebaseConfigured) {
+  console.warn("Firebase client config is incomplete. Set NEXT_PUBLIC_FIREBASE_* env vars.");
 }
 
-export { app, auth, db, analytics };
+const initAnalytics = () => {
+  if (typeof window === "undefined" || !app) return undefined;
+  if (!analytics) {
+    try {
+      analytics = getAnalytics(app);
+    } catch (error) {
+      console.warn("Failed to initialize Firebase Analytics:", error);
+      return undefined;
+    }
+  }
+  return analytics;
+};
+
+export { app, auth, db, analytics, initAnalytics, isFirebaseConfigured, firebaseClientReady };

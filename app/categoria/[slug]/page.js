@@ -1,5 +1,6 @@
-export default function CategoryPage({ params }) {
-  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
+export default async function CategoryPage({ params }) {
+  const resolvedParams = await params;
+  const slug = Array.isArray(resolvedParams?.slug) ? resolvedParams.slug[0] : resolvedParams?.slug;
   const labels = {
     "consumo-y-retail": "Consumo y Retail",
     "entretenimiento-y-cultura": "Entretenimiento y Cultura",

@@ -1,17 +1,21 @@
-"use client";
-
+import { getArticlesBySubcategory } from "../../../../lib/contentful";
+import SubcategoryListPageClient from "../../../../components/category/SubcategoryListPageClient";
 import BannerRecintos from "../../../../components/recintos-culturales/bannerheader";
-import SubcategoryListPage from "../../../../components/category/SubcategoryListPage";
 
-export default function RecintosCulturalesPage() {
+export default async function RecintosCulturalesPage() {
+  const posts = await getArticlesBySubcategory("entretenimiento-y-cultura", "recintos-culturales", 50);
+
   return (
-    <SubcategoryListPage
+    <SubcategoryListPageClient
       titleEs="Recintos Culturales" title="Cultural Venues"
       categorySlug="entretenimiento-y-cultura"
       subcategorySlug="recintos-culturales"
       barColor="#009640"
       gradientFrom="#cce5ce"
+      initialPosts={posts}
       BannerComponent={BannerRecintos}
     />
   );
 }
+
+export const revalidate = 1800;

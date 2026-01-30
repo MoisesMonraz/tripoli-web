@@ -15,11 +15,11 @@ export default function ServicesIntro() {
   const label = language === "EN" ? "Services" : "Servicios";
 
   return (
-    <section className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
-      <div className="flex flex-col gap-3">
-        <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">{label}</p>
-        <h1 className="text-2xl lg:text-[28px] font-semibold services-title inline-block">{headline}</h1>
-        <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 max-w-3xl">{description}</p>
+    <section className="max-w-[70rem] mx-auto w-full px-4 sm:px-6 md:px-4">
+      <div className="flex flex-col gap-2 sm:gap-3">
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">{label}</p>
+        <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold services-title inline-block">{headline}</h1>
+        <p className="text-[13px] sm:text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 max-w-3xl text-justify">{description}</p>
       </div>
       <style jsx>{`
         @keyframes servicesTitleSweep {

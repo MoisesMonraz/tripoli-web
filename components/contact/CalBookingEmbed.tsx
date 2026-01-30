@@ -3,7 +3,7 @@
 import AnimatedNavyCard from "./AnimatedNavyCard";
 import { useLanguage } from "../LanguageProvider";
 
-const CAL_LINK = "https://cal.com/moises-monraz-2nxw7i/reunion-de-1-hr";
+const CAL_LINK = "https://cal.com/tripolimedia/reunion-de-1-hr";
 
 const IconClock = ({ className = "" }) => (
   <svg

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // Static public paths to ensure predictable sizing and avoid dynamic imports.
@@ -90,15 +91,17 @@ export default function BaseBanner({ slides = defaultSlides, slideDuration = DEF
                   transform: "translateX(0)",
                 }}
               >
-                <Image
-                  src={slide.src}
-                  alt={slide.alt}
-                  fill
-                  priority={idx === 0}
-                  fetchPriority={idx === 0 ? "high" : "auto"}
-                  sizes="(max-width: 768px) 100vw, 1100px"
-                  className="tm-banner-img object-cover object-center"
-                />
+                <Link href="/servicios" className="block w-full h-full cursor-pointer">
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt}
+                    fill
+                    priority={idx === 0}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
+                    sizes="(max-width: 768px) 100vw, 1100px"
+                    className="tm-banner-img object-cover object-center"
+                  />
+                </Link>
               </div>
             );
           })}

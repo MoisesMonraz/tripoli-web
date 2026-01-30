@@ -175,7 +175,7 @@ export default function Header() {
   }, [language]);
 
   const navLinkStyles =
-    "relative px-1.5 py-2 text-[0.74rem] md:text-[0.82rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
+    "relative px-1.5 py-2 text-[0.779rem] md:text-[0.876rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
 
   const renderNav = () => (
     <nav className="flex flex-1 items-center justify-center">
@@ -184,58 +184,58 @@ export default function Header() {
           item.key === "consumo"
             ? "hover:text-[#f39200] dark:hover:text-[#f39200]"
             : item.key === "entretenimiento"
-            ? "hover:text-[#009640] dark:hover:text-[#009640]"
-            : item.key === "industria-ti"
-            ? "hover:text-[#0069b4] dark:hover:text-[#0069b4]"
-            : item.key === "infraestructura"
-            ? "hover:text-[#5d514c] dark:hover:text-[#5d514c]"
-            : item.key === "politica"
-            ? "hover:text-[#2e2c7e] dark:hover:text-[#2e2c7e]"
-            : item.key === "salud"
-            ? "hover:text-[#e6007e] dark:hover:text-[#e6007e]"
-            : "hover:text-[#00BFFF] dark:hover:text-[#33ceff]";
+              ? "hover:text-[#009640] dark:hover:text-[#009640]"
+              : item.key === "industria-ti"
+                ? "hover:text-[#0069b4] dark:hover:text-[#0069b4]"
+                : item.key === "infraestructura"
+                  ? "hover:text-[#5d514c] dark:hover:text-[#5d514c]"
+                  : item.key === "politica"
+                    ? "hover:text-[#2e2c7e] dark:hover:text-[#2e2c7e]"
+                    : item.key === "salud"
+                      ? "hover:text-[#e6007e] dark:hover:text-[#e6007e]"
+                      : "hover:text-[#00BFFF] dark:hover:text-[#33ceff]";
         const groupHoverTextClass =
           item.key === "consumo"
             ? "group-hover:text-[#f39200] dark:group-hover:text-[#f39200]"
             : item.key === "entretenimiento"
-            ? "group-hover:text-[#009640] dark:group-hover:text-[#009640]"
-            : item.key === "industria-ti"
-            ? "group-hover:text-[#0069b4] dark:group-hover:text-[#0069b4]"
-            : item.key === "infraestructura"
-            ? "group-hover:text-[#5d514c] dark:group-hover:text-[#5d514c]"
-            : item.key === "politica"
-            ? "group-hover:text-[#2e2c7e] dark:group-hover:text-[#2e2c7e]"
-            : item.key === "salud"
-            ? "group-hover:text-[#e6007e] dark:group-hover:text-[#e6007e]"
-            : "group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]";
+              ? "group-hover:text-[#009640] dark:group-hover:text-[#009640]"
+              : item.key === "industria-ti"
+                ? "group-hover:text-[#0069b4] dark:group-hover:text-[#0069b4]"
+                : item.key === "infraestructura"
+                  ? "group-hover:text-[#5d514c] dark:group-hover:text-[#5d514c]"
+                  : item.key === "politica"
+                    ? "group-hover:text-[#2e2c7e] dark:group-hover:text-[#2e2c7e]"
+                    : item.key === "salud"
+                      ? "group-hover:text-[#e6007e] dark:group-hover:text-[#e6007e]"
+                      : "group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]";
         const activeTextClass =
           item.key === "consumo"
             ? "text-[#f39200] dark:text-[#f39200]"
             : item.key === "entretenimiento"
-            ? "text-[#009640] dark:text-[#009640]"
-            : item.key === "industria-ti"
-            ? "text-[#0069b4] dark:text-[#0069b4]"
-            : item.key === "infraestructura"
-            ? "text-[#5d514c] dark:text-[#5d514c]"
-            : item.key === "politica"
-            ? "text-[#2e2c7e] dark:text-[#2e2c7e]"
-            : item.key === "salud"
-            ? "text-[#e6007e] dark:text-[#e6007e]"
-            : "text-[#00BFFF] dark:text-[#33ceff]";
+              ? "text-[#009640] dark:text-[#009640]"
+              : item.key === "industria-ti"
+                ? "text-[#0069b4] dark:text-[#0069b4]"
+                : item.key === "infraestructura"
+                  ? "text-[#5d514c] dark:text-[#5d514c]"
+                  : item.key === "politica"
+                    ? "text-[#2e2c7e] dark:text-[#2e2c7e]"
+                    : item.key === "salud"
+                      ? "text-[#e6007e] dark:text-[#e6007e]"
+                      : "text-[#00BFFF] dark:text-[#33ceff]";
         const underlineClass =
           item.key === "consumo"
             ? "bg-[#f39200]"
             : item.key === "entretenimiento"
-            ? "bg-[#009640]"
-            : item.key === "industria-ti"
-            ? "bg-[#0069b4]"
-            : item.key === "infraestructura"
-            ? "bg-[#5d514c]"
-            : item.key === "politica"
-            ? "bg-[#2e2c7e]"
-            : item.key === "salud"
-            ? "bg-[#e6007e]"
-            : "bg-gradient-to-r from-[#00BFFF] to-[#33ceff]";
+              ? "bg-[#009640]"
+              : item.key === "industria-ti"
+                ? "bg-[#0069b4]"
+                : item.key === "infraestructura"
+                  ? "bg-[#5d514c]"
+                  : item.key === "politica"
+                    ? "bg-[#2e2c7e]"
+                    : item.key === "salud"
+                      ? "bg-[#e6007e]"
+                      : "bg-gradient-to-r from-[#00BFFF] to-[#33ceff]";
         const hasDropdown = Array.isArray(item.subcategories) && item.subcategories.length > 0;
         const matchPath = item.path ?? item.href ?? "";
         const isActive =
@@ -254,9 +254,8 @@ export default function Header() {
               >
                 <span>{item.labels[language] ?? item.labels.ES}</span>
                 <span
-                  className={`absolute left-2.5 right-2.5 bottom-[6px] h-[1.5px] origin-left transition duration-200 ease-out ${
-                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                  } ${underlineClass}`}
+                  className={`absolute left-2.5 right-2.5 bottom-[6px] h-[1.5px] origin-left transition duration-200 ease-out ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                    } ${underlineClass}`}
                 />
               </Link>
 
@@ -287,13 +286,44 @@ export default function Header() {
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         aria-pressed={isDark}
         onClick={() => setIsDark((prev) => !prev)}
-        className="group flex h-10 items-center gap-1 rounded-full border border-slate-200 bg-white/80 pl-3 pr-2 text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+        className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/80 px-0 sm:pl-3 sm:pr-2 text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
       >
-        <span className="relative flex h-6 w-11 items-center rounded-full bg-slate-100 transition dark:bg-slate-800">
+        {/* Icono solo para móvil */}
+        <span className="flex sm:hidden w-full items-center justify-center" aria-hidden="true">
+          {isDark ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14.5 2.5A9 9 0 1 0 21.5 15 A7 7 0 0 1 14.5 2.5Z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          )}
+        </span>
+        {/* Switch para desktop */}
+        <span className="hidden sm:flex relative h-6 w-11 items-center rounded-full bg-slate-100 transition dark:bg-slate-800">
           <span
-            className={`absolute left-1 h-4 w-4 rounded-full bg-gradient-to-br from-[#00BFFF] to-[#33ceff] shadow-md shadow-sky-400/40 transition ${
-              isDark ? "translate-x-5 bg-gradient-to-br from-[#33ceff] to-[#66deff]" : ""
-            }`}
+            className={`absolute left-1 h-4 w-4 rounded-full bg-gradient-to-br from-[#00BFFF] to-[#33ceff] shadow-md shadow-sky-400/40 transition ${isDark ? "translate-x-5 bg-gradient-to-br from-[#33ceff] to-[#66deff]" : ""
+              }`}
           />
         </span>
         <span className="hidden sm:inline-flex w-6 items-center justify-center" aria-hidden="true">
@@ -332,7 +362,7 @@ export default function Header() {
         type="button"
         aria-label="Cambiar idioma"
         onClick={() => setLanguage((prev) => (prev === "ES" ? "EN" : "ES"))}
-        className="flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-3 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+        className="flex h-9 sm:h-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-2.5 sm:px-3 text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
       >
         {language}
       </button>
@@ -342,14 +372,14 @@ export default function Header() {
   return (
     <>
       <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-30">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 px-3 sm:px-4 py-4 sm:py-6 lg:px-8">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               type="button"
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="md:hidden flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+              className="md:hidden flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
             >
               {isMenuOpen ? (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
@@ -362,30 +392,50 @@ export default function Header() {
               )}
             </button>
 
-            <Link
-              href="/calendario"
-              className="hidden sm:flex items-center gap-2 text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] text-slate-700 dark:text-slate-200 ml-4 transition hover:text-[#00BFFF] dark:hover:text-[#33ceff]"
-              style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
-              aria-label="Ir al calendario editorial"
-            >
-              <span>{dateDisplay}</span>
-              <span className="h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
-              <span>{timeDisplay}</span>
-            </Link>
+            <div className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
+              <Link
+                href="/calendario"
+                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
+                style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
+                aria-label="Ir al calendario editorial"
+              >
+                {/* Icono de calendario solo para móvil */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="flex sm:hidden h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                {/* Texto completo para desktop */}
+                <span className="hidden sm:inline whitespace-nowrap">{dateDisplay}</span>
+                <span className="hidden sm:inline h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
+                <span className="hidden sm:inline whitespace-nowrap">{timeDisplay}</span>
+              </Link>
+            </div>
           </div>
 
           <div className="col-start-2 col-end-3 flex items-center justify-center">
-            <Link href="/" className="group flex items-center gap-5 text-[#00BFFF] transition hover:opacity-95 dark:text-[#33ceff]" aria-label="Ir a la pagina principal">
-              <span className="flex h-8 w-8 items-center justify-center">
-                <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" priority />
+            <Link href="/" className="group flex items-center gap-2 sm:gap-5 text-[#00BFFF] transition hover:opacity-95 dark:text-[#33ceff]" aria-label="Ir a la pagina principal">
+              <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center">
+                <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" priority />
               </span>
-              <span className="text-base font-semibold tracking-[0.12em] uppercase text-[#00BFFF] transition-colors duration-300 group-hover:text-[#33ceff] dark:text-[#33ceff] dark:group-hover:text-[#66deff]">
+              <span className="text-[0.75rem] sm:text-base font-semibold tracking-[0.08em] sm:tracking-[0.12em] uppercase text-[#00BFFF] transition-colors duration-300 group-hover:text-[#33ceff] dark:text-[#33ceff] dark:group-hover:text-[#66deff]">
                 Tripoli Media
               </span>
             </Link>
           </div>
 
-          <div className="flex items-center justify-end gap-2 sm:gap-2.5 md:gap-3 pr-4 sm:pr-5 lg:pr-6 translate-x-2">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3">
             {renderRightControls()}
           </div>
         </div>
@@ -395,17 +445,17 @@ export default function Header() {
         </div>
 
         {isMenuOpen && (
-          <nav className="md:hidden">
-            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
+          <nav className="md:hidden px-3 pb-3">
+            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => (
                 <li key={item.key}>
                   <a
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
                   >
-                    {item.labels[language]}
-                    <span className="h-[1px] w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70" />
+                    <span className="truncate">{item.labels[language]}</span>
+                    <span className="h-[1px] w-6 sm:w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70 flex-shrink-0 ml-2" />
                   </a>
                 </li>
               ))}
@@ -419,23 +469,89 @@ export default function Header() {
       <div
         data-header="sticky"
         data-visible={isStickyVisible ? "true" : "false"}
-        className={`fixed inset-x-0 top-0 z-40 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${
-          isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-x-0 top-0 z-40 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+          }`}
       >
-        <div className="relative w-full flex items-center gap-3 px-0 py-2 sm:px-1 lg:px-2">
-          <div className="flex items-center justify-start ml-12 sm:ml-[5rem] flex-shrink-0 gap-3">
-            <Link href="/" className="flex items-center" aria-label="Ir a la pagina principal">
-              <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
-            </Link>
+        <div className="relative w-full flex items-center gap-1.5 sm:gap-3 px-2 py-2 sm:px-1 lg:px-2">
+          <div className="flex items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
+            <button
+              type="button"
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="md:hidden flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+            >
+              {isMenuOpen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+              )}
+            </button>
+
+            <div className="md:hidden group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
+              <Link
+                href="/calendario"
+                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
+                style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
+                aria-label="Ir al calendario editorial"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="flex sm:hidden h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <span className="hidden sm:inline whitespace-nowrap">{dateDisplay}</span>
+                <span className="hidden sm:inline h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
+                <span className="hidden sm:inline whitespace-nowrap">{timeDisplay}</span>
+              </Link>
+            </div>
           </div>
-          <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+
+          <Link href="/" className="flex items-center justify-center absolute left-[50%] -translate-x-1/2 md:left-[7.5%] md:-translate-x-1/2 top-1/2 -translate-y-1/2" aria-label="Ir a la pagina principal">
+            <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
+          </Link>
+
+          <div className="hidden md:block pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {renderNav()}
           </div>
-          <div className="flex items-center justify-end gap-2 sm:gap-2.5 flex-shrink-0 ml-auto pr-0 sm:pr-0 lg:pr-0 -translate-x-2">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto pr-2 sm:pr-1 lg:pr-2">
             {renderRightControls()}
           </div>
         </div>
+
+        {isMenuOpen && (
+          <nav className="md:hidden px-3 pb-3">
+            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
+              {navItems.map((item) => (
+                <li key={item.key}>
+                  <a
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+                  >
+                    <span className="truncate">{item.labels[language]}</span>
+                    <span className="h-[1px] w-6 sm:w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70 flex-shrink-0 ml-2" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </div>
       <style jsx>{`
         .tm-header-line {

@@ -27,9 +27,9 @@ export default function CategorySection({
       ? post
       : {
           ...post,
-          title: post.titleEs ?? `T\u00edtulo ${idx + 1}`,
-          excerpt: post.excerptEs ?? "Vista previa corta aqu\u00ed...",
-          date: post.dateEs ?? "Noviembre 2025",
+          title: post.titleEs ?? post.title ?? `T\u00edtulo ${idx + 1}`,
+          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqu\u00ed...",
+          date: post.dateEs ?? post.date ?? "Noviembre 2025",
         }
   );
 

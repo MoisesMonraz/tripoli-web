@@ -10,6 +10,7 @@ module.exports = {
       fontFamily: {
         sans: ['"Raleway"', '"Space Grotesk"', '"Sora"', "system-ui", "sans-serif"],
         raleway: ['"Raleway"', "system-ui", "sans-serif"],
+        serif: ['"Merriweather"', "Georgia", "Cambria", '"Times New Roman"', "Times", "serif"],
       },
     },
   },

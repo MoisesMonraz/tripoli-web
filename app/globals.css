@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&family=Sora:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=Raleway:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&family=Sora:wght@400;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -178,4 +178,51 @@
 
 .animate-servicesTitleSweep {
   animation: servicesTitleSweep 10s ease-in-out infinite;
+}
+
+/* ── Article body editorial styles ── */
+.article-ul {
+  list-style: none;
+}
+.article-ul > li::before {
+  content: "\2014";
+  position: absolute;
+  left: 0;
+  color: #94a3b8;
+}
+.article-ul > li {
+  position: relative;
+}
+.dark .article-ul > li::before {
+  color: #64748b;
+}
+
+/* Remove bottom margin from the last paragraph inside a blockquote */
+.article-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Drop cap on the very first paragraph of the article body */
+.article-body > p:first-child::first-letter {
+  float: left;
+  font-family: "Merriweather", Georgia, serif;
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 0.08em;
+  padding-top: 0.07em;
+  font-weight: 700;
+  color: #0f172a;
+}
+.article-body--no-dropcap > p:first-child::first-letter {
+  float: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  padding-right: 0;
+  padding-top: 0;
+  font-weight: inherit;
+  color: inherit;
+}
+.dark .article-body > p:first-child::first-letter {
+  color: #f1f5f9;
 }

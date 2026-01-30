@@ -5,21 +5,30 @@ import BannerSectorsalud from "../components/home/BannerSectorsalud";
 import BannerIndustriaTI from "../components/home/BannerIndustriaTI";
 import BannerInfraestructuraSociaI from "../components/home/BannerInfraestructuraSociaI";
 import BannerPoliticaLeyes from "../components/home/BannerPoliticaLeyes";
+import StructuredData from "../components/seo/StructuredData";
+import { getArticlesByCategory } from "../lib/contentful";
 
-export default function HomePage() {
-  const placeholderImage =
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='16'%3EConsumo%3C/text%3E%3C/svg%3E";
-
-  const placeholderPosts = [
-    { title: "Placeholder Title 1", excerpt: "Short preview text here...", date: "November 2025", image: placeholderImage, slug: "placeholder-1" },
-    { title: "Placeholder Title 2", excerpt: "Short preview text here...", date: "November 2025", image: placeholderImage, slug: "placeholder-2" },
-    { title: "Placeholder Title 3", excerpt: "Short preview text here...", date: "November 2025", image: placeholderImage, slug: "placeholder-3" },
-    { title: "Placeholder Title 4", excerpt: "Short preview text here...", date: "November 2025", image: placeholderImage, slug: "placeholder-4" },
-    { title: "Placeholder Title 5", excerpt: "Short preview text here...", date: "November 2025", image: placeholderImage, slug: "placeholder-5" },
-  ];
+export default async function HomePage() {
+  // Fetch articles for each category in parallel
+  const [
+    consumoArticles,
+    entretenimientoArticles,
+    industriaTIArticles,
+    infraestructuraArticles,
+    politicaArticles,
+    saludArticles,
+  ] = await Promise.all([
+    getArticlesByCategory('consumo-y-retail', 6),
+    getArticlesByCategory('entretenimiento-y-cultura', 6),
+    getArticlesByCategory('industria-ti', 6),
+    getArticlesByCategory('infraestructura-social', 6),
+    getArticlesByCategory('politica-y-leyes', 6),
+    getArticlesByCategory('sector-salud', 6),
+  ]);
 
   return (
     <>
+      <StructuredData />
       <BannerHeader />
       <main className="flex flex-col gap-7 pb-12 mt-7">
         <CategorySection
@@ -27,7 +36,7 @@ export default function HomePage() {
           titleEn="Consumer & Retail"
           slug="consumo-y-retail"
           titleHref="/categoria/consumo-y-retail"
-          posts={placeholderPosts}
+          posts={consumoArticles}
           barColor="#f39200"
           barLightColor="#fee5c8"
           barPulseDuration="8s"
@@ -38,7 +47,7 @@ export default function HomePage() {
           title="Entretenimiento y Cultura"
           titleEn="Entertainment & Culture"
           slug="entretenimiento-y-cultura"
-          posts={placeholderPosts}
+          posts={entretenimientoArticles}
           BannerComponent={BannerEntretenimientoCultura}
           barColor="#009640"
           barLightColor="#cce5ce"
@@ -53,7 +62,7 @@ export default function HomePage() {
           title="Industria TI"
           titleEn="Industry IT"
           slug="industria-ti"
-          posts={placeholderPosts}
+          posts={industriaTIArticles}
           BannerComponent={BannerIndustriaTI}
           barColor="#0069b4"
           barLightColor="#c8d5ef"
@@ -68,7 +77,7 @@ export default function HomePage() {
           title="Infraestructura Social"
           titleEn="Social Infrastructure"
           slug="infraestructura-social"
-          posts={placeholderPosts}
+          posts={infraestructuraArticles}
           BannerComponent={BannerInfraestructuraSociaI}
           barColor="#5d514c"
           barLightColor="#d8d4d3"
@@ -83,7 +92,7 @@ export default function HomePage() {
           title="Política y Leyes"
           titleEn="Politics & Law"
           slug="politica-y-leyes"
-          posts={placeholderPosts}
+          posts={politicaArticles}
           BannerComponent={BannerPoliticaLeyes}
           barColor="#312783"
           barLightColor="#c8c1e1"
@@ -98,7 +107,7 @@ export default function HomePage() {
           title="Sector Salud"
           titleEn="Health Sector"
           slug="sector-salud"
-          posts={placeholderPosts}
+          posts={saludArticles}
           BannerComponent={BannerSectorsalud}
           barColor="#e6007e"
           barLightColor="#f9d3e6"
@@ -112,3 +121,6 @@ export default function HomePage() {
     </>
   );
 }
+
+// ISR: Revalidate every 30 minutes
+export const revalidate = 1800;

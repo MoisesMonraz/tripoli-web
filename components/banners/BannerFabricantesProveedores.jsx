@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -66,14 +67,16 @@ export default function BannerFabricantesProveedores() {
                   transition: "opacity 350ms ease",
                 }}
               >
-                <Image
-                  src={slide.src}
-                  alt={slide.alt}
-                  fill
-                  priority={idx === 0}
-                  sizes="(max-width: 768px) 100vw, 1100px"
-                  className="tm-banner-img"
-                />
+                <Link href="/servicios" className="block w-full h-full cursor-pointer">
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt}
+                    fill
+                    priority={idx === 0}
+                    sizes="(max-width: 768px) 100vw, 1100px"
+                    className="tm-banner-img"
+                  />
+                </Link>
               </div>
             );
           })}

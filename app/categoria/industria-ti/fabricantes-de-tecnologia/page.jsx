@@ -1,18 +1,21 @@
-"use client";
-
+import { getArticlesBySubcategory } from "../../../../lib/contentful";
+import SubcategoryListPageClient from "../../../../components/category/SubcategoryListPageClient";
 import BannerFabricantesTec from "../../../../components/fabricantes-de-tecnologia/bannerheader";
-import SubcategoryListPage from "../../../../components/category/SubcategoryListPage";
 
-export default function FabricantesDeTecnologiaPage() {
+export default async function FabricantesDeTecnologiaPage() {
+  const posts = await getArticlesBySubcategory("industria-ti", "fabricantes-de-tecnologia", 50);
+
   return (
-    <SubcategoryListPage
-      titleEs="Fabricantes de Tecnología"
-      title="Technology Manufacturers"
+    <SubcategoryListPageClient
+      titleEs="Fabricantes de Tecnología" title="Technology Manufacturers"
       categorySlug="industria-ti"
       subcategorySlug="fabricantes-de-tecnologia"
       barColor="#0069b4"
       gradientFrom="#c8d5ef"
+      initialPosts={posts}
       BannerComponent={BannerFabricantesTec}
     />
   );
 }
+
+export const revalidate = 1800;
