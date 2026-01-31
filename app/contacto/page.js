@@ -92,7 +92,7 @@ export default function ContactoPage() {
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 font-raleway">
               {copy.contactLabel}
             </p>
-            <h1 className="contact-title text-xl sm:text-2xl lg:text-[28px] font-semibold uppercase font-raleway">
+            <h1 className="contact-title whitespace-nowrap text-lg sm:text-2xl lg:text-[28px] font-semibold uppercase font-raleway">
               {copy.contactTitle}
             </h1>
           </div>
@@ -183,7 +183,6 @@ export default function ContactoPage() {
     </main>
   );
 }
-
 
 
 
