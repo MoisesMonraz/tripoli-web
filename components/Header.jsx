@@ -96,11 +96,13 @@ export default function Header() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const storedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialDark = storedTheme ? storedTheme === "dark" : prefersDark;
+    const initialDark = storedTheme ? storedTheme === "dark" : false;
     setIsDark(initialDark);
     document.documentElement.classList.toggle("dark", initialDark);
     document.documentElement.classList.toggle("light", !initialDark);
+    if (!storedTheme) {
+      localStorage.setItem("theme", "light");
+    }
   }, []);
 
   useEffect(() => {
