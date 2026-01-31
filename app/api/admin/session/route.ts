@@ -127,7 +127,8 @@ export async function POST(request: Request) {
 
     const cookieName = getAdminSessionCookieName();
     const ttl = getAdminSessionTtlSeconds();
-    cookies().set(cookieName, token, {
+    const cookieStore = await cookies();
+    cookieStore.set(cookieName, token, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -148,4 +149,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: message }, { status: 403 });
   }
 }
-

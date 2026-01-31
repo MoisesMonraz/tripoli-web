@@ -4,7 +4,8 @@ import { getAdminSessionCookieName } from "../../../../lib/security/adminSession
 
 export async function POST() {
   const cookieName = getAdminSessionCookieName();
-  cookies().set(cookieName, "", {
+  const cookieStore = await cookies();
+  cookieStore.set(cookieName, "", {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -13,4 +14,3 @@ export async function POST() {
   });
   return NextResponse.json({ ok: true }, { status: 200 });
 }
-

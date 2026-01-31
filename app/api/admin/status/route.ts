@@ -4,7 +4,8 @@ import { getAdminSessionCookieName, verifyAdminSession } from "../../../../lib/s
 
 export async function GET() {
   const cookieName = getAdminSessionCookieName();
-  const token = cookies().get(cookieName)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(cookieName)?.value;
   const session = verifyAdminSession(token);
   if (!session) {
     return NextResponse.json({ ok: false }, { status: 401 });
@@ -15,4 +16,3 @@ export async function GET() {
     role: session.role,
   });
 }
-

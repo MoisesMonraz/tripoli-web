@@ -14,7 +14,8 @@ const getClientIp = (request: Request) => {
 
 export async function GET(request: Request) {
   const cookieName = getAdminSessionCookieName();
-  const token = cookies().get(cookieName)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(cookieName)?.value;
   const session = verifyAdminSession(token);
   if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
