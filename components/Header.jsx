@@ -449,18 +449,23 @@ export default function Header() {
         {isMenuOpen && (
           <nav className="md:hidden px-3 pb-3">
             <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
-              {navItems.map((item) => (
+              {navItems.map((item) => {
+                const matchPath = item.path ?? item.href ?? "";
+                const isActive =
+                  item.key === "home"
+                    ? pathname === "/"
+                    : pathname === matchPath || pathname.startsWith(`${matchPath}/`);
+                return (
                 <li key={item.key}>
                   <a
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                   >
                     <span className="truncate">{item.labels[language]}</span>
-                    <span className="h-[1px] w-6 sm:w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70 flex-shrink-0 ml-2" />
                   </a>
                 </li>
-              ))}
+              )})}
             </ul>
           </nav>
         )}
@@ -539,18 +544,23 @@ export default function Header() {
         {isMenuOpen && (
           <nav className="md:hidden px-3 pb-3">
             <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
-              {navItems.map((item) => (
+              {navItems.map((item) => {
+                const matchPath = item.path ?? item.href ?? "";
+                const isActive =
+                  item.key === "home"
+                    ? pathname === "/"
+                    : pathname === matchPath || pathname.startsWith(`${matchPath}/`);
+                return (
                 <li key={item.key}>
                   <a
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] text-slate-700 transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                   >
                     <span className="truncate">{item.labels[language]}</span>
-                    <span className="h-[1px] w-6 sm:w-8 bg-gradient-to-r from-[#00BFFF]/60 to-[#33ceff]/70 dark:from-[#33ceff]/70 dark:to-[#66deff]/70 flex-shrink-0 ml-2" />
                   </a>
                 </li>
-              ))}
+              )})}
             </ul>
           </nav>
         )}
