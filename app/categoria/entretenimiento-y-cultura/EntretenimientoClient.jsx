@@ -72,9 +72,9 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
                 <h2
                   ref={titleRef}
                   className="
-                    inline-flex h-[44px] items-center px-3
+                    flex h-[44px] items-center px-3
                     text-lg lg:text-xl font-semibold uppercase font-raleway
-                    max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
+                    w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
                     tracking-[0.05em] transition-colors
                     text-[#009640]
                     bg-white dark:bg-transparent
@@ -88,9 +88,9 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
               <h2
                 ref={titleRef}
                 className="
-                  inline-flex h-[44px] items-center px-3
+                  flex h-[44px] items-center px-3
                   text-lg lg:text-xl font-semibold uppercase font-raleway
-                  max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
+                  w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
                   tracking-[0.05em] transition-colors
                   text-[#009640]
                   bg-white dark:bg-transparent

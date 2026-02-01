@@ -62,18 +62,18 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
             <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
             {titleHref ? (
               <Link href={titleHref}>
-                <h2
-                  ref={titleRef}
-                  className="
-                    inline-flex h-[44px] items-center px-3
-                    text-lg lg:text-xl font-semibold uppercase font-raleway
-                    max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
-                    tracking-[0.05em] transition-colors
-                    text-[#f39200]
-                    bg-white dark:bg-transparent
-                    hover:text-[#935b00] dark:hover:text-[#cce5ce]
-                  "
-                >
+                  <h2
+                    ref={titleRef}
+                    className="
+                      flex h-[44px] items-center px-3
+                      text-lg lg:text-xl font-semibold uppercase font-raleway
+                      w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
+                      tracking-[0.05em] transition-colors
+                      text-[#f39200]
+                      bg-white dark:bg-transparent
+                      hover:text-[#935b00] dark:hover:text-[#cce5ce]
+                    "
+                  >
                   {title}
                 </h2>
               </Link>
@@ -81,9 +81,9 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
               <h2
                 ref={titleRef}
                 className="
-                  inline-flex h-[44px] items-center px-3
+                  flex h-[44px] items-center px-3
                   text-lg lg:text-xl font-semibold uppercase font-raleway
-                  max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
+                  w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
                   tracking-[0.05em] transition-colors
                   text-[#f39200]
                   bg-white dark:bg-transparent
