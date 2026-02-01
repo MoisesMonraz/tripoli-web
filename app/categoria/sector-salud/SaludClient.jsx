@@ -49,19 +49,19 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
     ...tailSlides,
   ];
 
-  const SectionBlock = ({ title, posts, titleHref, moreHref }) => (
+  const SectionBlock = ({ title, posts, titleHref, moreHref, titleClassName = "" }) => (
     <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
       <div className="relative w-full">
         <div className="relative z-10 flex items-stretch gap-0">
           <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
           {titleHref ? (
             <Link href={titleHref}>
-              <h2 className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#e6007e] bg-white dark:bg-transparent hover:text-[#8d004c] dark:hover:text-[#f9d3e6]">
+              <h2 className={`inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#e6007e] bg-white dark:bg-transparent hover:text-[#8d004c] dark:hover:text-[#f9d3e6] ${titleClassName}`}>
                 {title}
               </h2>
             </Link>
           ) : (
-            <h2 className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#e6007e] bg-white dark:bg-transparent hover:text-[#8d004c] dark:hover:text-[#f9d3e6]">
+            <h2 className={`inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#e6007e] bg-white dark:bg-transparent hover:text-[#8d004c] dark:hover:text-[#f9d3e6] ${titleClassName}`}>
               {title}
             </h2>
           )}
@@ -97,6 +97,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
         posts={fabricantesData}
         titleHref="/categoria/sector-salud/fabricantes-equipo-insumos"
         moreHref="/categoria/sector-salud/fabricantes-equipo-insumos"
+        titleClassName="text-[13.5px] sm:text-lg"
       />
       <section aria-label={labels.bannerFabricantes} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerFabricantes}</h2>
