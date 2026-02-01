@@ -498,7 +498,7 @@ export default function AIChatWidget() {
         {showWelcome && !isOpen && (
           <div className="pointer-events-none absolute right-full top-1/2 mr-2 sm:mr-3 -translate-x-[48px] sm:-translate-x-[62px] -translate-y-1/2">
             <div
-              className={`relative min-w-0 sm:min-w-[280px] max-w-[min(280px,calc(100vw-96px))] sm:max-w-[320px] rounded-2xl border px-3 sm:px-4 py-2.5 sm:py-3 text-[10.5px] sm:text-[11.5px] leading-relaxed shadow-lg whitespace-normal break-words ${isDarkMode
+              className={`relative translate-x-[2.5px] sm:translate-x-0 min-w-0 sm:min-w-[280px] max-w-[min(280px,calc(100vw-96px))] sm:max-w-[320px] rounded-2xl border px-3 sm:px-4 py-2.5 sm:py-3 text-[10.5px] sm:text-[11.5px] leading-relaxed shadow-lg whitespace-normal break-words ${isDarkMode
                 ? "border-slate-700 bg-slate-900/75 text-slate-100 shadow-black/40"
                 : "border-slate-200 bg-white/75 text-slate-700 shadow-slate-900/10"
                 }`}
@@ -506,7 +506,7 @@ export default function AIChatWidget() {
               <button
                 type="button"
                 onClick={closeWelcome}
-                className="pointer-events-auto absolute right-1.5 sm:right-2 top-1.5 sm:top-2 rounded-full p-0.5 sm:p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 text-lg sm:text-xl"
+                className="pointer-events-auto absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 sm:top-2 sm:translate-y-0 rounded-full p-0.5 sm:p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 text-lg sm:text-xl"
                 aria-label={strings.ariaClose}
               >
                 ×
