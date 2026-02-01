@@ -97,7 +97,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
         posts={fabricantesData}
         titleHref="/categoria/sector-salud/fabricantes-equipo-insumos"
         moreHref="/categoria/sector-salud/fabricantes-equipo-insumos"
-        titleClassName="text-[13.5px] sm:text-lg"
+        titleClassName="text-[10px] sm:text-lg"
       />
       <section aria-label={labels.bannerFabricantes} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerFabricantes}</h2>
