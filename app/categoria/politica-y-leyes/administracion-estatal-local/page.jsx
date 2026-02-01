@@ -7,7 +7,7 @@ export default async function AdministracionEstatalLocalPage() {
 
   return (
     <SubcategoryListPageClient
-      titleEs="Administración Estatal y Local" title="State and Local Administration"
+      titleEs="Administración Pública" title="State and Local Administration"
       categorySlug="politica-y-leyes"
       subcategorySlug="administracion-estatal-local"
       barColor="#312783"

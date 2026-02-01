@@ -65,7 +65,7 @@ const navItems = [
     labels: { ES: "Pol\u00edtica y Leyes", EN: "Politics & Law" },
     subcategories: [
       { slug: "organismos-publicos", labels: { ES: "Organismos P\u00fablicos", EN: "Public Agencies" } },
-      { slug: "administracion-estatal-local", labels: { ES: "Administraci\u00f3n Estatal y Local", EN: "State & Local Administration" } },
+      { slug: "administracion-estatal-local", labels: { ES: "Administraci\u00f3n P\u00fablica", EN: "State & Local Administration" } },
       { slug: "servicios-juridicos", labels: { ES: "Servicios Jur\u00eddicos", EN: "Legal Services" } },
     ],
   },

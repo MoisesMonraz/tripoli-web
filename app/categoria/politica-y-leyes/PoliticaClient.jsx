@@ -25,12 +25,12 @@ export default function PoliticaClient({ organismosData, administracionData, jur
   const labels = {
     bannerHeader: isEnglish ? "Banner Header Politics & Law" : "Banner Header Politica y Leyes",
     fabricantes: isEnglish ? "Public Agencies" : "Organismos Públicos",
-    cadenas: isEnglish ? "State & Local Administration" : "Administración Estatal y Local",
+    cadenas: isEnglish ? "State & Local Administration" : "Administración Pública",
     conveniencia: isEnglish ? "Legal Services" : "Servicios Jurídicos",
     novedades: isEnglish ? "Latest news" : "Novedades",
     verMas: isEnglish ? "See more news" : "Ver más noticias",
     bannerFabricantes: isEnglish ? "Banner Public Agencies" : "Banner Organismos Públicos",
-    bannerCadenas: isEnglish ? "Banner State & Local Administration" : "Banner Administración Estatal y Local",
+    bannerCadenas: isEnglish ? "Banner State & Local Administration" : "Banner Administración Pública",
     bannerConveniencia: isEnglish ? "Banner Legal Services" : "Banner Servicios Jurídicos",
   };
 
@@ -41,7 +41,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
     ...tailSlides,
   ];
   const administracionSlides = [
-    { id: "politica-administracion", src: "/images/banners/subcategorias/banner-administracion-estatal-y-local.png", alt: "Administracion Estatal y Local" },
+    { id: "politica-administracion", src: "/images/banners/subcategorias/banner-administracion-estatal-y-local.png", alt: "Administracion Publica" },
     ...tailSlides,
   ];
   const juridicosSlides = [
