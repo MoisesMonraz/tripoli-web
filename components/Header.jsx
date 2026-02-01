@@ -448,7 +448,7 @@ export default function Header() {
 
         {isMenuOpen && (
           <nav className="md:hidden px-3 pb-3">
-            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
+            <ul className="w-fit max-w-[70%] space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => {
                 const matchPath = item.path ?? item.href ?? "";
                 const isActive =
@@ -543,7 +543,7 @@ export default function Header() {
 
         {isMenuOpen && (
           <nav className="md:hidden px-3 pb-3">
-            <ul className="space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
+            <ul className="w-fit max-w-[70%] space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => {
                 const matchPath = item.path ?? item.href ?? "";
                 const isActive =
