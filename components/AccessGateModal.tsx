@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import Script from "next/script";
 
+import { auth } from "@/lib/firebase";
 import { firebaseClientReady, initAnalytics } from "@/lib/firebase/client";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   saveGuestLead,
   signInWithGoogleAndRegister,
@@ -113,6 +115,7 @@ export default function AccessGateModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
   const [guestEmail, setGuestEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,6 +202,42 @@ export default function AccessGateModal() {
     } catch (err) {
       console.error("Guest lead capture failed:", err);
       setError("No pudimos guardar tu informacion. Intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegister = async (event: FormEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    setError("");
+
+    if (!EMAIL_REGEX.test(guestEmail.trim())) {
+      setError("Ingresa un correo valido.");
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError("La contraseña es muy corta.");
+      return;
+    }
+    if (!acceptTerms) {
+      setError("Debes aceptar los terminos para continuar.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await createUserWithEmailAndPassword(auth, guestEmail.trim(), password);
+      handleConsentGranted();
+    } catch (err: any) {
+      const code = err?.code;
+      if (code === "auth/email-already-in-use") {
+        setError("El usuario ya existe.");
+      } else if (code === "auth/weak-password") {
+        setError("La contraseña es muy corta.");
+      } else {
+        setError("No pudimos completar el registro. Intenta de nuevo.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -311,6 +350,22 @@ export default function AccessGateModal() {
                       className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                     />
                   </div>
+                  <div>
+                    <label htmlFor="guestPassword" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Contrase\u00f1a
+                    </label>
+                    <input
+                      id="guestPassword"
+                      type="password"
+                      value={password}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        if (error) setError("");
+                      }}
+                      placeholder="Contrase\u00f1a"
+                      className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                    />
+                  </div>
 
                   <label className="flex items-start gap-3 text-sm text-slate-600">
                     <input
@@ -337,6 +392,14 @@ export default function AccessGateModal() {
 
                   {error ? <p className="text-sm font-semibold text-rose-600">{error}</p> : null}
 
+                  <button
+                    type="button"
+                    onClick={handleRegister}
+                    disabled={isSubmitting}
+                    className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Registrarse con correo
+                  </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
