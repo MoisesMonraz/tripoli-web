@@ -76,11 +76,11 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700">{labels.novedades}</p>
+        <p className="text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700">{labels.novedades}</p>
         <NewsCarousel posts={getLocalizedPosts(posts)} />
         <Link
           href={moreHref || titleHref || "#"}
-          className="group relative text-right text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 transition-colors duration-200 hover:text-[#00BFFF] inline-block self-end"
+          className="group relative text-right text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 transition-colors duration-200 hover:text-[#00BFFF] inline-block self-end"
         >
           <span className="relative inline-block">
             {labels.verMas}

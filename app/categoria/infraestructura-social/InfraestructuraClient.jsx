@@ -70,11 +70,11 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">{labels.novedades}</p>
+        <p className="text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">{labels.novedades}</p>
         <NewsCarousel posts={getLocalizedPosts(posts)} />
         {moreHref ? (
           <Link href={moreHref}>
-            <p className="group relative text-right text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200 transition-colors duration-200 hover:text-[#00BFFF] dark:hover:text-[#33ceff]">
+            <p className="group relative text-right text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200 transition-colors duration-200 hover:text-[#00BFFF] dark:hover:text-[#33ceff]">
               <span className="relative inline-block">
                 {labels.verMas}
                 <span className="absolute left-0 right-0 bottom-0 h-px origin-left scale-x-0 transition-transform duration-200 ease-out bg-gradient-to-r from-[#00BFFF] to-[#33ceff] group-hover:scale-x-100 dark:from-[#33ceff] dark:to-[#66deff] will-change: transform" aria-hidden="true" />
@@ -82,7 +82,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
             </p>
           </Link>
         ) : (
-          <p className="group relative text-right text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200 transition-colors duration-200 hover:text-[#00BFFF] dark:hover:text-[#33ceff]">
+          <p className="group relative text-right text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200 transition-colors duration-200 hover:text-[#00BFFF] dark:hover:text-[#33ceff]">
             <span className="relative inline-block">
               {labels.verMas}
               <span className="absolute left-0 right-0 bottom-0 h-px origin-left scale-x-0 transition-transform duration-200 ease-out bg-gradient-to-r from-[#00BFFF] to-[#33ceff] group-hover:scale-x-100 dark:from-[#33ceff] dark:to-[#66deff] will-change: transform" aria-hidden="true" />
