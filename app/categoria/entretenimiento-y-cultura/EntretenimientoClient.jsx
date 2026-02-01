@@ -62,14 +62,13 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
       <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
         <div className="relative w-full">
           <div className="relative z-10 flex items-stretch gap-0">
-            <span className="min-h-[44px] h-auto sm:h-[44px] w-[8px] subcat-bar subcat-bar--left" style={barVars} aria-hidden="true" />
+            <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" style={barVars} aria-hidden="true" />
             {titleHref ? (
               <Link href={titleHref}>
                 <h2
                   className="
-                    inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
+                    inline-flex h-[44px] items-center px-3
                     text-lg lg:text-xl font-semibold uppercase font-raleway
-                    max-w-[65%] sm:max-w-none whitespace-normal
                     tracking-[0.05em] transition-colors
                     text-[#009640]
                     bg-white dark:bg-transparent
@@ -82,9 +81,8 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
             ) : (
               <h2
                 className="
-                  inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
+                  inline-flex h-[44px] items-center px-3
                   text-lg lg:text-xl font-semibold uppercase font-raleway
-                  max-w-[65%] sm:max-w-none whitespace-normal
                   tracking-[0.05em] transition-colors
                   text-[#009640]
                   bg-white dark:bg-transparent
@@ -94,7 +92,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
                 {title}
               </h2>
             )}
-            <div className="min-h-[44px] h-auto sm:h-[44px] flex-1 subcat-bar subcat-bar--right" style={barVars} aria-hidden="true" />
+            <div className="h-[44px] flex-1 subcat-bar subcat-bar--right" style={barVars} aria-hidden="true" />
           </div>
         </div>
 
