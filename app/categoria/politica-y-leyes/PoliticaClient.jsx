@@ -62,12 +62,12 @@ export default function PoliticaClient({ organismosData, administracionData, jur
             <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
             {titleHref ? (
               <Link href={titleHref}>
-                <h2 ref={titleRef} className="flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden tracking-[0.05em] transition-colors text-[#312783] bg-white dark:bg-transparent hover:text-[#211452] dark:hover:text-[#c8c1e1]">
+                <h2 ref={titleRef} className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden tracking-[0.05em] transition-colors text-[#312783] bg-white dark:bg-transparent hover:text-[#211452] dark:hover:text-[#c8c1e1]">
                   {title}
                 </h2>
               </Link>
             ) : (
-              <h2 ref={titleRef} className="flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway w-full max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden tracking-[0.05em] transition-colors text-[#312783] bg-white dark:bg-transparent hover:text-[#211452] dark:hover:text-[#c8c1e1]">
+              <h2 ref={titleRef} className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden tracking-[0.05em] transition-colors text-[#312783] bg-white dark:bg-transparent hover:text-[#211452] dark:hover:text-[#c8c1e1]">
                 {title}
               </h2>
             )}
