@@ -511,7 +511,7 @@ export default function AIChatWidget() {
               >
                 ×
               </button>
-              <div className="pr-3 sm:pr-4 text-right">
+              <div className="pr-3 sm:pr-4 text-left">
                 <p className="block sm:hidden whitespace-nowrap">
                   {isEnglish ? "Hi, I'm Tripoli Bot - your assistant!" : "¡Hola! Soy Trípoli tu asistente virtual."}
                 </p>
