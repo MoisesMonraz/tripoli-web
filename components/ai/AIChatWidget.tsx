@@ -498,9 +498,9 @@ export default function AIChatWidget() {
         {showWelcome && !isOpen && (
           <div className="pointer-events-none absolute right-full top-1/2 mr-2 sm:mr-3 -translate-x-[48px] sm:-translate-x-[62px] -translate-y-1/2">
             <div
-              className={`relative min-w-0 sm:min-w-[320px] max-w-[min(350px,calc(100vw-80px))] sm:max-w-[400px] rounded-2xl border px-3 sm:px-4 py-2.5 sm:py-3 text-[10.5px] sm:text-[11.5px] leading-relaxed shadow-lg whitespace-normal break-words ${isDarkMode
-                ? "border-slate-700 bg-slate-900 text-slate-100 shadow-black/40"
-                : "border-slate-200 bg-white text-slate-700 shadow-slate-900/10"
+              className={`relative min-w-0 sm:min-w-[280px] max-w-[min(280px,calc(100vw-96px))] sm:max-w-[320px] rounded-2xl border px-3 sm:px-4 py-2.5 sm:py-3 text-[10.5px] sm:text-[11.5px] leading-relaxed shadow-lg whitespace-normal break-words ${isDarkMode
+                ? "border-slate-700 bg-slate-900/75 text-slate-100 shadow-black/40"
+                : "border-slate-200 bg-white/75 text-slate-700 shadow-slate-900/10"
                 }`}
             >
               <button
@@ -519,11 +519,6 @@ export default function AIChatWidget() {
                   {welcomeMessage}
                 </p>
               </div>
-              <span
-                className={`absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border ${isDarkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"
-                  }`}
-                aria-hidden="true"
-              />
             </div>
           </div>
         )}
