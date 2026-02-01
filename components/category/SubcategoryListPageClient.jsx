@@ -42,9 +42,12 @@ export default function SubcategoryListPageClient({
 
   const heading = language === "EN" ? title : titleEs ?? title;
   const isFabricantesEquipoInsumos = subcategorySlug === "fabricantes-equipo-insumos";
+  const isFestivalesEventosArtistas = subcategorySlug === "festivales-eventos-artistas";
   const headingClassName = isFabricantesEquipoInsumos
     ? "text-[12.5px] sm:text-lg lg:text-xl"
-    : "text-lg lg:text-xl";
+    : isFestivalesEventosArtistas
+      ? "text-[13.5px] sm:text-lg lg:text-xl"
+      : "text-lg lg:text-xl";
   const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
   const barVars = {
     "--bar-base": barColor,

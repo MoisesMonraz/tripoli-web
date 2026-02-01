@@ -55,7 +55,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
     ...tailSlides,
   ];
 
-  const SectionBlock = ({ title, posts, titleHref, moreHref }) => {
+  const SectionBlock = ({ title, posts, titleHref, moreHref, titleClassName = "text-lg lg:text-xl" }) => {
     const linkHref = moreHref || titleHref || "#";
 
     return (
@@ -66,28 +66,14 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
             {titleHref ? (
               <Link href={titleHref}>
                 <h2
-                  className="
-                    inline-flex h-[44px] items-center px-3
-                    text-lg lg:text-xl font-semibold uppercase font-raleway
-                    tracking-[0.05em] transition-colors
-                    text-[#009640]
-                    bg-white dark:bg-transparent
-                    hover:text-[#005f27] dark:hover:text-[#cce5ce]
-                  "
+                  className={`inline-flex h-[44px] items-center px-3 ${titleClassName} font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#009640] bg-white dark:bg-transparent hover:text-[#005f27] dark:hover:text-[#cce5ce]`}
                 >
                   {title}
                 </h2>
               </Link>
             ) : (
               <h2
-                className="
-                  inline-flex h-[44px] items-center px-3
-                  text-lg lg:text-xl font-semibold uppercase font-raleway
-                  tracking-[0.05em] transition-colors
-                  text-[#009640]
-                  bg-white dark:bg-transparent
-                  hover:text-[#005f27] dark:hover:text-[#cce5ce]
-                "
+                className={`inline-flex h-[44px] items-center px-3 ${titleClassName} font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#009640] bg-white dark:bg-transparent hover:text-[#005f27] dark:hover:text-[#cce5ce]`}
               >
                 {title}
               </h2>
@@ -150,7 +136,13 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
         <BaseBanner slides={recintosSlides} />
       </section>
 
-      <SectionBlock title={labels.conveniencia} posts={festivalesData} titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas" moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas" />
+      <SectionBlock
+        title={labels.conveniencia}
+        posts={festivalesData}
+        titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas"
+        moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas"
+        titleClassName="text-[13.5px] sm:text-lg lg:text-xl"
+      />
       <section aria-label={labels.bannerConveniencia} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={festivalesSlides} />
