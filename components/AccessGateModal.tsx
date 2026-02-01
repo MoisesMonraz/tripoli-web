@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import { useRouter } from "next/navigation";
 
 import { auth } from "@/lib/firebase";
 import { firebaseClientReady, initAnalytics } from "@/lib/firebase/client";
@@ -111,6 +112,7 @@ gtag("config", "${gaId}", { anonymize_ip: true });`}
 };
 
 export default function AccessGateModal() {
+  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
@@ -150,10 +152,13 @@ export default function AccessGateModal() {
     };
   }, [isOpen]);
 
-  const handleConsentGranted = () => {
+  const handleConsentGranted = (redirectToAccount = false) => {
     setStoredConsent();
     setHasConsent(true);
     setIsOpen(false);
+    if (redirectToAccount) {
+      router.push("/mi-cuenta");
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -162,7 +167,7 @@ export default function AccessGateModal() {
     setIsSubmitting(true);
     try {
       await signInWithGoogleAndRegister();
-      handleConsentGranted();
+      handleConsentGranted(true);
     } catch (err) {
       console.error("Google sign-in failed:", err);
       setError("No pudimos completar el registro. Intenta de nuevo.");
@@ -228,7 +233,7 @@ export default function AccessGateModal() {
     setIsSubmitting(true);
     try {
       await createUserWithEmailAndPassword(auth, guestEmail.trim(), password);
-      handleConsentGranted();
+      handleConsentGranted(true);
     } catch (err: any) {
       const code = err?.code;
       if (code === "auth/email-already-in-use") {
