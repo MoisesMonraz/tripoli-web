@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import { useLanguage } from "../../../components/LanguageProvider";
-import { useFitText } from "../../../components/ui/useFitText";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
@@ -51,39 +49,18 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
     ...tailSlides,
   ];
 
-  const SectionBlock = ({ title, posts, titleHref, moreHref }) => {
-    const titleRef = useRef(null);
-    useFitText(titleRef, [title]);
-
-    return (
-      <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
-        <div className="relative w-full">
-          <div className="relative z-10 flex items-stretch gap-0">
-            <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
-            {titleHref ? (
-              <Link href={titleHref}>
-                <h2
-                  ref={titleRef}
-                  className="
-                    inline-flex h-[44px] items-center px-3
-                    text-lg lg:text-xl font-semibold uppercase font-raleway
-                    max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
-                    tracking-[0.05em] transition-colors
-                    text-[#f39200]
-                    bg-white dark:bg-transparent
-                    hover:text-[#935b00] dark:hover:text-[#cce5ce]
-                  "
-                >
-                  {title}
-                </h2>
-              </Link>
-            ) : (
+  const SectionBlock = ({ title, posts, titleHref, moreHref }) => (
+    <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
+      <div className="relative w-full">
+        <div className="relative z-10 flex items-stretch gap-0">
+          <span className="min-h-[44px] h-auto sm:h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
+          {titleHref ? (
+            <Link href={titleHref}>
               <h2
-                ref={titleRef}
                 className="
-                  inline-flex h-[44px] items-center px-3
+                  inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
                   text-lg lg:text-xl font-semibold uppercase font-raleway
-                  max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
+                  max-w-[65%] sm:max-w-none whitespace-normal
                   tracking-[0.05em] transition-colors
                   text-[#f39200]
                   bg-white dark:bg-transparent
@@ -92,10 +69,25 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
               >
                 {title}
               </h2>
-            )}
-            <div className="h-[44px] flex-1 subcat-bar subcat-bar--right" aria-hidden="true" />
-          </div>
+            </Link>
+          ) : (
+            <h2
+              className="
+                inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
+                text-lg lg:text-xl font-semibold uppercase font-raleway
+                max-w-[65%] sm:max-w-none whitespace-normal
+                tracking-[0.05em] transition-colors
+                text-[#f39200]
+                bg-white dark:bg-transparent
+                hover:text-[#935b00] dark:hover:text-[#cce5ce]
+              "
+            >
+              {title}
+            </h2>
+          )}
+          <div className="min-h-[44px] h-auto sm:h-[44px] flex-1 subcat-bar subcat-bar--right" aria-hidden="true" />
         </div>
+      </div>
 
       <div className="flex flex-col gap-1">
         <p className="text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">
@@ -154,9 +146,8 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
           </p>
         )}
       </div>
-      </section>
-    );
-  };
+    </section>
+  );
 
   return (
     <main className="flex flex-col gap-4 pb-12">
