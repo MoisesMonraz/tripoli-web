@@ -41,6 +41,10 @@ export default function SubcategoryListPageClient({
   );
 
   const heading = language === "EN" ? title : titleEs ?? title;
+  const isFabricantesEquipoInsumos = subcategorySlug === "fabricantes-equipo-insumos";
+  const headingClassName = isFabricantesEquipoInsumos
+    ? "text-[10px] sm:text-lg lg:text-xl"
+    : "text-lg lg:text-xl";
   const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
   const barVars = {
     "--bar-base": barColor,
@@ -61,7 +65,7 @@ export default function SubcategoryListPageClient({
         <section className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" style={barVars} aria-hidden="true" />
-            <h1 className="text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em]" style={{ color: barColor }}>
+            <h1 className={`${headingClassName} font-semibold uppercase font-raleway tracking-[0.05em]`} style={{ color: barColor }}>
               {heading}
             </h1>
             <div className="h-[44px] flex-1 rounded-sm subcat-bar subcat-bar--right" aria-hidden="true" style={barVars} />
