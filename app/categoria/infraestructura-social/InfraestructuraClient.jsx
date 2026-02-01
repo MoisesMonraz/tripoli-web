@@ -49,19 +49,19 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
     ...tailSlides,
   ];
 
-  const SectionBlock = ({ title, posts, titleHref, moreHref }) => (
+  const SectionBlock = ({ title, posts, titleHref, moreHref, titleClassName = "text-lg lg:text-xl" }) => (
     <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
       <div className="relative w-full">
         <div className="relative z-10 flex items-stretch gap-0">
           <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" aria-hidden="true" />
           {titleHref ? (
             <Link href={titleHref}>
-              <h2 className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#5d514c] bg-white dark:bg-transparent hover:text-[#261e19] dark:hover:text-[#d8d4d3]">
+              <h2 className={`inline-flex h-[44px] items-center px-3 ${titleClassName} font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#5d514c] bg-white dark:bg-transparent hover:text-[#261e19] dark:hover:text-[#d8d4d3]`}>
                 {title}
               </h2>
             </Link>
           ) : (
-            <h2 className="inline-flex h-[44px] items-center px-3 text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#5d514c] bg-white dark:bg-transparent hover:text-[#261e19] dark:hover:text-[#d8d4d3]">
+            <h2 className={`inline-flex h-[44px] items-center px-3 ${titleClassName} font-semibold uppercase font-raleway tracking-[0.05em] transition-colors text-[#5d514c] bg-white dark:bg-transparent hover:text-[#261e19] dark:hover:text-[#d8d4d3]`}>
               {title}
             </h2>
           )}
@@ -116,6 +116,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
         posts={desarrolladoresData}
         titleHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
         moreHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
+        titleClassName="text-[13.5px] sm:text-lg lg:text-xl"
       />
       <section aria-label={labels.bannerDesarrolladores} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerDesarrolladores}</h2>
