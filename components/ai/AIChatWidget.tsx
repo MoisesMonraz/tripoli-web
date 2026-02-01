@@ -506,7 +506,7 @@ export default function AIChatWidget() {
               <button
                 type="button"
                 onClick={closeWelcome}
-                className="pointer-events-auto absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 sm:top-2 sm:translate-y-0 rounded-full p-0.5 sm:p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 text-lg sm:text-xl"
+                className="pointer-events-auto absolute right-1.5 top-1/2 -translate-y-1/2 md:right-2 md:top-2 md:translate-y-0 rounded-full p-0.5 md:p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 text-lg md:text-xl"
                 aria-label={strings.ariaClose}
               >
                 ×
