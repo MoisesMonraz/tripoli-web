@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import { useLanguage } from "../../../components/LanguageProvider";
+import { useFitText } from "../../../components/ui/useFitText";
 import bannerEntretenimientoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Entretenimiento y Cultura.png";
 import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Productoras-de-Contenido.png";
 import bannerRecintos from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Recintos-Culturales.png";
@@ -56,20 +58,23 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
   ];
 
   const SectionBlock = ({ title, posts, titleHref, moreHref }) => {
+    const titleRef = useRef(null);
+    useFitText(titleRef, [title]);
     const linkHref = moreHref || titleHref || "#";
 
     return (
       <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">
         <div className="relative w-full">
           <div className="relative z-10 flex items-stretch gap-0">
-            <span className="min-h-[44px] h-auto sm:h-[44px] w-[8px] subcat-bar subcat-bar--left" style={barVars} aria-hidden="true" />
+            <span className="h-[44px] w-[8px] subcat-bar subcat-bar--left" style={barVars} aria-hidden="true" />
             {titleHref ? (
               <Link href={titleHref}>
                 <h2
+                  ref={titleRef}
                   className="
-                    inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
+                    inline-flex h-[44px] items-center px-3
                     text-lg lg:text-xl font-semibold uppercase font-raleway
-                    max-w-[65%] sm:max-w-none whitespace-normal
+                    max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
                     tracking-[0.05em] transition-colors
                     text-[#009640]
                     bg-white dark:bg-transparent
@@ -81,10 +86,11 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
               </Link>
             ) : (
               <h2
+                ref={titleRef}
                 className="
-                  inline-flex h-auto sm:h-[44px] items-center px-3 py-2 sm:py-0
+                  inline-flex h-[44px] items-center px-3
                   text-lg lg:text-xl font-semibold uppercase font-raleway
-                  max-w-[65%] sm:max-w-none whitespace-normal
+                  max-w-[65%] sm:max-w-none whitespace-nowrap overflow-hidden
                   tracking-[0.05em] transition-colors
                   text-[#009640]
                   bg-white dark:bg-transparent
@@ -94,7 +100,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
                 {title}
               </h2>
             )}
-            <div className="min-h-[44px] h-auto sm:h-[44px] flex-1 subcat-bar subcat-bar--right" style={barVars} aria-hidden="true" />
+            <div className="h-[44px] flex-1 subcat-bar subcat-bar--right" style={barVars} aria-hidden="true" />
           </div>
         </div>
 
