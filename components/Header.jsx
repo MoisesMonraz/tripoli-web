@@ -460,9 +460,9 @@ export default function Header() {
                   <a
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
+                    className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                   >
-                    <span className="truncate">{item.labels[language]}</span>
+                    <span className="truncate">- {item.labels[language]}</span>
                   </a>
                 </li>
               )})}
@@ -555,9 +555,9 @@ export default function Header() {
                   <a
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
+                    className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                   >
-                    <span className="truncate">{item.labels[language]}</span>
+                    <span className="truncate">- {item.labels[language]}</span>
                   </a>
                 </li>
               )})}
