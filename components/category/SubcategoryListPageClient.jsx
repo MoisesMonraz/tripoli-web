@@ -43,7 +43,7 @@ export default function SubcategoryListPageClient({
   const heading = language === "EN" ? title : titleEs ?? title;
   const isFabricantesEquipoInsumos = subcategorySlug === "fabricantes-equipo-insumos";
   const headingClassName = isFabricantesEquipoInsumos
-    ? "text-[10px] sm:text-lg lg:text-xl"
+    ? "text-[12.5px] sm:text-lg lg:text-xl"
     : "text-lg lg:text-xl";
   const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
   const barVars = {
