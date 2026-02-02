@@ -9,16 +9,12 @@ import { auth } from "@/lib/firebase";
 import { firebaseClientReady, initAnalytics } from "@/lib/firebase/client";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
-  saveGuestLead,
   signInWithGoogleAndRegister,
-  type IpLocationPayload,
 } from "@/lib/firebase/accessGate";
-import { useTurnstile } from "./security/useTurnstile";
 
 const STORAGE_KEY = "tripoli_access_gate_v1";
 const COOKIE_NAME = "tripoli_access_gate";
 const EMAIL_REGEX = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-const IP_LOCATION_ENABLED = process.env.NEXT_PUBLIC_ENABLE_IP_LOCATION !== "false";
 
 const getCookieValue = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -51,30 +47,6 @@ const setStoredConsent = () => {
     window.localStorage.setItem(`${STORAGE_KEY}_at`, new Date().toISOString());
   }
   setCookieValue(COOKIE_NAME, "granted");
-};
-
-const fetchApproxIpLocation = async (): Promise<IpLocationPayload | null> => {
-  if (!IP_LOCATION_ENABLED) return null;
-  try {
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 3500);
-    const response = await fetch("https://ipapi.co/json/", { signal: controller.signal });
-    window.clearTimeout(timeout);
-    if (!response.ok) return null;
-    const data = await response.json();
-    return {
-      ip: data?.ip,
-      city: data?.city,
-      region: data?.region,
-      country: data?.country_name || data?.country,
-      latitude: typeof data?.latitude === "number" ? data.latitude : undefined,
-      longitude: typeof data?.longitude === "number" ? data.longitude : undefined,
-      timezone: data?.timezone,
-      source: "ipapi.co",
-    };
-  } catch (error) {
-    return null;
-  }
 };
 
 const ConsentScripts = () => {
@@ -116,12 +88,11 @@ export default function AccessGateModal() {
   const [isReady, setIsReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
-  const [guestEmail, setGuestEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isEnabled: isCaptchaEnabled, getToken, reset: resetCaptcha, containerRef } = useTurnstile();
 
   useEffect(() => {
     if (!firebaseClientReady) {
@@ -169,47 +140,17 @@ export default function AccessGateModal() {
       await signInWithGoogleAndRegister();
       handleConsentGranted(true);
     } catch (err) {
-      console.error("Google sign-in failed:", err);
+      console.error("Google Login Error:", err);
       setError("No pudimos completar el registro. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGuestSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleGuestContinue = () => {
     if (isSubmitting) return;
     setError("");
-
-    if (!EMAIL_REGEX.test(guestEmail.trim())) {
-      setError("Ingresa un correo valido.");
-      return;
-    }
-    if (!acceptTerms) {
-      setError("Debes aceptar los terminos para continuar.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const ipLocation = await fetchApproxIpLocation();
-      let captchaToken: string | null = null;
-      if (isCaptchaEnabled) {
-        captchaToken = await getToken();
-        if (!captchaToken) {
-          setError("No pudimos validar tu solicitud. Intenta de nuevo.");
-          return;
-        }
-      }
-      await saveGuestLead({ email: guestEmail, ipLocation, captchaToken });
-      resetCaptcha();
-      handleConsentGranted();
-    } catch (err) {
-      console.error("Guest lead capture failed:", err);
-      setError("No pudimos guardar tu informacion. Intenta de nuevo.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    handleConsentGranted();
   };
 
   const handleRegister = async (event: FormEvent<HTMLButtonElement>) => {
@@ -217,7 +158,7 @@ export default function AccessGateModal() {
     if (isSubmitting) return;
     setError("");
 
-    if (!EMAIL_REGEX.test(guestEmail.trim())) {
+    if (!EMAIL_REGEX.test(email.trim())) {
       setError("Ingresa un correo valido.");
       return;
     }
@@ -232,7 +173,7 @@ export default function AccessGateModal() {
 
     setIsSubmitting(true);
     try {
-      await createUserWithEmailAndPassword(auth, guestEmail.trim(), password);
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
       handleConsentGranted(true);
     } catch (err: any) {
       const code = err?.code;
@@ -253,9 +194,6 @@ export default function AccessGateModal() {
   return (
     <>
       {hasConsent ? <ConsentScripts /> : null}
-      {isCaptchaEnabled ? (
-        <div ref={containerRef} className="absolute -left-[9999px] -top-[9999px]" aria-hidden="true" />
-      ) : null}
       {isOpen ? (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 px-4 py-8 backdrop-blur-sm">
           <div
@@ -338,7 +276,7 @@ export default function AccessGateModal() {
                   <div className="h-px flex-1 bg-slate-200" />
                 </div>
 
-                <form className="space-y-4" onSubmit={handleGuestSubmit}>
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                   <div>
                     <label htmlFor="guestEmail" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                       Correo
@@ -346,9 +284,9 @@ export default function AccessGateModal() {
                     <input
                       id="guestEmail"
                       type="email"
-                      value={guestEmail}
+                      value={email}
                       onChange={(event) => {
-                        setGuestEmail(event.target.value);
+                        setEmail(event.target.value);
                         if (error) setError("");
                       }}
                       placeholder="tu@empresa.com"
@@ -398,7 +336,7 @@ export default function AccessGateModal() {
                   {error ? <p className="text-sm font-semibold text-rose-600">{error}</p> : null}
 
                   <button
-                    type="button"
+                    type="submit"
                     onClick={handleRegister}
                     disabled={isSubmitting}
                     className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
@@ -406,7 +344,8 @@ export default function AccessGateModal() {
                     Registrarse con correo
                   </button>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleGuestContinue}
                     disabled={isSubmitting}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
