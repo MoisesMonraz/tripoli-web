@@ -53,10 +53,9 @@ export default function AdminPage() {
   const fetchLeads = useCallback(async () => {
     setIsLoadingLeads(true);
     try {
-      const response = await fetch("/api/admin/leads");
-      const data = await response.json();
-      if (response.ok && data?.leads) {
-        setLeads(data.leads);
+      const result = await getRegisteredUsers();
+      if (result.ok && result.leads) {
+        setLeads(result.leads);
       }
     } catch {
       // no-op
