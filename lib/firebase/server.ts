@@ -1,29 +1,33 @@
-import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import "server-only";
+import admin from "firebase-admin";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+const privateKey = process.env.FIREBASE_PRIVATE_KEY
+  ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+  : undefined;
 
-if (!projectId || !clientEmail || !privateKey) {
-  console.warn("Missing FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY. Firebase Admin SDK will not be initialized.");
-}
-
-let app: App | null = null;
-let db: Firestore | null = null;
-
-if (projectId && clientEmail && privateKey) {
-  app = getApps().length
-    ? getApp()
-    : initializeApp({
-        credential: cert({
+if (!admin.apps.length) {
+  if (projectId && clientEmail && privateKey) {
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert({
           projectId,
           clientEmail,
           privateKey,
         }),
       });
-
-  db = getFirestore(app);
+      console.log("✅ Firebase Admin SDK Initialized");
+    } catch (error) {
+      console.error("❌ Firebase Admin SDK Initialization Error:", error);
+    }
+  } else {
+    console.warn("⚠️ Firebase Admin SDK Environment Variables Missing");
+  }
 }
 
-export { app, db };
+const db = admin.apps.length ? admin.firestore() : null;
+const auth = admin.apps.length ? admin.auth() : null;
+const app = admin.apps.length ? admin.app() : null;
+
+export { app, db, auth };
