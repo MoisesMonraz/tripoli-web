@@ -12,7 +12,11 @@ type AdminSessionPayload = {
 const COOKIE_NAME = "tripoli_admin_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
-const getSecret = () => process.env.ADMIN_SESSION_SECRET ?? "";
+const getSecret = () =>
+  process.env.ADMIN_SESSION_SECRET ||
+  process.env.SESSION_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  "";
 
 const base64UrlEncode = (input: Buffer | string) => {
   const buffer = Buffer.isBuffer(input) ? input : Buffer.from(input);
@@ -66,4 +70,3 @@ export const verifyAdminSession = (token: string | null | undefined): AdminSessi
 export const getAdminSessionCookieName = () => COOKIE_NAME;
 export const getAdminSessionTtlSeconds = () => SESSION_TTL_SECONDS;
 export type { AdminSessionPayload };
-
