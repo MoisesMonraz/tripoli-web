@@ -187,17 +187,11 @@ export default function AccessGateModal() {
           background-image: linear-gradient(
             90deg,
             #c9e8fb,
-            #9cd8f6,
-            #6cc6f0,
-            #36b3e8,
             #009fe3,
-            #36b3e8,
-            #6cc6f0,
-            #9cd8f6,
             #c9e8fb
           );
           background-size: 300% 100%;
-          animation: tmHeaderFlow 10s linear infinite;
+          animation: tmHeaderFlow 12.5s linear infinite;
         }
         @keyframes tmHeaderFlow {
           0% { background-position: 0% 0; }
@@ -226,7 +220,7 @@ export default function AccessGateModal() {
                       Registrese gratis y consiga:
                     </h2>
                     <p className="mt-3 text-sm text-white/90">
-                      Acceso inmediato a una experiencia editorial premium para lideres, agencias y decisores.
+                      Acceso inmediato a una experiencia editorial premium para lideres, agencias y tomadores de decisiones.
                     </p>
                     {/* Benefits list hidden on mobile to save vertical space */}
                     <ul className="hidden sm:block mt-8 space-y-5 text-sm text-white/90">

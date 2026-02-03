@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getArticleBySlug, getArticles } from "../../../../../lib/contentful";
 import ArticleContent from "../../../../../components/article/ArticleContent";
+import SocialShareBar from "../../../../../components/article/SocialShareBar";
 
 const formatFullSpanishDate = (dateInput) => {
   if (!dateInput) return "";
@@ -157,15 +158,18 @@ export default async function ArticlePage({ params }) {
             </p>
           )}
 
-          {/* Author + Date */}
-          <div className="mt-4 flex items-center gap-2 border-b border-slate-200 pb-4 text-xs font-sans text-slate-500 md:mt-6 md:gap-3 md:pb-6 md:text-sm dark:border-slate-800 dark:text-slate-400">
-            <span className="font-semibold text-slate-800 dark:text-slate-200">
-              Tripoli Publishing House
-            </span>
-            <span className="text-slate-300 dark:text-slate-600">|</span>
-            <time dateTime={article.dateISO || article.date}>
-              {formattedDate}
-            </time>
+          {/* Author + Date + Share Bar */}
+          <div className="mt-4 flex flex-col gap-3 border-b border-slate-200 pb-4 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-4 md:pb-6 dark:border-slate-800">
+            <div className="flex items-center gap-2 text-xs font-sans text-slate-500 md:gap-3 md:text-sm dark:text-slate-400">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                Tripoli Publishing House
+              </span>
+              <span className="text-slate-300 dark:text-slate-600">|</span>
+              <time dateTime={article.dateISO || article.date}>
+                {formattedDate}
+              </time>
+            </div>
+            <SocialShareBar title={article.title} />
           </div>
         </header>
 

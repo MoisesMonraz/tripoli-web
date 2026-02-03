@@ -4,6 +4,18 @@ import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import { BLOCKS, INLINES, MARKS } from '@contentful/rich-text-types';
 import Image from 'next/image';
 
+// Helper to extract plain text from a node for detection
+const getPlainText = (node) => {
+  if (!node || !node.content) return '';
+  return node.content
+    .map((child) => {
+      if (child.nodeType === 'text') return child.value || '';
+      if (child.content) return getPlainText(child);
+      return '';
+    })
+    .join('');
+};
+
 const renderOptions = {
   renderMark: {
     [MARKS.BOLD]: (text) => <strong className="font-bold">{text}</strong>,
@@ -15,11 +27,26 @@ const renderOptions = {
     ),
   },
   renderNode: {
-    [BLOCKS.PARAGRAPH]: (node, children) => (
-      <p className="mb-5 font-serif text-base leading-relaxed text-slate-700 md:mb-8 md:text-[1.125rem] md:leading-[1.85] dark:text-slate-300">
-        {children}
-      </p>
-    ),
+    [BLOCKS.PARAGRAPH]: (node, children) => {
+      const plainText = getPlainText(node);
+      const isSources = plainText.toLowerCase().startsWith('fuentes');
+
+      if (isSources) {
+        // Smaller font for the sources section (25% smaller)
+        return (
+          <p className="mb-5 font-serif text-xs leading-relaxed text-slate-700 md:mb-8 md:text-[0.85rem] md:leading-[1.85] dark:text-slate-300">
+            {children}
+          </p>
+        );
+      }
+
+      // Normal paragraph styling
+      return (
+        <p className="mb-5 font-serif text-base leading-relaxed text-slate-700 md:mb-8 md:text-[1.125rem] md:leading-[1.85] dark:text-slate-300">
+          {children}
+        </p>
+      );
+    },
     [BLOCKS.HEADING_1]: (node, children) => (
       <h2 className="mb-3 mt-10 font-sans text-xl font-extrabold leading-tight tracking-tight text-slate-900 md:mb-5 md:mt-14 md:text-3xl dark:text-slate-100">
         {children}
