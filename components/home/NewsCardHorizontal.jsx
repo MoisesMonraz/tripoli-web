@@ -40,13 +40,13 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
       </div>
       <div className="flex flex-1 flex-col items-start md:items-start text-left md:text-left justify-center md:justify-start gap-1.5 md:gap-1 overflow-hidden pt-0">
         {isPlaceholder ? (
-          <h3 className="text-[10px] leading-tight md:text-[0.9rem] md:leading-snug font-semibold text-slate-900 dark:text-slate-50 md:line-clamp-4">
+          <h3 className="text-[8px] leading-tight md:text-[11.5px] md:leading-snug font-semibold text-slate-900 dark:text-slate-50 md:line-clamp-4">
             {title}
           </h3>
         ) : (
           <Link
             href={articleHref}
-            className="text-[10px] leading-tight md:text-[0.9rem] md:leading-snug font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] md:line-clamp-4"
+            className="text-[8px] leading-tight md:text-[11.5px] md:leading-snug font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] md:line-clamp-4"
           >
             {title}
           </Link>

@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
+import { useLanguage } from "../../components/LanguageProvider";
 
 export default function MiCuentaPage() {
   const [email, setEmail] = useState("");
+  const { language } = useLanguage();
+  const isEnglish = language === "EN";
 
   useEffect(() => {
     if (!auth) return;
@@ -16,42 +19,49 @@ export default function MiCuentaPage() {
   }, []);
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-      <section className="rounded-3xl border border-slate-200 bg-white shadow-sm p-6 sm:p-10">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-400 font-raleway">
-          Mi Cuenta
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <section className="rounded-3xl border border-slate-200 bg-white shadow-sm p-6 sm:p-10 dark:bg-slate-950 dark:border-slate-800 transition-colors duration-300">
+        <p className="text-xs uppercase tracking-[0.25em] text-slate-400 font-raleway dark:text-slate-500">
+          {isEnglish ? "My Account" : "Mi Cuenta"}
         </p>
-        <h1 className="mt-3 text-2xl sm:text-3xl font-semibold text-slate-900 font-raleway">
-          Bienvenido a Tripoli Media
+        <h1 className="mt-3 text-2xl sm:text-3xl font-semibold text-slate-900 font-raleway dark:text-white">
+          {isEnglish ? "Welcome to Tripoli Media!" : "¡Bienvenido a Tripoli Media!"}
         </h1>
-        <p className="mt-2 text-sm sm:text-base text-slate-600">
-          {email ? `Tu correo registrado: ${email}` : "Tu registro fue exitoso."}
-        </p>
+        <div className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+          {email ? (
+            <p>
+              {isEnglish ? "Registered email: " : "Correo registrado: "}
+              <span className="font-bold text-slate-900 dark:text-white">{email}</span>
+            </p>
+          ) : (
+            <p>{isEnglish ? "Registration successful." : "Tu registro fue exitoso."}</p>
+          )}
+        </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <Link
-            href="/contacto"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white"
+            href="/conocenos"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-slate-600"
           >
-            Contactar con Tripoli
+            {isEnglish ? "Learn about us" : "Conoce acerca de nosotros"}
           </Link>
           <Link
             href="/servicios"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-slate-600"
           >
-            Ver servicios
+            {isEnglish ? "Discover our Services" : "Conoce nuestros Servicios"}
           </Link>
           <Link
-            href="/calendario"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white"
+            href="/contacto"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-slate-600"
           >
-            Calendario editorial
+            {isEnglish ? "Contact the Tripoli Media team" : "Contacta con el equipo de Tripoli Media"}
           </Link>
           <Link
             href="/"
-            className="rounded-2xl border border-slate-900 bg-slate-900 px-4 py-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="rounded-2xl bg-sky-500 px-3 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:bg-sky-600 hover:scale-[1.02] dark:bg-sky-500 dark:hover:bg-sky-400"
           >
-            Ir al Home
+            {isEnglish ? "Go to Home page" : "Ir a la página de inicio"}
           </Link>
         </div>
       </section>

@@ -2,9 +2,34 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import BannerHeader from "../BannerHeader";
 import SubcategoryBanner from "../banners/SubcategoryBanner";
 import { useLanguage } from "../LanguageProvider";
+
+const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
+
+const formatFullSpanishDate = (dateInput) => {
+  if (!dateInput) return "";
+  const dateValue = new Date(dateInput);
+  if (Number.isNaN(dateValue.getTime())) return "";
+  const formatter = new Intl.DateTimeFormat("es-MX", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const parts = formatter.formatToParts(dateValue).reduce((acc, part) => {
+    if (part.type !== "literal") {
+      acc[part.type] = part.value;
+    }
+    return acc;
+  }, {});
+  if (parts.weekday && parts.day && parts.month && parts.year) {
+    return `${parts.weekday} ${parts.day} de ${parts.month} del ${parts.year}`;
+  }
+  return formatter.format(dateValue);
+};
 
 export default function SubcategoryListPageClient({
   title,
@@ -31,11 +56,11 @@ export default function SubcategoryListPageClient({
         language === "EN"
           ? post
           : {
-              ...post,
-              title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
-              excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
-              date: post.dateEs ?? post.date ?? "Noviembre 2025",
-            }
+            ...post,
+            title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
+            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
+            date: post.dateEs ?? post.date ?? "Noviembre 2025",
+          }
       ),
     [posts, language]
   );
@@ -50,7 +75,7 @@ export default function SubcategoryListPageClient({
       ? "text-[13.5px] sm:text-lg lg:text-xl"
       : isDesarrolladoresProyectos
         ? "text-[13.5px] sm:text-lg lg:text-xl"
-      : "text-lg lg:text-xl";
+        : "text-lg lg:text-xl";
   const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
   const barVars = {
     "--bar-base": barColor,
@@ -78,23 +103,46 @@ export default function SubcategoryListPageClient({
           </div>
 
           <div className="flex flex-col gap-4">
-            {visiblePosts.map((post) => (
-              <Link key={post.slug} href={post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`} className="block">
-                <article
-                  className="flex gap-6 p-5 rounded-xl border border-slate-200 shadow-sm bg-white transition hover:shadow-md hover:border-slate-300
-                  dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-500 dark:shadow-none"
-                >
-                  <div className="w-[160px] h-[120px] bg-slate-200 rounded-md flex items-center justify-center text-slate-500 text-sm">
-                    Imagen
-                  </div>
-                  <div className="flex flex-col justify-center gap-1">
-                    <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{post.title}</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{post.excerpt}</p>
-                    <span className="text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500">{post.date}</span>
-                  </div>
-                </article>
-              </Link>
-            ))}
+            {visiblePosts.map((post) => {
+              // Ensuring date is strictly lowercase as requested
+              const rawDate = formatFullSpanishDate(post.dateISO) || formatFullSpanishDate(post.date) || post.date || "";
+              const formattedDate = rawDate.toLowerCase();
+
+              return (
+                <Link key={post.slug} href={post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`} className="block">
+                  <article
+                    className="flex flex-col items-stretch gap-4 p-4 rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-slate-900/10 hover:border-slate-300
+                    md:flex-row md:items-center dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 hover:border-[#00BFFF]/60 dark:hover:border-[#33ceff]/60"
+                  >
+                    <div className="relative h-[200px] w-full md:h-[180px] md:w-[240px] flex-shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
+                      <Image
+                        src={post.image || placeholderImage}
+                        alt={post.title}
+                        fill
+                        className="object-cover transition-transform duration-500 hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 240px"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center gap-2">
+                      <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]">
+                        {post.title}
+                      </h2>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 md:line-clamp-3 leading-relaxed">
+                        {post.excerpt}
+                      </p>
+                      <div className="mt-1 flex flex-col gap-1">
+                        <span className="text-[11px] font-sans font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
+                          por: Tripoli Publishing House
+                        </span>
+                        <time className="text-[11px] font-sans text-slate-500 dark:text-slate-400">
+                          {formattedDate}
+                        </time>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              );
+            })}
             {showButton && (
               <div className="flex justify-center mt-6">
                 <button

@@ -373,7 +373,7 @@ export default function Header() {
 
   return (
     <>
-      <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-30">
+      <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-50">
         <div className="mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 px-3 sm:px-4 py-4 sm:py-6 lg:px-8">
           <div className="flex items-center gap-1.5 sm:gap-3">
             <button
@@ -476,7 +476,7 @@ export default function Header() {
       <div
         data-header="sticky"
         data-visible={isStickyVisible ? "true" : "false"}
-        className={`fixed inset-x-0 top-0 z-40 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+        className={`fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
           }`}
       >
         <div className="relative w-full flex items-center gap-1.5 sm:gap-3 px-2 py-2 sm:px-1 lg:px-2">

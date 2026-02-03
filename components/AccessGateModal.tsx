@@ -5,16 +5,15 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 
-import { auth } from "@/lib/firebase";
 import { firebaseClientReady, initAnalytics } from "@/lib/firebase/client";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   signInWithGoogleAndRegister,
+  saveGuestLead,
 } from "@/lib/firebase/accessGate";
 
 const STORAGE_KEY = "tripoli_access_gate_v1";
 const COOKIE_NAME = "tripoli_access_gate";
-const EMAIL_REGEX = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const getCookieValue = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -89,7 +88,6 @@ export default function AccessGateModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,10 +160,7 @@ export default function AccessGateModal() {
       setError("Ingresa un correo valido.");
       return;
     }
-    if (!password || password.length < 6) {
-      setError("La contraseña es muy corta.");
-      return;
-    }
+
     if (!acceptTerms) {
       setError("Debes aceptar los terminos para continuar.");
       return;
@@ -173,17 +168,11 @@ export default function AccessGateModal() {
 
     setIsSubmitting(true);
     try {
-      await createUserWithEmailAndPassword(auth, email.trim(), password);
+      await saveGuestLead({ email: email.trim() });
       handleConsentGranted(true);
     } catch (err: any) {
-      const code = err?.code;
-      if (code === "auth/email-already-in-use") {
-        setError("El usuario ya existe.");
-      } else if (code === "auth/weak-password") {
-        setError("La contraseña es muy corta.");
-      } else {
-        setError("No pudimos completar el registro. Intenta de nuevo.");
-      }
+      console.error(err);
+      setError("No pudimos completar el registro. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -193,169 +182,182 @@ export default function AccessGateModal() {
 
   return (
     <>
+      <style jsx>{`
+        .tm-chat-header-animated {
+          background-image: linear-gradient(
+            90deg,
+            #c9e8fb,
+            #9cd8f6,
+            #6cc6f0,
+            #36b3e8,
+            #009fe3,
+            #36b3e8,
+            #6cc6f0,
+            #9cd8f6,
+            #c9e8fb
+          );
+          background-size: 300% 100%;
+          animation: tmHeaderFlow 10s linear infinite;
+        }
+        @keyframes tmHeaderFlow {
+          0% { background-position: 0% 0; }
+          50% { background-position: 100% 0; }
+          100% { background-position: 0% 0; }
+        }
+      `}</style>
       {hasConsent ? <ConsentScripts /> : null}
       {isOpen ? (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 px-4 py-8 backdrop-blur-sm">
-          <div
-            className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Acceso a Tripoli Media"
-          >
-            <div className="grid gap-0 lg:grid-cols-2">
-              <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-black p-8 text-white">
-                <div className="absolute -left-20 -top-24 h-56 w-56 rounded-full bg-amber-400/20 blur-3xl" aria-hidden="true" />
-                <div className="absolute -bottom-24 right-0 h-48 w-48 rounded-full bg-sky-500/20 blur-3xl" aria-hidden="true" />
-                <div className="relative">
-                  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-amber-300">Tripoli Media</p>
-                  <h2 className="mt-4 text-3xl font-semibold leading-tight">
-                    Registrese gratis y consiga:
-                  </h2>
-                  <p className="mt-3 text-sm text-slate-300">
-                    Acceso inmediato a una experiencia editorial premium para lideres, agencias y decisores.
-                  </p>
-                  <ul className="mt-8 space-y-5 text-sm text-slate-200">
-                    <li className="flex items-start gap-3">
-                      <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
-                      <div>
-                        <p className="font-semibold text-white">Alertas en tiempo real</p>
-                        <p className="text-slate-300">Insights y tendencias clave para tu industria.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
-                      <div>
-                        <p className="font-semibold text-white">Portafolio avanzado</p>
-                        <p className="text-slate-300">Guarda y organiza los temas que mas importan.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
-                      <div>
-                        <p className="font-semibold text-white">Graficos personalizados</p>
-                        <p className="text-slate-300">Visualiza indicadores y desempeno de mercado.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
-                      <div>
-                        <p className="font-semibold text-white">App movil sincronizada</p>
-                        <p className="text-slate-300">Accede desde cualquier dispositivo sin perder contexto.</p>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="p-8 lg:p-10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-2xl font-semibold text-slate-900">Bienvenido</h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Elige como quieres acceder a Tripoli Media.
+        <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/80 backdrop-blur-sm">
+          <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div
+              className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-slate-200 sm:my-8"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Acceso a Tripoli Media"
+            >
+              <div className="grid gap-0 lg:grid-cols-2">
+                {/* Left Side: Hidden detailed list on mobile for compactness */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-black p-6 sm:p-8 text-white">
+                  <div className="absolute -left-20 -top-24 h-56 w-56 rounded-full bg-amber-400/20 blur-3xl" aria-hidden="true" />
+                  <div className="absolute -bottom-24 right-0 h-48 w-48 rounded-full bg-sky-500/20 blur-3xl" aria-hidden="true" />
+                  <div className="relative">
+                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-amber-300">Tripoli Media</p>
+                    <h2 className="mt-4 text-2xl sm:text-3xl font-semibold leading-tight">
+                      Registrese gratis y consiga:
+                    </h2>
+                    <p className="mt-3 text-sm text-slate-300">
+                      Acceso inmediato a una experiencia editorial premium para lideres, agencias y decisores.
                     </p>
+                    {/* Benefits list hidden on mobile to save vertical space */}
+                    <ul className="hidden sm:block mt-8 space-y-5 text-sm text-slate-200">
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <div>
+                          <p className="font-semibold text-white">Alertas en tiempo real</p>
+                          <p className="text-slate-300">Insights y tendencias clave para tu industria.</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <div>
+                          <p className="font-semibold text-white">Portafolio avanzado</p>
+                          <p className="text-slate-300">Guarda y organiza los temas que mas importan.</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <div>
+                          <p className="font-semibold text-white">Graficos personalizados</p>
+                          <p className="text-slate-300">Visualiza indicadores y desempeno de mercado.</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <div>
+                          <p className="font-semibold text-white">App movil sincronizada</p>
+                          <p className="text-slate-300">Accede desde cualquier dispositivo sin perder contexto.</p>
+                        </div>
+                      </li>
+                    </ul>
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-4">
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-600">
-                      G
-                    </span>
-                    Registrarse y continuar con Google
-                  </button>
-                </div>
+                {/* Right Side: Form (Reduced Text Size on Mobile) */}
+                <div className="p-6 sm:p-8 lg:p-10 tm-chat-header-animated text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-semibold text-white">Bienvenido</h3>
+                      <p className="mt-1 text-xs sm:text-sm text-white/90">
+                        Elige como quieres acceder a Tripoli Media.
+                      </p>
+                    </div>
+                  </div>
 
-                <div className="my-6 flex items-center gap-4">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <span className="text-xs uppercase tracking-[0.3em] text-slate-400">o</span>
-                  <div className="h-px flex-1 bg-slate-200" />
-                </div>
+                  <div className="mt-6 space-y-4">
+                    <button
+                      type="button"
+                      onClick={handleGoogleSignIn}
+                      disabled={isSubmitting}
+                      className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                        G
+                      </span>
+                      Registrarse y continuar con Google
+                    </button>
+                  </div>
 
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                  <div>
-                    <label htmlFor="guestEmail" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Correo
+                  <div className="my-6 flex items-center gap-4">
+                    <div className="h-px flex-1 bg-white/30" />
+                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/60">o</span>
+                    <div className="h-px flex-1 bg-white/30" />
+                  </div>
+
+                  <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                    <div>
+                      <label htmlFor="guestEmail" className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+                        Correo
+                      </label>
+                      <input
+                        id="guestEmail"
+                        type="email"
+                        value={email}
+                        onChange={(event) => {
+                          setEmail(event.target.value);
+                          if (error) setError("");
+                        }}
+                        placeholder="Escribe tu correo"
+                        className="mt-2 w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-sm text-white placeholder-white/70 outline-none transition focus:border-white/40 focus:bg-white/30"
+                      />
+                    </div>
+
+                    <label className="flex items-start gap-3 text-xs sm:text-sm text-white/90">
+                      <input
+                        type="checkbox"
+                        checked={acceptTerms}
+                        onChange={(event) => {
+                          setAcceptTerms(event.target.checked);
+                          if (error) setError("");
+                        }}
+                        className="mt-1 h-4 w-4 rounded border-white/50 bg-white/10 text-amber-500 focus:ring-amber-400"
+                      />
+                      <span>
+                        Acepto los{" "}
+                        <Link href="/terminos-y-condiciones" className="font-semibold text-white underline underline-offset-4">
+                          Terminos y condiciones
+                        </Link>{" "}
+                        y el{" "}
+                        <Link href="/aviso-de-privacidad" className="font-semibold text-white underline underline-offset-4">
+                          Aviso de privacidad
+                        </Link>
+                        .
+                      </span>
                     </label>
-                    <input
-                      id="guestEmail"
-                      type="email"
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        if (error) setError("");
-                      }}
-                      placeholder="tu@empresa.com"
-                      className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="guestPassword" className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Contrase\u00f1a
-                    </label>
-                    <input
-                      id="guestPassword"
-                      type="password"
-                      value={password}
-                      onChange={(event) => {
-                        setPassword(event.target.value);
-                        if (error) setError("");
-                      }}
-                      placeholder="Contrase\u00f1a"
-                      className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
-                    />
-                  </div>
 
-                  <label className="flex items-start gap-3 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={acceptTerms}
-                      onChange={(event) => {
-                        setAcceptTerms(event.target.checked);
-                        if (error) setError("");
-                      }}
-                      className="mt-1 h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                    />
-                    <span>
-                      Acepto los{" "}
-                      <Link href="/terminos-y-condiciones" className="font-semibold text-slate-900 underline underline-offset-4">
-                        Terminos y condiciones
-                      </Link>{" "}
-                      y el{" "}
-                      <Link href="/aviso-de-privacidad" className="font-semibold text-slate-900 underline underline-offset-4">
-                        Aviso de privacidad
-                      </Link>
-                      .
-                    </span>
-                  </label>
+                    {error ? <p className="text-sm font-semibold text-rose-200 bg-rose-900/40 p-2 rounded">{error}</p> : null}
 
-                  {error ? <p className="text-sm font-semibold text-rose-600">{error}</p> : null}
+                    <button
+                      type="submit"
+                      onClick={handleRegister}
+                      disabled={isSubmitting}
+                      className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 shadow-lg"
+                    >
+                      Continuar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleGuestContinue}
+                      disabled={isSubmitting}
+                      className="w-full rounded-lg border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Continuar como invitado
+                    </button>
+                  </form>
 
-                  <button
-                    type="submit"
-                    onClick={handleRegister}
-                    disabled={isSubmitting}
-                    className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Registrarse con correo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleGuestContinue}
-                    disabled={isSubmitting}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Continuar como invitado
-                  </button>
-                </form>
-
-                <p className="mt-6 text-xs text-slate-400">
-                  Al continuar, validas tu consentimiento para fines de acceso y experiencia personalizada.
-                </p>
+                  <p className="mt-6 text-[10px] sm:text-xs text-white/70">
+                    Al continuar, validas tu consentimiento para fines de acceso y experiencia personalizada.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
