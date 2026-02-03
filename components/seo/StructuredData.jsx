@@ -64,10 +64,10 @@ export default function StructuredData() {
       closes: '18:00',
     },
     sameAs: [
-      'https://www.facebook.com/tripolimedia',
-      'https://www.linkedin.com/company/tripolimedia',
+      'https://www.facebook.com/TripoliMediaMX',
       'https://x.com/tripolimedia',
-      'https://www.instagram.com/tripolimedia',
+      'https://www.instagram.com/tripoli.media/',
+      'https://www.linkedin.com/company/tripoli-media',
     ],
   };
 
