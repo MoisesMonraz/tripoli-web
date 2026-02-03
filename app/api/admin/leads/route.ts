@@ -41,9 +41,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const listUsersResult = await auth.listUsers({
-      maxResults: 100,
-    });
+    const listUsersResult = await auth.listUsers(100);
 
     // Sort by creation time desc
     const users = listUsersResult.users.sort((a, b) => {
