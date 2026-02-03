@@ -50,6 +50,32 @@ const splitContentAtFirstParagraph = (content) => {
   };
 };
 
+const splitBeforeLastParagraphs = (richText) => {
+  if (!richText || !Array.isArray(richText.content) || richText.content.length === 0) {
+    return { mainBody: richText, lastParagraphs: null };
+  }
+
+  const nodes = richText.content;
+  const paragraphIndices = [];
+
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].nodeType === "paragraph") {
+      paragraphIndices.push(i);
+    }
+  }
+
+  if (paragraphIndices.length < 3) {
+    return { mainBody: richText, lastParagraphs: null };
+  }
+
+  const splitIndex = paragraphIndices[paragraphIndices.length - 3];
+
+  return {
+    mainBody: { ...richText, content: nodes.slice(0, splitIndex) },
+    lastParagraphs: { ...richText, content: nodes.slice(splitIndex) },
+  };
+};
+
 export async function generateStaticParams() {
   const articles = await getArticles();
   return articles
@@ -113,10 +139,28 @@ export default async function ArticlePage({ params }) {
           priority
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 768px"
+          quality={85}
         />
       </div>
     </figure>
   ) : null;
+
+  const secondaryImageElement = article.secondaryImage ? (
+    <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
+        <Image
+          src={article.secondaryImage}
+          alt={`${article.title} - imagen secundaria`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 768px"
+          quality={85}
+        />
+      </div>
+    </figure>
+  ) : null;
+
+  const { mainBody, lastParagraphs } = splitBeforeLastParagraphs(rest);
 
   return (
     <main className="bg-neutral-50 pb-24 dark:bg-slate-950">
@@ -181,10 +225,19 @@ export default async function ArticlePage({ params }) {
               </div>
             )}
             {heroImage}
-            {rest && (
+            {mainBody && (
               <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
                 <ArticleContent
-                  content={rest}
+                  content={mainBody}
+                  className="article-body article-body--no-dropcap"
+                />
+              </div>
+            )}
+            {secondaryImageElement}
+            {lastParagraphs && (
+              <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                <ArticleContent
+                  content={lastParagraphs}
                   className="article-body article-body--no-dropcap"
                 />
               </div>

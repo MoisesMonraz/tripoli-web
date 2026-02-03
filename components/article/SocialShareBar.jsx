@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 /**
  * SocialShareBar - A professional social sharing bar component
  * Features: Facebook, X (Twitter), LinkedIn, Instagram/Share, Copy Link
+ * Style: Solid black icons with scale hover effect, no background boxes
  */
 export default function SocialShareBar({ title }) {
     const [showToast, setShowToast] = useState(false);
@@ -85,17 +86,24 @@ export default function SocialShareBar({ title }) {
         }
     };
 
+    // Base button styles: transparent bg, no border/outline, scale on hover
+    const buttonClasses =
+        "inline-flex items-center justify-center p-1 bg-transparent border-none outline-none shadow-none cursor-pointer transition-transform duration-200 ease-in-out hover:scale-[1.15] focus:outline-none focus:ring-0 focus:shadow-none active:outline-none [-webkit-tap-highlight-color:transparent]";
+
+    // Icon styles: solid black, with dark mode invert
+    const iconClasses = "h-[18px] w-[18px] text-black dark:text-white";
+
     return (
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Facebook */}
             <button
                 onClick={() => handleShare("facebook")}
-                className="group flex h-7 w-7 items-center justify-center rounded-md transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={buttonClasses}
                 aria-label="Compartir en Facebook"
                 title="Compartir en Facebook"
             >
                 <svg
-                    className="h-4 w-4 text-slate-500 transition-opacity group-hover:opacity-70 dark:text-slate-400"
+                    className={iconClasses}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -107,12 +115,12 @@ export default function SocialShareBar({ title }) {
             {/* X (Twitter) */}
             <button
                 onClick={() => handleShare("twitter")}
-                className="group flex h-7 w-7 items-center justify-center rounded-md transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={buttonClasses}
                 aria-label="Compartir en X"
                 title="Compartir en X"
             >
                 <svg
-                    className="h-4 w-4 text-slate-500 transition-opacity group-hover:opacity-70 dark:text-slate-400"
+                    className={iconClasses}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -124,12 +132,12 @@ export default function SocialShareBar({ title }) {
             {/* LinkedIn */}
             <button
                 onClick={() => handleShare("linkedin")}
-                className="group flex h-7 w-7 items-center justify-center rounded-md transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={buttonClasses}
                 aria-label="Compartir en LinkedIn"
                 title="Compartir en LinkedIn"
             >
                 <svg
-                    className="h-4 w-4 text-slate-500 transition-opacity group-hover:opacity-70 dark:text-slate-400"
+                    className={iconClasses}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -141,12 +149,12 @@ export default function SocialShareBar({ title }) {
             {/* Instagram / Share */}
             <button
                 onClick={() => handleShare("instagram")}
-                className="group flex h-7 w-7 items-center justify-center rounded-md transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={buttonClasses}
                 aria-label={canShare ? "Compartir" : "Compartir en Instagram"}
                 title={canShare ? "Compartir" : "Compartir en Instagram"}
             >
                 <svg
-                    className="h-4 w-4 text-slate-500 transition-opacity group-hover:opacity-70 dark:text-slate-400"
+                    className={iconClasses}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -158,12 +166,12 @@ export default function SocialShareBar({ title }) {
             {/* Copy Link */}
             <button
                 onClick={handleCopyLink}
-                className="group flex h-7 w-7 items-center justify-center rounded-md transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={buttonClasses}
                 aria-label="Copiar enlace"
                 title="Copiar enlace"
             >
                 <svg
-                    className="h-4 w-4 text-slate-500 transition-opacity group-hover:opacity-70 dark:text-slate-400"
+                    className={iconClasses}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

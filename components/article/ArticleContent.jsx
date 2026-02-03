@@ -93,20 +93,21 @@ const renderOptions = {
       <hr className="my-8 border-none text-center before:text-2xl before:tracking-[1em] before:text-slate-300 before:content-['···'] md:my-12 dark:before:text-slate-600" />
     ),
     [BLOCKS.EMBEDDED_ASSET]: (node) => {
-      const { file, title, description } = node.data.target.fields;
+      const { file, title, description } = node.data.target?.fields || {};
       const imageUrl = file?.url ? `https:${file.url}` : '';
 
       if (!imageUrl) return null;
 
       return (
         <figure className="my-6 md:my-10">
-          <div className="relative aspect-video w-full overflow-hidden rounded-md">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
             <Image
               src={imageUrl}
               alt={description || title || 'Article image'}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 768px"
+              quality={85}
             />
           </div>
           {(title || description) && (
