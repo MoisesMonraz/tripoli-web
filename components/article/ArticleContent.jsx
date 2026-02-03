@@ -93,8 +93,34 @@ const renderOptions = {
       <hr className="my-8 border-none text-center before:text-2xl before:tracking-[1em] before:text-slate-300 before:content-['···'] md:my-12 dark:before:text-slate-600" />
     ),
     [BLOCKS.EMBEDDED_ASSET]: (node) => {
-      const { file, title, description } = node.data.target?.fields || {};
-      const imageUrl = file?.url ? `https:${file.url}` : '';
+      const target = node.data.target;
+      const fields = target?.fields || {};
+
+      // Handle both resolved format and locale-specific format (e.g., fields.title['en-US'])
+      const getFieldValue = (field) => {
+        if (!field) return '';
+        if (typeof field === 'string') return field;
+        // If it's an object with locale keys, get the first value
+        if (typeof field === 'object') {
+          const values = Object.values(field);
+          return values[0] || '';
+        }
+        return '';
+      };
+
+      // Get file URL - handle both formats
+      let imageUrl = '';
+      if (fields.file?.url) {
+        imageUrl = `https:${fields.file.url}`;
+      } else if (fields.file && typeof fields.file === 'object') {
+        const fileData = Object.values(fields.file)[0];
+        if (fileData?.url) {
+          imageUrl = `https:${fileData.url}`;
+        }
+      }
+
+      const title = getFieldValue(fields.title);
+      const description = getFieldValue(fields.description);
 
       if (!imageUrl) return null;
 

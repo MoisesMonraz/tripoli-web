@@ -9,7 +9,7 @@ export const metadata = {
 export default async function PoliticaYLeyesPage() {
   const [organismosData, administracionData, juridicosData] = await Promise.all([
     getArticlesBySubcategory("politica-y-leyes", "organismos-publicos", 6),
-    getArticlesBySubcategory("politica-y-leyes", "administracion-estatal-local", 6),
+    getArticlesBySubcategory("politica-y-leyes", "administracion-publica", 6),
     getArticlesBySubcategory("politica-y-leyes", "servicios-juridicos", 6),
   ]);
 

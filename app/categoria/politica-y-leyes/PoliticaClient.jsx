@@ -15,11 +15,11 @@ export default function PoliticaClient({ organismosData, administracionData, jur
       isEnglish
         ? post
         : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
+          ...post,
+          title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
+          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
+          date: post.dateEs ?? post.date ?? "Noviembre 2025",
+        }
     );
 
   const labels = {
@@ -41,7 +41,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
     ...tailSlides,
   ];
   const administracionSlides = [
-    { id: "politica-administracion", src: "/images/banners/subcategorias/banner-administracion-estatal-y-local.png", alt: "Administracion Publica" },
+    { id: "politica-administracion", src: "/images/banners/subcategorias/banner-administracion-publica.png", alt: "Administracion Publica" },
     ...tailSlides,
   ];
   const juridicosSlides = [
@@ -106,8 +106,8 @@ export default function PoliticaClient({ organismosData, administracionData, jur
       <SectionBlock
         title={labels.cadenas}
         posts={administracionData}
-        titleHref="/categoria/politica-y-leyes/administracion-estatal-local"
-        moreHref="/categoria/politica-y-leyes/administracion-estatal-local"
+        titleHref="/categoria/politica-y-leyes/administracion-publica"
+        moreHref="/categoria/politica-y-leyes/administracion-publica"
       />
       <section aria-label={labels.bannerCadenas} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerCadenas}</h2>

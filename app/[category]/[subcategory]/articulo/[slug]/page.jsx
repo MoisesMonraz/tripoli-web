@@ -134,7 +134,7 @@ export default async function ArticlePage({ params }) {
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
         <Image
           src={article.image}
-          alt={article.title}
+          alt={article.imageCaption || article.title}
           fill
           priority
           className="object-cover"
@@ -142,6 +142,11 @@ export default async function ArticlePage({ params }) {
           quality={85}
         />
       </div>
+      {article.imageCaption && (
+        <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
+          {article.imageCaption}
+        </figcaption>
+      )}
     </figure>
   ) : null;
 
@@ -150,13 +155,18 @@ export default async function ArticlePage({ params }) {
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
         <Image
           src={article.secondaryImage}
-          alt={`${article.title} - imagen secundaria`}
+          alt={article.secondaryImageCaption || `${article.title} - imagen secundaria`}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 768px"
           quality={85}
         />
       </div>
+      {article.secondaryImageCaption && (
+        <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
+          {article.secondaryImageCaption}
+        </figcaption>
+      )}
     </figure>
   ) : null;
 

@@ -15,7 +15,7 @@ const bannerMap = {
   "desarrolladores-de-proyectos": "/images/banners/subcategorias/banner-desarrolladores-de-proyectos.png",
   "promotores-inmobiliarios": "/images/banners/subcategorias/banner-promotores-inmobiliarios.png",
   "organismos-publicos": "/images/banners/subcategorias/banner-organismos-publicos.png",
-  "administracion-estatal-local": "/images/banners/subcategorias/banner-administracion-estatal-y-local.png",
+  "administracion-publica": "/images/banners/subcategorias/banner-administracion-publica.png",
   "servicios-juridicos": "/images/banners/subcategorias/banner-servicios-juridicos.png",
   "fabricantes-equipo-insumos": "/images/banners/subcategorias/banner-fabricantes-equipo-insumos.png",
   "instituciones-de-salud": "/images/banners/subcategorias/banner-instituciones-de-salud.png",
