@@ -41,12 +41,28 @@ export const getAdminUsers = (): AdminUser[] => {
 export const getRoleForEmail = (email: string | null | undefined): AdminRole | null => {
   if (!email) return null;
   const normalized = normalizeEmail(email);
+
+  // Super Admin / Owner Override
+  const superAdmins = (process.env.ADMIN_EMAIL ?? "")
+    .split(",")
+    .map((e) => normalizeEmail(e))
+    .filter(Boolean);
+
+  if (superAdmins.includes(normalized)) {
+    return "owner";
+  }
+
+  // Standard Role Check
   const admin = getAdminUsers().find((user) => user.email === normalized);
-  return admin?.role ?? null;
+  if (admin) {
+    return admin.role;
+  }
+
+  console.warn(`Blocked access attempt: ${normalized}`);
+  return null;
 };
 
 export const isAdminEmail = (email: string | null | undefined): boolean =>
   Boolean(getRoleForEmail(email));
 
 export type { AdminRole };
-
