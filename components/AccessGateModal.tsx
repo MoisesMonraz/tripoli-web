@@ -216,58 +216,58 @@ export default function AccessGateModal() {
               aria-label="Acceso a Tripoli Media"
             >
               <div className="grid gap-0 lg:grid-cols-2">
-                {/* Left Side: Hidden detailed list on mobile for compactness */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-black p-6 sm:p-8 text-white">
-                  <div className="absolute -left-20 -top-24 h-56 w-56 rounded-full bg-amber-400/20 blur-3xl" aria-hidden="true" />
-                  <div className="absolute -bottom-24 right-0 h-48 w-48 rounded-full bg-sky-500/20 blur-3xl" aria-hidden="true" />
+                {/* Left Side: Animated Gradient Background (Moved from Right) */}
+                <div className="relative overflow-hidden tm-chat-header-animated p-6 sm:p-8 text-white">
+                  <div className="absolute -left-20 -top-24 h-56 w-56 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+                  <div className="absolute -bottom-24 right-0 h-48 w-48 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
                   <div className="relative">
-                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-amber-300">Tripoli Media</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/80">Tripoli Media</p>
                     <h2 className="mt-4 text-2xl sm:text-3xl font-semibold leading-tight">
                       Registrese gratis y consiga:
                     </h2>
-                    <p className="mt-3 text-sm text-slate-300">
+                    <p className="mt-3 text-sm text-white/90">
                       Acceso inmediato a una experiencia editorial premium para lideres, agencias y decisores.
                     </p>
                     {/* Benefits list hidden on mobile to save vertical space */}
-                    <ul className="hidden sm:block mt-8 space-y-5 text-sm text-slate-200">
+                    <ul className="hidden sm:block mt-8 space-y-5 text-sm text-white/90">
                       <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">Alertas en tiempo real</p>
-                          <p className="text-slate-300">Insights y tendencias clave para tu industria.</p>
+                          <p className="text-white/80">Insights y tendencias clave para tu industria.</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">Portafolio avanzado</p>
-                          <p className="text-slate-300">Guarda y organiza los temas que mas importan.</p>
+                          <p className="text-white/80">Guarda y organiza los temas que mas importan.</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">Graficos personalizados</p>
-                          <p className="text-slate-300">Visualiza indicadores y desempeno de mercado.</p>
+                          <p className="text-white/80">Visualiza indicadores y desempeno de mercado.</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-amber-400" />
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">App movil sincronizada</p>
-                          <p className="text-slate-300">Accede desde cualquier dispositivo sin perder contexto.</p>
+                          <p className="text-white/80">Accede desde cualquier dispositivo sin perder contexto.</p>
                         </div>
                       </li>
                     </ul>
                   </div>
                 </div>
 
-                {/* Right Side: Form (Reduced Text Size on Mobile) */}
-                <div className="p-6 sm:p-8 lg:p-10 tm-chat-header-animated text-white">
+                {/* Right Side: Form (White Background, Dark Text) */}
+                <div className="p-6 sm:p-8 lg:p-10 bg-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-semibold text-white">Bienvenido</h3>
-                      <p className="mt-1 text-xs sm:text-sm text-white/90">
+                      <h3 className="text-xl sm:text-2xl font-semibold text-slate-900">Bienvenido</h3>
+                      <p className="mt-1 text-xs sm:text-sm text-slate-600">
                         Elige como quieres acceder a Tripoli Media.
                       </p>
                     </div>
@@ -278,9 +278,9 @@ export default function AccessGateModal() {
                       type="button"
                       onClick={handleGoogleSignIn}
                       disabled={isSubmitting}
-                      className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs">
                         G
                       </span>
                       Registrarse y continuar con Google
@@ -288,14 +288,14 @@ export default function AccessGateModal() {
                   </div>
 
                   <div className="my-6 flex items-center gap-4">
-                    <div className="h-px flex-1 bg-white/30" />
-                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/60">o</span>
-                    <div className="h-px flex-1 bg-white/30" />
+                    <div className="h-px flex-1 bg-slate-200" />
+                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-slate-400">o</span>
+                    <div className="h-px flex-1 bg-slate-200" />
                   </div>
 
                   <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
-                      <label htmlFor="guestEmail" className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+                      <label htmlFor="guestEmail" className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Correo
                       </label>
                       <input
@@ -307,11 +307,11 @@ export default function AccessGateModal() {
                           if (error) setError("");
                         }}
                         placeholder="Escribe tu correo"
-                        className="mt-2 w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-sm text-white placeholder-white/70 outline-none transition focus:border-white/40 focus:bg-white/30"
+                        className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
 
-                    <label className="flex items-start gap-3 text-xs sm:text-sm text-white/90">
+                    <label className="flex items-start gap-3 text-xs sm:text-sm text-slate-600">
                       <input
                         type="checkbox"
                         checked={acceptTerms}
@@ -319,22 +319,22 @@ export default function AccessGateModal() {
                           setAcceptTerms(event.target.checked);
                           if (error) setError("");
                         }}
-                        className="mt-1 h-4 w-4 rounded border-white/50 bg-white/10 text-amber-500 focus:ring-amber-400"
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       />
                       <span>
                         Acepto los{" "}
-                        <Link href="/terminos-y-condiciones" className="font-semibold text-white underline underline-offset-4">
+                        <Link href="/terminos-y-condiciones" className="font-semibold text-slate-900 underline underline-offset-4">
                           Terminos y condiciones
                         </Link>{" "}
                         y el{" "}
-                        <Link href="/aviso-de-privacidad" className="font-semibold text-white underline underline-offset-4">
+                        <Link href="/aviso-de-privacidad" className="font-semibold text-slate-900 underline underline-offset-4">
                           Aviso de privacidad
                         </Link>
                         .
                       </span>
                     </label>
 
-                    {error ? <p className="text-sm font-semibold text-rose-200 bg-rose-900/40 p-2 rounded">{error}</p> : null}
+                    {error ? <p className="text-sm font-semibold text-rose-600 bg-rose-50 p-2 rounded">{error}</p> : null}
 
                     <button
                       type="submit"
@@ -348,13 +348,13 @@ export default function AccessGateModal() {
                       type="button"
                       onClick={handleGuestContinue}
                       disabled={isSubmitting}
-                      className="w-full rounded-lg border border-white/30 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Continuar como invitado
                     </button>
                   </form>
 
-                  <p className="mt-6 text-[10px] sm:text-xs text-white/70">
+                  <p className="mt-6 text-[10px] sm:text-xs text-slate-500">
                     Al continuar, validas tu consentimiento para fines de acceso y experiencia personalizada.
                   </p>
                 </div>

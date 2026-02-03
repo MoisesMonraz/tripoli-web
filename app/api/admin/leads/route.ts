@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getAdminSessionCookieName, verifyAdminSession } from "../../../../lib/security/adminSession";
-import { getAdminDb } from "../../../../lib/security/adminAuth";
+import { auth } from "../../../../lib/firebase/server";
 import { isRateLimited } from "../../../../lib/security/rateLimit";
 
 const getClientIp = (request: Request) => {
@@ -36,24 +36,36 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Too many requests." }, { status: 429 });
   }
 
-  const db = getAdminDb();
-  if (!db) {
-    return NextResponse.json({ ok: false, error: "Firestore not initialized." }, { status: 500 });
+  if (!auth) {
+    return NextResponse.json({ ok: false, error: "Firebase Auth not initialized." }, { status: 500 });
   }
 
   try {
-    const snapshot = await db
-      .collection("leads")
-      .orderBy("createdAt", "desc")
-      .limit(50)
-      .get();
-    const leads = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const listUsersResult = await auth.listUsers({
+      maxResults: 100,
+    });
+
+    // Sort by creation time desc
+    const users = listUsersResult.users.sort((a, b) => {
+      const dateA = new Date(a.metadata.creationTime).getTime();
+      const dateB = new Date(b.metadata.creationTime).getTime();
+      return dateB - dateA;
+    });
+
+    const leads = users.map((user) => ({
+      id: user.uid,
+      email: user.email,
+      name: user.displayName,
+      photo: user.photoURL,
+      provider: user.providerData.map((p) => p.providerId).join(", "),
+      createdAt: user.metadata.creationTime,
+      lastLogin: user.metadata.lastSignInTime,
     }));
-    return NextResponse.json({ ok: true, leads }, { status: 200 });
+
+    return NextResponse.json({ ok: true, leads, total: leads.length }, { status: 200 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch leads.";
+    console.error("Failed to list users:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch users.";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
