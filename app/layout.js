@@ -99,7 +99,7 @@ export const metadata = {
   manifest: "/manifest.json",
   formatDetection: { telephone: false, address: false, email: false },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    google: "1J1f5pbHqCeB3GbE5F7p-GSweM4iXPK8CbTKh17OFj4",
   },
 };
 
