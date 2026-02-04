@@ -15,11 +15,11 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
       isEnglish
         ? post
         : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
+          ...post,
+          title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
+          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
+          date: post.dateEs ?? post.date ?? "Noviembre 2025",
+        }
     );
 
   const labels = {
@@ -37,7 +37,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
   const tailSlides = defaultSlides.slice(1);
   const heroSlides = [{ id: "salud-hero", src: bannerSaludHero, alt: "Sector Salud" }, ...tailSlides];
   const fabricantesSlides = [
-    { id: "salud-fabricantes", src: "/images/banners/subcategorias/banner-fabricantes-equipo-insumos.png", alt: "Fabricantes de Equipos e Insumos" },
+    { id: "salud-fabricantes", src: "/images/banners/subcategorias/banner-fabricantes-equipos-insumos.png", alt: "Fabricantes de Equipos e Insumos" },
     ...tailSlides,
   ];
   const institucionesSlides = [
@@ -95,8 +95,8 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
       <SectionBlock
         title={labels.fabricantes}
         posts={fabricantesData}
-        titleHref="/categoria/sector-salud/fabricantes-equipo-insumos"
-        moreHref="/categoria/sector-salud/fabricantes-equipo-insumos"
+        titleHref="/categoria/sector-salud/fabricantes-equipos-insumos"
+        moreHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         titleClassName="text-[12.5px] sm:text-lg lg:text-xl"
       />
       <section aria-label={labels.bannerFabricantes} className="m-0 p-0">

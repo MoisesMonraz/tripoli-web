@@ -17,7 +17,7 @@ const bannerMap = {
   "organismos-publicos": "/images/banners/subcategorias/banner-organismos-publicos.png",
   "administracion-publica": "/images/banners/subcategorias/banner-administracion-publica.png",
   "servicios-juridicos": "/images/banners/subcategorias/banner-servicios-juridicos.png",
-  "fabricantes-equipo-insumos": "/images/banners/subcategorias/banner-fabricantes-equipo-insumos.png",
+  "fabricantes-equipos-insumos": "/images/banners/subcategorias/banner-fabricantes-equipos-insumos.png",
   "instituciones-de-salud": "/images/banners/subcategorias/banner-instituciones-de-salud.png",
   "especialistas-medicos": "/images/banners/subcategorias/banner-especialistas-medicos.png",
   // "fabricantes-y-proveedores" is intentionally handled separately and not routed here.

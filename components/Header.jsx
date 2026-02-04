@@ -76,7 +76,7 @@ const navItems = [
     categorySlug: "sector-salud",
     labels: { ES: "Sector Salud", EN: "Health Sector" },
     subcategories: [
-      { slug: "fabricantes-equipo-insumos", labels: { ES: "Fabricantes de Equipo e Insumos", EN: "Equipment & Supplies Manufacturers" } },
+      { slug: "fabricantes-equipos-insumos", labels: { ES: "Fabricantes de Equipo e Insumos", EN: "Equipment & Supplies Manufacturers" } },
       { slug: "instituciones-de-salud", labels: { ES: "Instituciones de Salud", EN: "Healthcare Institutions" } },
       { slug: "especialistas-medicos", labels: { ES: "Especialistas M\u00e9dicos", EN: "Medical Specialists" } },
     ],
@@ -456,16 +456,17 @@ export default function Header() {
                     ? pathname === "/"
                     : pathname === matchPath || pathname.startsWith(`${matchPath}/`);
                 return (
-                <li key={item.key}>
-                  <a
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
-                  >
-                    <span className="truncate">- {item.labels[language]}</span>
-                  </a>
-                </li>
-              )})}
+                  <li key={item.key}>
+                    <a
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
+                    >
+                      <span className="truncate">- {item.labels[language]}</span>
+                    </a>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
         )}
@@ -551,16 +552,17 @@ export default function Header() {
                     ? pathname === "/"
                     : pathname === matchPath || pathname.startsWith(`${matchPath}/`);
                 return (
-                <li key={item.key}>
-                  <a
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
-                  >
-                    <span className="truncate">- {item.labels[language]}</span>
-                  </a>
-                </li>
-              )})}
+                  <li key={item.key}>
+                    <a
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
+                    >
+                      <span className="truncate">- {item.labels[language]}</span>
+                    </a>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
         )}
