@@ -73,26 +73,24 @@ const ArticleImage = ({ src, alt, caption, priority = false }) => {
   if (!src) return null;
 
   return (
-    <div className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
-      <figure>
-        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            priority={priority}
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-            quality={85}
-          />
-        </div>
-        {caption && (
-          <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
-            {caption}
-          </figcaption>
-        )}
-      </figure>
-    </div>
+    <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          priority={priority}
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 768px"
+          quality={85}
+        />
+      </div>
+      {caption && (
+        <figcaption className="mt-3 w-full text-center font-sans text-sm leading-snug text-slate-500 dark:text-slate-400">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
   );
 };
 
