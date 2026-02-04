@@ -201,7 +201,7 @@ export default async function ArticlePage({ params }) {
           </div>
 
           {/* Title */}
-          <h1 className="font-sans text-2xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-3xl md:text-5xl dark:text-slate-50">
+          <h1 className="font-sans text-[1.3125rem] font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-[1.64rem] md:text-[2.625rem] dark:text-slate-50">
             {article.title}
           </h1>
 
