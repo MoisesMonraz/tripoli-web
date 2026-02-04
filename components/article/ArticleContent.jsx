@@ -18,7 +18,11 @@ const getPlainText = (node) => {
 
 const renderOptions = {
   renderMark: {
-    [MARKS.BOLD]: (text) => <strong className="font-bold">{text}</strong>,
+    [MARKS.BOLD]: (text) => (
+      <strong className="font-extrabold text-slate-950 dark:text-slate-50">
+        {text}
+      </strong>
+    ),
     [MARKS.ITALIC]: (text) => <em className="italic">{text}</em>,
     [MARKS.CODE]: (text) => (
       <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.9em] text-slate-800 dark:bg-slate-800 dark:text-slate-200">
@@ -30,40 +34,58 @@ const renderOptions = {
     [BLOCKS.PARAGRAPH]: (node, children) => {
       const plainText = getPlainText(node);
       const isSources = plainText.toLowerCase().startsWith('fuentes');
+      const isNumberedSubtitle = /^\d+\./.test(plainText.trim()); // Detects "1.", "2.", etc.
+
+      // Detect short bold-only paragraphs (section titles like "El Horizonte Inmediato")
+      // A paragraph is a "bold subtitle" if: it's short (<100 chars) AND all content is bold
+      const isBoldSubtitle = plainText.length < 100 &&
+        node.content &&
+        node.content.length === 1 &&
+        node.content[0].marks?.some(m => m.type === 'bold');
 
       if (isSources) {
-        // Smaller font for the sources section (25% smaller)
+        // Smaller font for the sources section with "Fuentes consultadas:" in bold, all italic
         return (
-          <p className="mb-5 font-serif text-xs leading-relaxed text-slate-700 md:mb-8 md:text-[0.85rem] md:leading-[1.85] dark:text-slate-300">
+          <p className="mb-5 font-serif text-xs italic leading-relaxed text-slate-700 md:mb-8 md:text-[0.85rem] md:leading-[1.85] dark:text-slate-300">
+            <strong className="font-extrabold text-slate-950 dark:text-slate-50">Fuentes consultadas:</strong>
+            {' '}{plainText.replace(/^fuentes\s*consultadas:\s*/i, '')}
+          </p>
+        );
+      }
+
+      if (isNumberedSubtitle || isBoldSubtitle) {
+        // Subtitle: reduced bottom margin (62.5% less) to group with its paragraph
+        return (
+          <p className="mb-[0.5rem] mt-8 font-serif text-base leading-relaxed text-slate-700 md:mb-3 md:mt-10 md:text-[1.125rem] md:leading-[1.85] dark:text-slate-300">
             {children}
           </p>
         );
       }
 
-      // Normal paragraph styling
+      // Normal paragraph styling (including closing paragraph)
       return (
-        <p className="mb-5 font-serif text-base leading-relaxed text-slate-700 md:mb-8 md:text-[1.125rem] md:leading-[1.85] dark:text-slate-300">
+        <p className="mb-5 font-serif text-base leading-relaxed text-slate-700 first:mt-0 md:mb-8 md:text-[1.125rem] md:leading-[1.85] dark:text-slate-300">
           {children}
         </p>
       );
     },
     [BLOCKS.HEADING_1]: (node, children) => (
-      <h2 className="mb-3 mt-10 font-sans text-xl font-extrabold leading-tight tracking-tight text-slate-900 md:mb-5 md:mt-14 md:text-3xl dark:text-slate-100">
+      <h2 className="mb-[0.5rem] mt-10 font-sans text-xl font-extrabold leading-tight tracking-tight text-slate-900 md:mb-3 md:mt-14 md:text-3xl dark:text-slate-100">
         {children}
       </h2>
     ),
     [BLOCKS.HEADING_2]: (node, children) => (
-      <h2 className="mb-3 mt-10 font-sans text-xl font-extrabold leading-tight tracking-tight text-slate-900 md:mb-5 md:mt-14 md:text-3xl dark:text-slate-100">
+      <h2 className="mb-[0.5rem] mt-10 font-sans text-xl font-extrabold leading-tight tracking-tight text-slate-900 md:mb-3 md:mt-14 md:text-3xl dark:text-slate-100">
         {children}
       </h2>
     ),
     [BLOCKS.HEADING_3]: (node, children) => (
-      <h3 className="mb-3 mt-8 font-sans text-lg font-bold leading-snug text-slate-900 md:mb-4 md:mt-10 md:text-2xl dark:text-slate-100">
+      <h3 className="mb-[0.5rem] mt-8 font-sans text-lg font-bold leading-snug text-slate-900 md:mb-3 md:mt-10 md:text-2xl dark:text-slate-100">
         {children}
       </h3>
     ),
     [BLOCKS.HEADING_4]: (node, children) => (
-      <h4 className="mb-2 mt-6 font-sans text-base font-bold text-slate-900 md:mb-3 md:mt-8 md:text-xl dark:text-slate-100">
+      <h4 className="mb-[0.5rem] mt-6 font-sans text-base font-bold text-slate-900 md:mb-3 md:mt-8 md:text-xl dark:text-slate-100">
         {children}
       </h4>
     ),
