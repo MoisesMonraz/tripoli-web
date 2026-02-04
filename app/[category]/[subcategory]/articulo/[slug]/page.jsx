@@ -50,6 +50,105 @@ const splitContentAtFirstParagraph = (content) => {
   };
 };
 
+/**
+ * Extract plain text from a Rich Text node recursively
+ */
+const extractNodeText = (node) => {
+  if (!node) return '';
+  if (node.nodeType === 'text') return node.value || '';
+  if (node.content && Array.isArray(node.content)) {
+    return node.content.map(extractNodeText).join('');
+  }
+  return '';
+};
+
+/**
+ * Check if a node starts with a specific number pattern like "5.", "6.", etc.
+ */
+const getItemNumber = (node) => {
+  const text = extractNodeText(node).trim();
+  const match = text.match(/^(\d+)\./);
+  return match ? parseInt(match[1], 10) : null;
+};
+
+/**
+ * Split content for 3-image layout (Golden Layout for Listicles)
+ * Detects numbered items (1., 2., etc.) and divides accordingly:
+ * [Intro] -> [Image1] -> [Items 1-5] -> [Image2] -> [Items 6-10] -> [Image3] -> [Closing]
+ */
+const splitContentForThreeImages = (richText) => {
+  if (!richText || !Array.isArray(richText.content) || richText.content.length === 0) {
+    return { firstPart: richText, secondPart: null, lastPart: null };
+  }
+
+  const nodes = richText.content;
+
+  // Find indices of specific numbered items (5, 6, 10, 11)
+  let item5Index = -1;
+  let item6Index = -1;
+  let item10Index = -1;
+  let item11Index = -1; // For finding end of item 10
+
+  for (let i = 0; i < nodes.length; i++) {
+    const itemNum = getItemNumber(nodes[i]);
+    if (itemNum === 5) item5Index = i;
+    if (itemNum === 6) item6Index = i;
+    if (itemNum === 10) item10Index = i;
+    if (itemNum === 11) item11Index = i;
+  }
+
+  console.log('📊 Item positions:', { item5Index, item6Index, item10Index, item11Index, totalNodes: nodes.length });
+
+  // If we found items 5 and 6, use Golden Layout
+  // Split AFTER item 5, BEFORE item 6 for image2
+  // Split AFTER item 10 for image3
+  if (item5Index !== -1 && item6Index !== -1) {
+    // First part: everything up to and including item 5
+    // Image2 goes here
+    // Second part: from item 6 to end of item 10 (or end if no item 10)
+    // Image3 goes here
+    // Third part: closing (after item 10)
+
+    const endOfFirstPart = item6Index; // Just before item 6
+    const endOfSecondPart = item10Index !== -1
+      ? (item11Index !== -1 ? item11Index : item10Index + 1)
+      : nodes.length;
+
+    console.log('📊 Golden Layout split:', {
+      endOfFirstPart,
+      endOfSecondPart,
+      totalNodes: nodes.length
+    });
+
+    return {
+      firstPart: { ...richText, content: nodes.slice(0, endOfFirstPart) }, // Items 1-5
+      secondPart: { ...richText, content: nodes.slice(endOfFirstPart, endOfSecondPart) }, // Items 6-10
+      lastPart: endOfSecondPart < nodes.length
+        ? { ...richText, content: nodes.slice(endOfSecondPart) } // Closing
+        : null,
+    };
+  }
+
+  // Fallback: ALWAYS divide into 3 parts if we have at least 3 blocks
+  // This ensures image2 and image3 can be placed even with minimal content
+  const totalNodes = nodes.length;
+  if (totalNodes >= 3) {
+    const firstSplitIndex = Math.max(1, Math.floor(totalNodes / 3));
+    const lastSplitIndex = Math.max(firstSplitIndex + 1, Math.floor((totalNodes * 2) / 3));
+
+    console.log('📊 Fallback split:', { firstSplitIndex, lastSplitIndex, totalNodes });
+
+    return {
+      firstPart: { ...richText, content: nodes.slice(0, firstSplitIndex) },
+      secondPart: { ...richText, content: nodes.slice(firstSplitIndex, lastSplitIndex) },
+      lastPart: { ...richText, content: nodes.slice(lastSplitIndex) },
+    };
+  }
+
+  // Very short content: put everything in firstPart, leave others empty
+  return { firstPart: richText, secondPart: null, lastPart: null };
+};
+
 const splitBeforeLastParagraphs = (richText) => {
   if (!richText || !Array.isArray(richText.content) || richText.content.length === 0) {
     return { mainBody: richText, lastParagraphs: null };
@@ -150,7 +249,50 @@ export default async function ArticlePage({ params }) {
     </figure>
   ) : null;
 
-  const secondaryImageElement = article.secondaryImage ? (
+  // Image 2 - appears after 5th paragraph (4 development paragraphs)
+  const image2Element = article.image2 ? (
+    <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
+        <Image
+          src={article.image2}
+          alt={article.image2Caption || `${article.title} - imagen 2`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 768px"
+          quality={85}
+        />
+      </div>
+      {article.image2Caption && (
+        <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
+          {article.image2Caption}
+        </figcaption>
+      )}
+    </figure>
+  ) : null;
+
+  // Image 3 - appears before closing paragraphs
+  const image3Element = article.image3 ? (
+    <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
+        <Image
+          src={article.image3}
+          alt={article.image3Caption || `${article.title} - imagen 3`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 768px"
+          quality={85}
+        />
+      </div>
+      {article.image3Caption && (
+        <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
+          {article.image3Caption}
+        </figcaption>
+      )}
+    </figure>
+  ) : null;
+
+  // Fallback to secondaryImage if image3 is not set (backward compatibility)
+  const secondaryImageElement = image3Element || (article.secondaryImage ? (
     <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
         <Image
@@ -168,9 +310,20 @@ export default async function ArticlePage({ params }) {
         </figcaption>
       )}
     </figure>
-  ) : null;
+  ) : null);
 
+  // Use new 3-part split if image2 exists, otherwise fall back to old split
+  const { firstPart, secondPart, lastPart } = splitContentForThreeImages(rest);
   const { mainBody, lastParagraphs } = splitBeforeLastParagraphs(rest);
+
+  // DEBUG: Log image and content split status
+  console.log('🎨 Render debug:', {
+    hasImage2: !!article.image2,
+    hasSecondPart: !!secondPart,
+    firstPartNodes: firstPart?.content?.length || 0,
+    secondPartNodes: secondPart?.content?.length || 0,
+    lastPartNodes: lastPart?.content?.length || 0,
+  });
 
   return (
     <main className="bg-neutral-50 pb-24 dark:bg-slate-950">
@@ -235,22 +388,63 @@ export default async function ArticlePage({ params }) {
               </div>
             )}
             {heroImage}
-            {mainBody && (
-              <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
-                <ArticleContent
-                  content={mainBody}
-                  className="article-body article-body--no-dropcap"
-                />
-              </div>
-            )}
-            {secondaryImageElement}
-            {lastParagraphs && (
-              <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
-                <ArticleContent
-                  content={lastParagraphs}
-                  className="article-body article-body--no-dropcap"
-                />
-              </div>
+
+            {/* If image2 exists, use 3-part layout */}
+            {article.image2 && secondPart ? (
+              <>
+                {/* First part: 4 paragraphs after intro */}
+                {firstPart && (
+                  <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                    <ArticleContent
+                      content={firstPart}
+                      className="article-body article-body--no-dropcap"
+                    />
+                  </div>
+                )}
+                {/* Image 2: after 5th paragraph */}
+                {image2Element}
+                {/* Second part: middle content */}
+                {secondPart && (
+                  <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                    <ArticleContent
+                      content={secondPart}
+                      className="article-body article-body--no-dropcap"
+                    />
+                  </div>
+                )}
+                {/* Image 3: before closing */}
+                {secondaryImageElement}
+                {/* Last part: closing paragraphs */}
+                {lastPart && (
+                  <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                    <ArticleContent
+                      content={lastPart}
+                      className="article-body article-body--no-dropcap"
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Fallback: original 2-image layout */
+              <>
+                {mainBody && (
+                  <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                    <ArticleContent
+                      content={mainBody}
+                      className="article-body article-body--no-dropcap"
+                    />
+                  </div>
+                )}
+                {secondaryImageElement}
+                {lastParagraphs && (
+                  <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+                    <ArticleContent
+                      content={lastParagraphs}
+                      className="article-body article-body--no-dropcap"
+                    />
+                  </div>
+                )}
+              </>
             )}
           </>
         ) : (
