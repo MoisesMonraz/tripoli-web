@@ -30,7 +30,7 @@ const navItems = [
     subcategories: [
       { slug: "productoras-de-contenido", labels: { ES: "Productoras de Contenido", EN: "Content Producers" } },
       { slug: "recintos-culturales", labels: { ES: "Recintos Culturales", EN: "Cultural Venues" } },
-      { slug: "festivales-eventos-artistas", labels: { ES: "Festivales, Eventos y Artistas", EN: "Festivals, Events & Artists" } },
+      { slug: "festivales-eventos-y-artistas", labels: { ES: "Festivales, Eventos y Artistas", EN: "Festivals, Events & Artists" } },
     ],
   },
   {

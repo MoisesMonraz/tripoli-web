@@ -67,7 +67,7 @@ export default function SubcategoryListPageClient({
 
   const heading = language === "EN" ? title : titleEs ?? title;
   const isFabricantesEquipoInsumos = subcategorySlug === "fabricantes-equipos-insumos";
-  const isFestivalesEventosArtistas = subcategorySlug === "festivales-eventos-artistas";
+  const isFestivalesEventosArtistas = subcategorySlug === "festivales-eventos-y-artistas";
   const isDesarrolladoresProyectos = subcategorySlug === "desarrolladores-de-proyectos";
   const headingClassName = isFabricantesEquipoInsumos
     ? "text-[12.5px] sm:text-lg lg:text-xl"

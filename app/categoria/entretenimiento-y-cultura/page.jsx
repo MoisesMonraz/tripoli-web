@@ -10,7 +10,7 @@ export default async function EntretenimientoCulturaPage() {
   const [productorasData, recintosData, festivalesData] = await Promise.all([
     getArticlesBySubcategory("entretenimiento-y-cultura", "productoras-de-contenido", 6),
     getArticlesBySubcategory("entretenimiento-y-cultura", "recintos-culturales", 6),
-    getArticlesBySubcategory("entretenimiento-y-cultura", "festivales-eventos-artistas", 6),
+    getArticlesBySubcategory("entretenimiento-y-cultura", "festivales-eventos-y-artistas", 6),
   ]);
 
   return (

@@ -18,11 +18,11 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
       isEnglish
         ? post
         : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
+          ...post,
+          title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
+          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
+          date: post.dateEs ?? post.date ?? "Noviembre 2025",
+        }
     );
 
   const labels = {
@@ -139,8 +139,8 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
       <SectionBlock
         title={labels.conveniencia}
         posts={festivalesData}
-        titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas"
-        moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-artistas"
+        titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
+        moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
         titleClassName="text-[13.5px] sm:text-lg lg:text-xl"
       />
       <section aria-label={labels.bannerConveniencia} className="m-0 p-0">

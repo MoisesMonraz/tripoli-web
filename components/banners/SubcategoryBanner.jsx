@@ -7,7 +7,7 @@ const bannerMap = {
   "tiendas-de-conveniencia": "/images/banners/subcategorias/banner-tiendas-de-conveniencia.png",
   "productoras-de-contenido": "/images/banners/subcategorias/banner-productoras-de-contenido.png",
   "recintos-culturales": "/images/banners/subcategorias/banner-recintos-culturales.png",
-  "festivales-eventos-artistas": "/images/banners/subcategorias/banner-festivales-eventos-artistas.png",
+  "festivales-eventos-y-artistas": "/images/banners/subcategorias/banner-festivales-eventos-artistas.png",
   "fabricantes-de-tecnologia": "/images/banners/subcategorias/banner-fabricantes-de-tecnologia.png",
   "mayoristas-ti": "/images/banners/subcategorias/banner-mayoristas-ti.png",
   "canales-de-distribucion": "/images/banners/subcategorias/banner-canales-de-distribucion.png",
