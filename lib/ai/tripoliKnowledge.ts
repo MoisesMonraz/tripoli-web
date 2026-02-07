@@ -99,6 +99,15 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     tags: ["noticias", "news", "notas", "notes", "ultimas", "latest", "inicio", "home"],
   },
   {
+    id: "calendario",
+    title: "Calendario",
+    url: "/calendario",
+    section: "Calendario",
+    content:
+      "ES: Consulta la fecha y hora actual desde el calendario editorial de Tripoli Media. EN: Check the current date and time from Tripoli Media's editorial calendar.",
+    tags: ["fecha", "date", "hora", "time", "hoy", "today", "ayer", "yesterday", "dia", "day", "calendario", "calendar", "que dia", "what day"],
+  },
+  {
     id: "categoria-consumo",
     title: "Consumo y Retail",
     url: "/categoria/consumo-y-retail",

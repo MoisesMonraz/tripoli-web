@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, type KeyboardEvent, useCallback } from "react";
 import { useLanguage } from "../LanguageProvider";
 import Image from "next/image";
 import botIcon from "../../Imagenes/Logos/AIIcon.png";
@@ -32,14 +32,57 @@ const createId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 
  * Converts plain text with URLs into JSX with clickable links
  */
 const renderTextWithLinks = (text: string) => {
-  // Regex to detect URLs (http, https, www)
+  // Regex to detect markdown links: [Title](URL)
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  // Regex to detect plain URLs
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
-  const parts = text.split(urlRegex);
 
-  return parts.map((part, index) => {
-    // Check if this part is a URL
+  // First, handle markdown-style links
+  const parts: (string | React.ReactNode)[] = [];
+  let lastIndex = 0;
+  let match;
+
+  // Process markdown links first
+  const markdownMatches: { start: number; end: number; element: React.ReactNode }[] = [];
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    const [fullMatch, title, url] = match;
+    const href = url.startsWith('http') ? url : `https://tripoli.media${url}`;
+    markdownMatches.push({
+      start: match.index,
+      end: match.index + fullMatch.length,
+      element: (
+        <a
+          key={`md-${match.index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 font-medium transition-colors duration-150"
+        >
+          {title}
+        </a>
+      ),
+    });
+  }
+
+  // If we have markdown links, use them
+  if (markdownMatches.length > 0) {
+    markdownMatches.forEach((m, idx) => {
+      if (m.start > lastIndex) {
+        parts.push(text.slice(lastIndex, m.start));
+      }
+      parts.push(m.element);
+      lastIndex = m.end;
+    });
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    return <>{parts.map((p, i) => (typeof p === 'string' ? <span key={i}>{p}</span> : p))}</>;
+  }
+
+  // Fallback: handle plain URLs
+  const urlParts = text.split(urlRegex);
+  return urlParts.map((part, index) => {
     if (part.match(urlRegex)) {
-      // Ensure URL has protocol
       const href = part.startsWith('http') ? part : `https://${part}`;
       return (
         <a
@@ -47,13 +90,12 @@ const renderTextWithLinks = (text: string) => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium"
+          className="underline text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200 font-medium transition-colors duration-150"
         >
           {part}
         </a>
       );
     }
-    // Regular text
     return <span key={index}>{part}</span>;
   });
 };
