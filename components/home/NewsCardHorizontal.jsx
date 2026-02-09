@@ -56,7 +56,7 @@ function CopyLinkButton({ url }) {
         className="h-[16px] w-[16px] transition-colors duration-200"
         viewBox="0 0 24 24"
         fill="none"
-        stroke={copied ? "#22c55e" : "#00BFFF"}
+        stroke={copied ? "#22c55e" : "#1e293b"}
         strokeWidth="2"
       >
         {copied ? (
