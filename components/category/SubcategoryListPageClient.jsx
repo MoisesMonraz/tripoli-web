@@ -109,32 +109,63 @@ export default function SubcategoryListPageClient({
               const formattedDate = rawDate.toLowerCase();
 
               return (
-                <Link key={post.slug} href={post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`} className="block">
-                  <article
-                    className="flex flex-col items-stretch gap-4 p-4 rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-slate-900/10 hover:border-slate-300
-                    md:flex-row md:items-center dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 hover:border-[#00BFFF]/60 dark:hover:border-[#33ceff]/60"
-                  >
-                    <div className="relative h-[200px] w-full md:h-[180px] md:w-[240px] flex-shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
+                <Link key={post.slug} href={post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`} className="block group">
+                  {/* Mobile: Vertical card (favorites style) */}
+                  <article className="md:hidden flex flex-col overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:border-[#00BFFF]/60 dark:border-slate-800/70 dark:bg-slate-900/70 dark:hover:border-[#33ceff]/60">
+                    <div className="relative aspect-[16/9] overflow-hidden">
+                      <Image
+                        src={post.image || placeholderImage}
+                        alt={post.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="100vw"
+                      />
+                    </div>
+                    <div className="flex flex-col p-4">
+                      <h2 className="font-sans text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-[#00BFFF] dark:text-slate-50 dark:group-hover:text-[#33ceff] line-clamp-2">
+                        {post.title}
+                      </h2>
+                      {post.excerpt && (
+                        <p className="mt-2 font-serif text-xs leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
+                          {post.excerpt}
+                        </p>
+                      )}
+                      <div className="mt-3 flex items-center gap-2 text-[10px] font-sans">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          por: Tripoli Publishing House
+                        </span>
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                        <time className="text-slate-500 dark:text-slate-400">
+                          {formattedDate}
+                        </time>
+                      </div>
+                    </div>
+                  </article>
+
+                  {/* Desktop: Horizontal card (original style) */}
+                  <article className="hidden md:flex flex-row items-center gap-4 p-4 rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-slate-900/10 hover:border-slate-300 dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 hover:border-[#00BFFF]/60 dark:hover:border-[#33ceff]/60">
+                    <div className="relative h-[180px] w-[240px] flex-shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
                       <Image
                         src={post.image || placeholderImage}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-500 hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 240px"
+                        sizes="240px"
                       />
                     </div>
                     <div className="flex flex-1 flex-col justify-center gap-2">
                       <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]">
                         {post.title}
                       </h2>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 md:line-clamp-3 leading-relaxed">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
                         {post.excerpt}
                       </p>
-                      <div className="mt-1 flex flex-col gap-1">
-                        <span className="text-[11px] font-sans font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
+                      <div className="mt-1 flex items-center gap-2 text-[11px] font-sans">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
                           por: Tripoli Publishing House
                         </span>
-                        <time className="text-[11px] font-sans text-slate-500 dark:text-slate-400">
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                        <time className="text-slate-500 dark:text-slate-400">
                           {formattedDate}
                         </time>
                       </div>

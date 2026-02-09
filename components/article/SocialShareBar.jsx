@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import FavoriteButton from "./FavoriteButton";
 
 /**
  * SocialShareBar - A professional social sharing bar component
- * Features: Facebook, X (Twitter), LinkedIn, Instagram/Share, Copy Link
+ * Features: Facebook, X (Twitter), LinkedIn, Instagram/Share, Copy Link, Favorites
  * Style: Solid black icons with scale hover effect, no background boxes
  */
-export default function SocialShareBar({ title }) {
+export default function SocialShareBar({ title, articleSlug, articleData }) {
     const [showToast, setShowToast] = useState(false);
     const [currentUrl, setCurrentUrl] = useState("");
     const [canShare, setCanShare] = useState(false);
@@ -185,6 +186,14 @@ export default function SocialShareBar({ title }) {
                     />
                 </svg>
             </button>
+
+            {/* Divider + Favorite Star */}
+            {articleSlug && articleData && (
+                <>
+                    <span className="h-4 w-px bg-slate-300 dark:bg-slate-600" aria-hidden="true" />
+                    <FavoriteButton articleSlug={articleSlug} articleData={articleData} />
+                </>
+            )}
 
             {/* Toast Notification */}
             {showToast && (

@@ -2,6 +2,7 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { LanguageProvider } from "../components/LanguageProvider";
+import { FavoritesProvider } from "../components/favorites/FavoritesContext";
 import ScrollToTop from "../components/ScrollToTop";
 import AIChatWidget from "../components/ai/AIChatWidget";
 import AccessGateModal from "../components/AccessGateModal";
@@ -109,14 +110,16 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
         <LanguageProvider>
-          <OrganizationJsonLd />
-          <ScrollToTop />
-          <Header />
-          {children}
-          <Footer />
-          <AccessGateModal />
-          <RegistrationModal />
-          <AIChatWidget />
+          <FavoritesProvider>
+            <OrganizationJsonLd />
+            <ScrollToTop />
+            <Header />
+            {children}
+            <Footer />
+            <AccessGateModal />
+            <RegistrationModal />
+            <AIChatWidget />
+          </FavoritesProvider>
         </LanguageProvider>
       </body>
     </html>
