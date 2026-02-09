@@ -228,7 +228,7 @@ export default function SubcategoryListPageClient({
                           {post.excerpt}
                         </p>
                       )}
-                      <div className="mt-3 flex items-center gap-2 text-[10px] font-sans pr-16">
+                      <div className="mt-3 flex items-center gap-1.5 text-[7.5px] font-sans pr-16">
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                           por: Tripoli Publishing House
                         </span>
