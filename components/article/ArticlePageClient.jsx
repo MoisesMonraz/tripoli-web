@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "../LanguageProvider";
 import ArticleContent from "./ArticleContent";
 import SocialShareBar from "./SocialShareBar";
+import { getCachedTranslation, saveCachedTranslation } from "../../lib/translationCache";
 
 /**
  * Extract all text nodes from Rich Text for translation
@@ -173,21 +174,32 @@ export default function ArticlePageClient({
   const translationCacheRef = useRef({ ES: initialArticle });
 
   /**
-   * Translate article using Gemini API
+   * Translate article using Gemini API with Firebase persistent cache
    */
   const translateArticle = useCallback(async () => {
-    // Check memory cache first
+    // Check memory cache first (instant)
     if (translationCacheRef.current.EN) {
       setArticle(translationCacheRef.current.EN);
       return;
     }
 
-    // Check localStorage cache
+    // Check Firebase cache (shared across all users)
+    try {
+      const firebaseCached = await getCachedTranslation(slug);
+      if (firebaseCached) {
+        translationCacheRef.current.EN = firebaseCached;
+        setArticle(firebaseCached);
+        return;
+      }
+    } catch (e) {
+      console.error("Firebase cache check failed:", e);
+    }
+
+    // Check localStorage cache (fallback for offline)
     try {
       const cached = localStorage.getItem(getCacheKey(slug));
       if (cached) {
         const parsedCache = JSON.parse(cached);
-        // Check if cache is less than 7 days old
         if (parsedCache.timestamp && Date.now() - parsedCache.timestamp < 7 * 24 * 60 * 60 * 1000) {
           translationCacheRef.current.EN = parsedCache.article;
           setArticle(parsedCache.article);
@@ -215,6 +227,14 @@ export default function ArticlePageClient({
       if (spanishArticle.excerpt) {
         textsToTranslate.push(spanishArticle.excerpt);
       }
+
+      // Add image captions (pies de foto)
+      const captionFields = ["imageCaption", "image1Caption", "image2Caption", "image3Caption"];
+      captionFields.forEach((field) => {
+        if (spanishArticle[field]?.trim()) {
+          textsToTranslate.push(spanishArticle[field]);
+        }
+      });
 
       // Collect from Rich Text fields
       const richTextFields = ["introduccion", "body1", "body2", "cierre", "fuentes"];
@@ -259,6 +279,13 @@ export default function ArticlePageClient({
           : "",
       };
 
+      // Apply translations to image captions
+      captionFields.forEach((field) => {
+        if (spanishArticle[field]?.trim()) {
+          translatedArticle[field] = translationMap.get(spanishArticle[field]) || spanishArticle[field];
+        }
+      });
+
       // Apply translations to Rich Text fields
       richTextFields.forEach((field) => {
         if (spanishArticle[field]) {
@@ -272,7 +299,14 @@ export default function ArticlePageClient({
       // Cache in memory
       translationCacheRef.current.EN = translatedArticle;
 
-      // Cache in localStorage
+      // Save to Firebase (persistent, shared across all users)
+      try {
+        await saveCachedTranslation(slug, translatedArticle);
+      } catch (e) {
+        console.error("Firebase save failed:", e);
+      }
+
+      // Also cache in localStorage (backup for offline)
       try {
         localStorage.setItem(
           getCacheKey(slug),
