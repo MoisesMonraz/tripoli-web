@@ -277,9 +277,6 @@ export const generateTripoliAnswer = async ({
   const responseLang = resolveLanguage(question, lang);
   const isFirstMessage = chatHistory.length === 0;
 
-  // Build system instruction (identity, rules, tool instructions, constraints)
-  // Passing this via systemInstruction config makes Gemini treat it as authoritative,
-  // which significantly improves tool-calling reliability.
   const systemInstruction = buildSystemInstruction(responseLang, isFirstMessage, currentDate, currentTime);
 
   const model = genAI.getGenerativeModel({
@@ -288,102 +285,104 @@ export const generateTripoliAnswer = async ({
     tools: [{ functionDeclarations: toolDeclarations }] as any,
   });
 
-  // Build the user message with sources, history, and question
   const userMessage = buildUserMessage(question, sources, chatHistory, responseLang);
 
-  // Use the chat API to support multi-turn function calling
-  const chat = model.startChat({});
-  let result = await chat.sendMessage(userMessage);
-  let response = result.response;
-
-  // Function calling loop: execute tools and feed results back (max 3 rounds)
-  let rounds = 0;
-  while (rounds < 3) {
-    const functionCalls = response.functionCalls();
-    if (!functionCalls || functionCalls.length === 0) break;
-
-    const functionResponseParts: any[] = [];
-    for (const fc of functionCalls) {
-      const toolResult = await executeTool(fc.name, fc.args as Record<string, any>);
-      functionResponseParts.push({
-        functionResponse: {
-          name: fc.name,
-          response: toolResult,
-        },
-      });
-    }
-
-    result = await chat.sendMessage(functionResponseParts);
-    response = result.response;
-    rounds++;
-  }
-
-  // Extract the final text response
-  let text: string;
-  try {
-    text = response.text();
-  } catch {
-    // Safety fallback if response is still a function call
-    text = "";
-  }
-
-  const parsed = extractJson(text);
-  const fallbackSources = sources.map((source) => ({
-    title: source.title,
-    url: source.url,
-    excerpt: buildExcerpt(source.content),
-  }));
-  const notFoundMessage = NOT_FOUND_MESSAGES[lang];
-
-  if (!parsed || !parsed.answer) {
-    return {
-      answer: notFoundMessage,
-      sources: [],
-    };
-  }
-
-  if (parsed.answer.trim() === notFoundMessage) {
-    return {
-      answer: notFoundMessage,
-      sources: [],
-    };
-  }
-
-  // For tool-sourced answers, the model may reference article URLs
-  // that aren't in the static knowledge base. Allow those through.
-  if (!parsed.sources || parsed.sources.length === 0) {
-    return {
-      answer: parsed.answer,
-      sources: fallbackSources,
-    };
-  }
-
-  const allowedByUrl = new Map(sources.map((source) => [source.url, source]));
-  const normalizedSources = parsed.sources
-    .map((source) => {
-      // Allow sources from the static knowledge base
-      const match = allowedByUrl.get(source.url);
-      if (match) {
-        return {
-          title: source.title || match.title,
-          url: match.url,
-          excerpt: source.excerpt || buildExcerpt(match.content),
-        };
-      }
-      // Also allow sources from tool results (article URLs)
-      if (source.url && source.title) {
-        return {
-          title: source.title,
-          url: source.url,
-          excerpt: source.excerpt || "",
-        };
-      }
-      return null;
-    })
-    .filter((source): source is { title: string; url: string; excerpt: string } => Boolean(source));
-
-  return {
-    answer: parsed.answer,
-    sources: normalizedSources.length ? normalizedSources : fallbackSources,
+  // Retry helper for Gemini quota/rate-limit errors
+  const MAX_RETRIES = 3;
+  const isRetryableError = (err: any): boolean => {
+    const msg = String(err?.message || err || "").toLowerCase();
+    return msg.includes("429") || msg.includes("quota") || msg.includes("rate") || msg.includes("resource_exhausted");
   };
+
+  let lastError: any = null;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const chat = model.startChat({});
+      let result = await chat.sendMessage(userMessage);
+      let response = result.response;
+
+      // Function calling loop (max 3 rounds)
+      let rounds = 0;
+      while (rounds < 3) {
+        const functionCalls = response.functionCalls();
+        if (!functionCalls || functionCalls.length === 0) break;
+
+        const functionResponseParts: any[] = [];
+        for (const fc of functionCalls) {
+          const toolResult = await executeTool(fc.name, fc.args as Record<string, any>);
+          functionResponseParts.push({
+            functionResponse: { name: fc.name, response: toolResult },
+          });
+        }
+
+        result = await chat.sendMessage(functionResponseParts);
+        response = result.response;
+        rounds++;
+      }
+
+      let text: string;
+      try {
+        text = response.text();
+      } catch {
+        text = "";
+      }
+
+      // — Success: parse and return —
+      const parsed = extractJson(text);
+      const fallbackSources = sources.map((source) => ({
+        title: source.title,
+        url: source.url,
+        excerpt: buildExcerpt(source.content),
+      }));
+      const notFoundMessage = NOT_FOUND_MESSAGES[lang];
+
+      if (!parsed || !parsed.answer) {
+        return { answer: notFoundMessage, sources: [] };
+      }
+
+      if (parsed.answer.trim() === notFoundMessage) {
+        return { answer: notFoundMessage, sources: [] };
+      }
+
+      if (!parsed.sources || parsed.sources.length === 0) {
+        return { answer: parsed.answer, sources: fallbackSources };
+      }
+
+      const allowedByUrl = new Map(sources.map((s) => [s.url, s]));
+      const normalizedSources = parsed.sources
+        .map((source) => {
+          const match = allowedByUrl.get(source.url);
+          if (match) {
+            return {
+              title: source.title || match.title,
+              url: match.url,
+              excerpt: source.excerpt || buildExcerpt(match.content),
+            };
+          }
+          if (source.url && source.title) {
+            return { title: source.title, url: source.url, excerpt: source.excerpt || "" };
+          }
+          return null;
+        })
+        .filter((s): s is { title: string; url: string; excerpt: string } => Boolean(s));
+
+      return {
+        answer: parsed.answer,
+        sources: normalizedSources.length ? normalizedSources : fallbackSources,
+      };
+
+    } catch (err: any) {
+      lastError = err;
+      if (isRetryableError(err) && attempt < MAX_RETRIES - 1) {
+        const delay = 2000 * Math.pow(2, attempt); // 2s, 4s, 8s
+        console.warn(`[Gemini] Quota/rate error on attempt ${attempt + 1}/${MAX_RETRIES}. Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw lastError || new Error("Gemini API failed after retries");
 };

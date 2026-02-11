@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("CHAT_ERROR:", error?.message || error);
+    console.error("CHAT_ERROR:", error?.message || error, error?.stack || "");
     return NextResponse.json({
       answer: GENERIC_ERROR_MESSAGE[lang],
       sources: []
