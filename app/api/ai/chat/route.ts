@@ -84,18 +84,6 @@ const getClientIp = (request: NextRequest) => {
   return request.headers.get("x-real-ip") ?? "unknown";
 };
 
-/**
- * Recursively extract plain text from a Contentful Rich Text JSON node.
- * Used to build body excerpts for Gemini context.
- */
-function extractRichTextPlain(node: any): string {
-  if (!node) return "";
-  if (node.nodeType === "text") return node.value || "";
-  if (Array.isArray(node.content)) {
-    return node.content.map(extractRichTextPlain).join("");
-  }
-  return "";
-}
 
 const sanitizeHistory = (history?: IncomingMessage[]) => {
   if (!Array.isArray(history)) return [];
@@ -176,27 +164,17 @@ export async function POST(request: NextRequest) {
       sources = [];
     }
 
-    // Fetch dynamic articles from Contentful matching the user's query.
-    // Extracts Rich Text body content so Gemini has real article context.
+    // Fetch dynamic articles from Contentful matching the user's query
     try {
       const articles = await searchArticles(message, 5);
-      const articleSources: TripoliSource[] = (articles as any[]).map((article) => {
-        // Build an excerpt from the article's Rich Text body fields
-        const bodyParts: string[] = [];
-        if (article.introduccion) bodyParts.push(extractRichTextPlain(article.introduccion));
-        if (article.body1) bodyParts.push(extractRichTextPlain(article.body1));
-        if (article.cierre) bodyParts.push(extractRichTextPlain(article.cierre));
-        const bodyExcerpt = bodyParts.join(" ").replace(/\s+/g, " ").trim().slice(0, 300);
-
-        return {
-          id: `article-${article.slug}`,
-          title: article.title,
-          url: `/${article.category}/${article.subcategory}/articulo/${article.slug}`,
-          section: article.categoryName || "Artículos",
-          content: `${article.title}. Categoría: ${article.categoryName || ""}. Subcategoría: ${article.subcategoryName || ""}. Fecha: ${article.date}. Autor: ${article.author || "Tripoli Media"}. Contenido: ${bodyExcerpt}`,
-          tags: [article.category, article.subcategory, article.categoryName, article.subcategoryName].filter(Boolean),
-        };
-      });
+      const articleSources: TripoliSource[] = (articles as any[]).map((article) => ({
+        id: `article-${article.slug}`,
+        title: article.title,
+        url: `/${article.category}/${article.subcategory}/articulo/${article.slug}`,
+        section: article.categoryName || "Artículos",
+        content: `${article.title}. Categoría: ${article.categoryName || ""}. Subcategoría: ${article.subcategoryName || ""}. Fecha: ${article.date}. Autor: ${article.author || "Tripoli Media"}.`,
+        tags: [article.category, article.subcategory, article.categoryName, article.subcategoryName].filter(Boolean),
+      }));
       const existingUrls = new Set(sources.map((s) => s.url));
       const uniqueArticles = articleSources.filter((a) => !existingUrls.has(a.url));
       sources = [...sources, ...uniqueArticles];
@@ -231,7 +209,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("CHAT_ERROR:", error?.message || error, error?.stack || "");
+    console.error("CHAT_ERROR:", error?.message || error);
     return NextResponse.json({
       answer: GENERIC_ERROR_MESSAGE[lang],
       sources: []
