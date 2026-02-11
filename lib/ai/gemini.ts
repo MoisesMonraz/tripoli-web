@@ -293,8 +293,29 @@ export const generateTripoliAnswer = async ({
 
   // Use the chat API to support multi-turn function calling
   const chat = model.startChat({});
-  let result = await chat.sendMessage(userMessage);
-  let response = result.response;
+
+  let result;
+  let response;
+
+  // Retry logic with exponential backoff
+  let attempt = 0;
+  const maxRetries = 3;
+  while (attempt <= maxRetries) {
+    try {
+      result = await chat.sendMessage(userMessage);
+      response = result.response;
+      break; // Success
+    } catch (error: any) {
+      if (attempt === maxRetries) throw error;
+
+      const isRetryable = error.status === 503 || error.status === 500 || error.message?.includes("Overloaded") || error.message?.includes("quota");
+      if (!isRetryable) throw error;
+
+      const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      attempt++;
+    }
+  }
 
   // Function calling loop: execute tools and feed results back (max 3 rounds)
   let rounds = 0;

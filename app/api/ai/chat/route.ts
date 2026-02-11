@@ -172,7 +172,9 @@ export async function POST(request: NextRequest) {
         title: article.title,
         url: `/${article.category}/${article.subcategory}/articulo/${article.slug}`,
         section: article.categoryName || "Artículos",
-        content: `${article.title}. Categoría: ${article.categoryName || ""}. Subcategoría: ${article.subcategoryName || ""}. Fecha: ${article.date}. Autor: ${article.author || "Tripoli Media"}.`,
+        content: `TÍTULO: ${article.title}.
+CONTENIDO: ${article.plainTextContent || article.excerpt || ""}
+CONTEXTO: Categoría: ${article.categoryName || ""}. Subcategoría: ${article.subcategoryName || ""}. Fecha: ${article.date}. Autor: ${article.author || "Tripoli Media"}.`,
         tags: [article.category, article.subcategory, article.categoryName, article.subcategoryName].filter(Boolean),
       }));
       const existingUrls = new Set(sources.map((s) => s.url));
