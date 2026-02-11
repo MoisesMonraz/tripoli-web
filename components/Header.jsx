@@ -83,6 +83,37 @@ const navItems = [
   },
 ];
 
+/** Color theme per navigation category key */
+const CATEGORY_COLORS = {
+  consumo: { color: "#f39200" },
+  entretenimiento: { color: "#009640" },
+  "industria-ti": { color: "#0069b4" },
+  infraestructura: { color: "#5d514c" },
+  politica: { color: "#2e2c7e" },
+  salud: { color: "#e6007e" },
+};
+
+const DEFAULT_COLOR = "#00BFFF";
+const DEFAULT_COLOR_DARK = "#33ceff";
+
+function getCategoryColorClasses(key) {
+  const c = CATEGORY_COLORS[key];
+  if (!c) {
+    return {
+      hover: `hover:text-[${DEFAULT_COLOR}] dark:hover:text-[${DEFAULT_COLOR_DARK}]`,
+      groupHover: `group-hover:text-[${DEFAULT_COLOR}] dark:group-hover:text-[${DEFAULT_COLOR_DARK}]`,
+      active: `text-[${DEFAULT_COLOR}] dark:text-[${DEFAULT_COLOR_DARK}]`,
+      underline: `bg-gradient-to-r from-[${DEFAULT_COLOR}] to-[${DEFAULT_COLOR_DARK}]`,
+    };
+  }
+  return {
+    hover: `hover:text-[${c.color}] dark:hover:text-[${c.color}]`,
+    groupHover: `group-hover:text-[${c.color}] dark:group-hover:text-[${c.color}]`,
+    active: `text-[${c.color}] dark:text-[${c.color}]`,
+    underline: `bg-[${c.color}]`,
+  };
+}
+
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
   const { language, setLanguage } = useLanguage();
@@ -182,62 +213,7 @@ export default function Header() {
   const renderNav = () => (
     <nav className="flex flex-1 items-center justify-center">
       {navItems.map((item, idx) => {
-        const hoverTextClass =
-          item.key === "consumo"
-            ? "hover:text-[#f39200] dark:hover:text-[#f39200]"
-            : item.key === "entretenimiento"
-              ? "hover:text-[#009640] dark:hover:text-[#009640]"
-              : item.key === "industria-ti"
-                ? "hover:text-[#0069b4] dark:hover:text-[#0069b4]"
-                : item.key === "infraestructura"
-                  ? "hover:text-[#5d514c] dark:hover:text-[#5d514c]"
-                  : item.key === "politica"
-                    ? "hover:text-[#2e2c7e] dark:hover:text-[#2e2c7e]"
-                    : item.key === "salud"
-                      ? "hover:text-[#e6007e] dark:hover:text-[#e6007e]"
-                      : "hover:text-[#00BFFF] dark:hover:text-[#33ceff]";
-        const groupHoverTextClass =
-          item.key === "consumo"
-            ? "group-hover:text-[#f39200] dark:group-hover:text-[#f39200]"
-            : item.key === "entretenimiento"
-              ? "group-hover:text-[#009640] dark:group-hover:text-[#009640]"
-              : item.key === "industria-ti"
-                ? "group-hover:text-[#0069b4] dark:group-hover:text-[#0069b4]"
-                : item.key === "infraestructura"
-                  ? "group-hover:text-[#5d514c] dark:group-hover:text-[#5d514c]"
-                  : item.key === "politica"
-                    ? "group-hover:text-[#2e2c7e] dark:group-hover:text-[#2e2c7e]"
-                    : item.key === "salud"
-                      ? "group-hover:text-[#e6007e] dark:group-hover:text-[#e6007e]"
-                      : "group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]";
-        const activeTextClass =
-          item.key === "consumo"
-            ? "text-[#f39200] dark:text-[#f39200]"
-            : item.key === "entretenimiento"
-              ? "text-[#009640] dark:text-[#009640]"
-              : item.key === "industria-ti"
-                ? "text-[#0069b4] dark:text-[#0069b4]"
-                : item.key === "infraestructura"
-                  ? "text-[#5d514c] dark:text-[#5d514c]"
-                  : item.key === "politica"
-                    ? "text-[#2e2c7e] dark:text-[#2e2c7e]"
-                    : item.key === "salud"
-                      ? "text-[#e6007e] dark:text-[#e6007e]"
-                      : "text-[#00BFFF] dark:text-[#33ceff]";
-        const underlineClass =
-          item.key === "consumo"
-            ? "bg-[#f39200]"
-            : item.key === "entretenimiento"
-              ? "bg-[#009640]"
-              : item.key === "industria-ti"
-                ? "bg-[#0069b4]"
-                : item.key === "infraestructura"
-                  ? "bg-[#5d514c]"
-                  : item.key === "politica"
-                    ? "bg-[#2e2c7e]"
-                    : item.key === "salud"
-                      ? "bg-[#e6007e]"
-                      : "bg-gradient-to-r from-[#00BFFF] to-[#33ceff]";
+        const colors = getCategoryColorClasses(item.key);
         const hasDropdown = Array.isArray(item.subcategories) && item.subcategories.length > 0;
         const matchPath = item.path ?? item.href ?? "";
         const isActive =
@@ -251,13 +227,13 @@ export default function Header() {
             <div className="relative group flex items-center">
               <Link
                 href={item.href}
-                className={`${navLinkStyles} ${hoverTextClass} ${groupHoverTextClass} ${isActive ? activeTextClass : ""}`}
+                className={`${navLinkStyles} ${colors.hover} ${colors.groupHover} ${isActive ? colors.active : ""}`}
                 aria-label={item.labels[language]}
               >
                 <span>{item.labels[language] ?? item.labels.ES}</span>
                 <span
                   className={`absolute left-2.5 right-2.5 bottom-[6px] h-[1.5px] origin-left transition duration-200 ease-out ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    } ${underlineClass}`}
+                    } ${colors.underline}`}
                 />
               </Link>
 

@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
+import { getLatestArticles } from '../lib/contentful';
 
 /**
  * Sitemap dinámico para Tripoli Media
  *
- * Este sitemap incluye todas las rutas estáticas y dinámicas del sitio.
- * Next.js 14 generará automáticamente el archivo sitemap.xml en la raíz del dominio.
+ * Incluye rutas estáticas, categorías, subcategorías y artículos individuales.
+ * Los artículos se obtienen dinámicamente desde Contentful.
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
@@ -78,7 +79,7 @@ const STATIC_ROUTES = [
   { url: '/terminos-y-condiciones', changeFrequency: 'yearly' as const, priority: 0.3 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const currentDate = new Date();
 
   // Rutas estáticas
@@ -107,5 +108,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
   );
 
-  return [...staticRoutes, ...categoryRoutes, ...subcategoryRoutes];
+  // Rutas de artículos individuales (dinámicas desde Contentful)
+  let articleRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const articles = await getLatestArticles(200);
+    articleRoutes = articles
+      .filter((a: any) => a.category && a.subcategory && a.slug)
+      .map((article: any) => ({
+        url: `${SITE_URL}/${article.category}/${article.subcategory}/articulo/${article.slug}`,
+        lastModified: article.dateISO ? new Date(article.dateISO) : currentDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }));
+  } catch (error) {
+    console.error('[Sitemap] Error fetching articles from Contentful:', error);
+    // Continue with static routes only — sitemap should never fail completely
+  }
+
+  return [...staticRoutes, ...categoryRoutes, ...subcategoryRoutes, ...articleRoutes];
 }
