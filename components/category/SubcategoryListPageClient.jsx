@@ -247,7 +247,7 @@ export default function SubcategoryListPageClient({
                   </article>
 
                   {/* Desktop: Horizontal card (edge-to-edge image) */}
-                  <article className="relative hidden md:flex flex-row items-stretch overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-slate-900/10 hover:border-slate-300 dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 hover:border-[#00BFFF]/60 dark:hover:border-[#33ceff]/60">
+                  <article className="relative hidden md:flex flex-row items-stretch h-[180px] overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 transition hover:shadow-lg hover:shadow-slate-900/10 hover:border-slate-300 dark:border-slate-800/70 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:border-slate-500 hover:border-[#00BFFF]/60 dark:hover:border-[#33ceff]/60">
                     <div className="relative w-[240px] flex-shrink-0 self-stretch overflow-hidden bg-slate-200 dark:bg-slate-800">
                       <Image
                         src={post.image || placeholderImage}
