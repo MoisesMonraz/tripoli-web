@@ -24,7 +24,7 @@ const MAX_HISTORY_ITEMS = 10;
 const MAX_HISTORY_MESSAGE_LENGTH = 800;
 const NO_SOURCES_MESSAGE = {
   EN: "We don't have that information published yet, but I can help with other topics.",
-  ES: "A\u00fan no contamos con esa informaci\u00f3n publicada, pero puedo ayudarte con otros temas.",
+  ES: "No encontramos informaci\u00f3n con esos t\u00e9rminos. Por favor, reformula tu b\u00fasqueda o consulta directamente en el calendario si conoces la fecha.",
 } as const;
 const GENERIC_ERROR_MESSAGE = {
   EN: "Something went wrong. Please try again in a moment.",

@@ -13,7 +13,7 @@ export type ChatAnswer = {
 
 const NOT_FOUND_MESSAGES = {
   EN: "We don't have that information published yet, but I can help with other topics.",
-  ES: "A\u00fan no contamos con esa informaci\u00f3n publicada, pero puedo ayudarte con otros temas.",
+  ES: "No encontramos informaci\u00f3n con esos t\u00e9rminos. Por favor, reformula tu b\u00fasqueda o consulta directamente en el calendario si conoces la fecha.",
 } as const;
 
 let cachedGeminiModule: typeof import("@google/generative-ai") | null = null;
