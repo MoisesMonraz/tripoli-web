@@ -165,10 +165,10 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
               {displayTitle}
             </Link>
           )}
-          <span className="text-[7px] font-sans font-semibold text-slate-800 dark:text-slate-200">
+          <span className="text-[5.25px] font-sans font-semibold text-slate-800 dark:text-slate-200">
             por: Tripoli Publishing House
           </span>
-          <time className="text-[7px] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
+          <time className="text-[5.25px] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
             {formattedDate}
           </time>
         </div>

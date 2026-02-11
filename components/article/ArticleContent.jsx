@@ -159,7 +159,7 @@ const renderOptions = {
             />
           </div>
           {(title || description) && (
-            <figcaption className="mt-3 text-center font-sans text-sm text-slate-500 dark:text-slate-400">
+            <figcaption className="mt-3 text-center font-sans text-sm max-md:text-[10.5px] text-slate-500 dark:text-slate-400">
               {description || title}
             </figcaption>
           )}

@@ -104,7 +104,7 @@ const ArticleImage = ({ src, alt, caption, priority = false }) => {
         />
       </div>
       {caption && (
-        <figcaption className="mt-3 w-full text-center font-sans text-sm leading-snug text-slate-500 dark:text-slate-400">
+        <figcaption className="mt-3 w-full text-center font-sans text-sm max-md:text-[10.5px] leading-snug text-slate-500 dark:text-slate-400">
           {caption}
         </figcaption>
       )}
@@ -187,12 +187,14 @@ export default function ArticlePageClient({
     try {
       const firebaseCached = await getCachedTranslation(slug);
       if (firebaseCached) {
+        console.log("[Translation] Found in Firebase cache");
         translationCacheRef.current.EN = firebaseCached;
         setArticle(firebaseCached);
         return;
       }
     } catch (e) {
-      console.error("Firebase cache check failed:", e);
+      console.warn("[Translation] Firebase cache check failed:", e.message);
+      // Continue to localStorage fallback
     }
 
     // Check localStorage cache (fallback for offline)
@@ -201,6 +203,7 @@ export default function ArticlePageClient({
       if (cached) {
         const parsedCache = JSON.parse(cached);
         if (parsedCache.timestamp && Date.now() - parsedCache.timestamp < 7 * 24 * 60 * 60 * 1000) {
+          console.log("[Translation] Found in localStorage cache");
           translationCacheRef.current.EN = parsedCache.article;
           setArticle(parsedCache.article);
           return;
@@ -244,28 +247,53 @@ export default function ArticlePageClient({
         }
       });
 
-      // Translate in batches of 20 (API limit)
-      const allTranslations = [];
-      for (let i = 0; i < textsToTranslate.length; i += 20) {
-        const batch = textsToTranslate.slice(i, i + 20);
-        const response = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ texts: batch, targetLang: "EN" }),
-        });
+      console.log(`[Translation] Translating ${textsToTranslate.length} text segments`);
 
-        if (!response.ok) {
-          throw new Error("Translation API failed");
+      // Helper function to translate a batch with retry
+      const translateBatchWithRetry = async (batch, retries = 2) => {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+          try {
+            const response = await fetch("/api/translate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ texts: batch, targetLang: "EN" }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.translations || batch;
+          } catch (error) {
+            console.warn(`[Translation] Batch attempt ${attempt + 1} failed:`, error.message);
+            if (attempt === retries) {
+              // On final failure, return original texts
+              console.error("[Translation] All retry attempts failed, using original texts");
+              return batch;
+            }
+            // Wait before retry
+            await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+          }
         }
+        return batch;
+      };
 
-        const data = await response.json();
-        allTranslations.push(...data.translations);
+      // Translate in batches of 15 (smaller batches for reliability)
+      const allTranslations = [];
+      const BATCH_SIZE = 15;
+
+      for (let i = 0; i < textsToTranslate.length; i += BATCH_SIZE) {
+        const batch = textsToTranslate.slice(i, i + BATCH_SIZE);
+        const translations = await translateBatchWithRetry(batch);
+        allTranslations.push(...translations);
       }
 
       // Create translation map
       const translationMap = new Map();
       textsToTranslate.forEach((text, i) => {
-        if (allTranslations[i]) {
+        if (allTranslations[i] && allTranslations[i] !== text) {
           translationMap.set(text, allTranslations[i]);
         }
       });
@@ -302,8 +330,9 @@ export default function ArticlePageClient({
       // Save to Firebase (persistent, shared across all users)
       try {
         await saveCachedTranslation(slug, translatedArticle);
+        console.log("[Translation] Saved to Firebase cache");
       } catch (e) {
-        console.error("Firebase save failed:", e);
+        console.warn("[Translation] Firebase save failed:", e.message);
       }
 
       // Also cache in localStorage (backup for offline)
@@ -320,8 +349,9 @@ export default function ArticlePageClient({
       }
 
       setArticle(translatedArticle);
+      console.log("[Translation] Article translated successfully");
     } catch (error) {
-      console.error("Translation error:", error);
+      console.error("[Translation] Fatal error:", error);
       setTranslationError("Translation failed. Showing original content.");
       setArticle(translationCacheRef.current.ES || initialArticle);
     } finally {

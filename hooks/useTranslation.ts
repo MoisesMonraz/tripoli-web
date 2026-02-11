@@ -18,23 +18,37 @@ const processBatch = async () => {
 
     const textsToTranslate = currentBatch.map(item => item.text);
 
-    try {
-        const response = await fetch("/api/translate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ texts: textsToTranslate, targetLang: "EN" }),
-        });
+    // Retry function
+    const attemptTranslation = async (retries = 2): Promise<string[]> => {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const response = await fetch("/api/translate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ texts: textsToTranslate, targetLang: "EN" }),
+                });
 
-        if (!response.ok) {
-            // On error, resolve with original texts
-            currentBatch.forEach(item => {
-                item.resolve(item.text);
-            });
-            return;
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.translations || textsToTranslate;
+            } catch (error) {
+                console.warn(`[useTranslation] Attempt ${attempt + 1} failed:`, error);
+                if (attempt === retries) {
+                    // On final failure, return original texts
+                    return textsToTranslate;
+                }
+                // Wait before retry with exponential backoff
+                await new Promise(r => setTimeout(r, 300 * (attempt + 1)));
+            }
         }
+        return textsToTranslate;
+    };
 
-        const data = await response.json();
-        const translations = data.translations || [];
+    try {
+        const translations = await attemptTranslation();
 
         currentBatch.forEach((item, index) => {
             const translation = translations[index] || item.text;
@@ -43,7 +57,7 @@ const processBatch = async () => {
             item.resolve(translation);
         });
     } catch (error) {
-        console.error("Translation batch error:", error);
+        console.error("[useTranslation] Batch error:", error);
         currentBatch.forEach(item => {
             item.resolve(item.text);
         });

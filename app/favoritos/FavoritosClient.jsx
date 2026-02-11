@@ -1,8 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useFavorites } from "../../components/favorites/FavoritesContext";
+import { useLanguage } from "../../components/LanguageProvider";
+import { useTranslatedTexts } from "@/hooks/useTranslation";
 
 const formatFullSpanishDate = (dateInput) => {
     if (!dateInput) return "";
@@ -26,17 +29,60 @@ const formatFullSpanishDate = (dateInput) => {
     return formatter.format(dateValue);
 };
 
+const formatFullEnglishDate = (dateInput) => {
+    if (!dateInput) return "";
+    const dateValue = new Date(dateInput);
+    if (Number.isNaN(dateValue.getTime())) return "";
+    return new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    }).format(dateValue);
+};
+
+// UI text translations
+const UI_TEXT = {
+    ES: {
+        label: "Favoritos",
+        title: "Artículos guardados como favoritos",
+        emptyTitle: "No tienes artículos guardados",
+        emptyDescription: "Cuando encuentres un artículo que te interese, haz clic en la estrella para guardarlo aquí.",
+        exploreButton: "Explorar artículos",
+        author: "por: Tripoli Publishing House",
+        removeLabel: "Quitar de favoritos",
+    },
+    EN: {
+        label: "Favorites",
+        title: "Articles saved as favorites",
+        emptyTitle: "You have no saved articles",
+        emptyDescription: "When you find an article you like, click the star to save it here.",
+        exploreButton: "Explore articles",
+        author: "by: Tripoli Publishing House",
+        removeLabel: "Remove from favorites",
+    },
+};
+
 export default function FavoritosClient() {
     const { favorites, removeFavorite, isLoaded } = useFavorites();
+    const { language } = useLanguage();
+    const t = UI_TEXT[language] || UI_TEXT.ES;
+
+    // Extract titles for batch translation
+    const articleTitles = useMemo(() => favorites.map(article => article.title || ""), [favorites]);
+    const translatedTitles = useTranslatedTexts(articleTitles);
+
+    // Format date based on language
+    const formatDate = language === "EN" ? formatFullEnglishDate : formatFullSpanishDate;
 
     if (!isLoaded) {
         return (
             <main className="flex flex-col gap-8 sm:gap-10 pb-12 sm:pb-16 pt-8 sm:pt-12 font-raleway bg-white dark:bg-slate-950">
                 <section className="max-w-[70rem] mx-auto w-full px-5 sm:px-7 md:px-5">
                     <div className="flex flex-col gap-2 sm:gap-3">
-                        <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">Favoritos</p>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">{t.label}</p>
                         <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold uppercase bg-gradient-to-r from-[#0082b9] via-[#00b6ed] to-[#0082b9] bg-[length:200%_100%] bg-clip-text text-transparent animate-servicesTitleSweep">
-                            Artículos guardados como favoritos
+                            {t.title}
                         </h1>
                     </div>
                     <div className="mt-8 flex items-center justify-center py-16">
@@ -52,9 +98,9 @@ export default function FavoritosClient() {
             <section className="max-w-[70rem] mx-auto w-full px-5 sm:px-7 md:px-5">
                 {/* Page Header - matching static pages style */}
                 <div className="flex flex-col gap-2 sm:gap-3 mb-8 md:mb-12">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">Favoritos</p>
+                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-300">{t.label}</p>
                     <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold uppercase bg-gradient-to-r from-[#0082b9] via-[#00b6ed] to-[#0082b9] bg-[length:200%_100%] bg-clip-text text-transparent animate-servicesTitleSweep">
-                        Artículos guardados como favoritos
+                        {t.title}
                     </h1>
                 </div>
 
@@ -75,25 +121,26 @@ export default function FavoritosClient() {
                             />
                         </svg>
                         <h2 className="font-sans text-lg font-semibold text-slate-700 dark:text-slate-300">
-                            No tienes artículos guardados
+                            {t.emptyTitle}
                         </h2>
                         <p className="mt-2 max-w-md font-serif text-sm text-slate-500 dark:text-slate-400">
-                            Cuando encuentres un artículo que te interese, haz clic en la estrella para guardarlo aquí.
+                            {t.emptyDescription}
                         </p>
                         <Link
                             href="/"
                             className="mt-6 rounded-lg bg-[#00BFFF] px-6 py-2.5 font-sans text-sm font-semibold text-white transition-colors hover:bg-[#0099CC]"
                         >
-                            Explorar artículos
+                            {t.exploreButton}
                         </Link>
                     </div>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {favorites.map((article) => {
+                        {favorites.map((article, index) => {
                             const articleHref = article.category && article.subcategory
                                 ? `/${article.category}/${article.subcategory}/articulo/${article.slug}`
                                 : `/articulo/${article.slug}`;
-                            const formattedDate = formatFullSpanishDate(article.date);
+                            const formattedDate = formatDate(article.date);
+                            const displayTitle = language === "EN" ? translatedTitles[index] || article.title : article.title;
 
                             return (
                                 <article
@@ -117,7 +164,7 @@ export default function FavoritosClient() {
                                             href={articleHref}
                                             className="font-sans text-sm font-semibold leading-snug text-slate-900 transition-colors hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] line-clamp-2"
                                         >
-                                            {article.title}
+                                            {displayTitle}
                                         </Link>
                                         {article.excerpt && (
                                             <p className="mt-2 font-serif text-xs leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
@@ -126,7 +173,7 @@ export default function FavoritosClient() {
                                         )}
                                         <div className="mt-auto pt-3 flex items-center gap-2 text-[10px] font-sans">
                                             <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                                por: Tripoli Publishing House
+                                                {t.author}
                                             </span>
                                             <span className="text-slate-300 dark:text-slate-600">|</span>
                                             <time className="text-slate-500 dark:text-slate-400">
@@ -139,8 +186,8 @@ export default function FavoritosClient() {
                                     <button
                                         onClick={() => removeFavorite(article.slug)}
                                         className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow-md transition-all hover:bg-red-50 hover:scale-110 dark:bg-slate-800/90 dark:hover:bg-red-900/50"
-                                        aria-label="Quitar de favoritos"
-                                        title="Quitar de favoritos"
+                                        aria-label={t.removeLabel}
+                                        title={t.removeLabel}
                                     >
                                         <svg
                                             className="h-4 w-4 text-[#00BFFF]"

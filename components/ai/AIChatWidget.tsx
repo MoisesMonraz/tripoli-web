@@ -230,9 +230,13 @@ function useChatEngine(
 
 /**
  * Manages the floating button position relative to the footer/header.
+ * Ensures minimum gap from header equals the icon height (44px mobile, 48px desktop).
  */
 function useFloatingPosition() {
   const SM_BREAKPOINT = 640;
+  // Icon heights: mobile 44px (h-11), desktop 48px (h-12)
+  const ICON_HEIGHT_MOBILE = 44;
+  const ICON_HEIGHT_DESKTOP = 48;
 
   const [fabTop, setFabTop] = useState(120);
 
@@ -260,10 +264,18 @@ function useFloatingPosition() {
     const updatePosition = () => {
       const bottom = getTargetBottom();
       const mobile = window.innerWidth < SM_BREAKPOINT;
-      // Mobile: small gap (≤ icon height 44px). Desktop: larger gap.
-      const offset = mobile ? 8 : 48;
-      const minTop = mobile ? 64 : 120;
-      setFabTop(Math.max(Math.round(bottom + offset), minTop));
+
+      // Minimum gap from header = icon height (so icon is always fully visible below header)
+      const iconHeight = mobile ? ICON_HEIGHT_MOBILE : ICON_HEIGHT_DESKTOP;
+      const offset = iconHeight; // Gap equals icon height as requested
+
+      // Calculate position: header bottom + offset
+      const calculatedTop = Math.round(bottom + offset);
+
+      // Ensure minimum top position to prevent being too close to top of viewport
+      const minTop = mobile ? 80 : 120;
+
+      setFabTop(Math.max(calculatedTop, minTop));
     };
 
     const handleScroll = () => {
