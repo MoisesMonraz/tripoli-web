@@ -47,27 +47,27 @@ curl -X POST https://tripolimedia.com/api/leads?test=1 \
 Asegurar que todas las variables están configuradas en Vercel Dashboard:
 
 ```env
-# Firebase (ya configuradas)
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyDuoPGc64gdlg9E_iFDS1HykS79zmACr-4
+# Firebase (Configuración pública segura)
+NEXT_PUBLIC_FIREBASE_API_KEY=<tu_firebase_api_key>
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tripolimedia-f9812.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=tripolimedia-f9812
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=tripolimedia-f9812.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=9043219600
-NEXT_PUBLIC_FIREBASE_APP_ID=1:9043219600:web:67cef4cf3170f408c8f415
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-S6QMRLJFLC
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<tu_sender_id>
+NEXT_PUBLIC_FIREBASE_APP_ID=<tu_app_id>
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=<tu_measurement_id>
 
-# Gemini AI (ya configurada)
-GOOGLE_GEMINI_API_KEY=<tu_key>
+# Gemini AI (CRÍTICO: MANTENER SECRETA)
+GOOGLE_GEMINI_API_KEY=<tu_google_api_key_secreta>
 
-# Firebase Admin (IMPORTANTE: Agregar esta si no existe)
+# Firebase Admin (CRÍTICO: MANTENER SECRETO)
 FIREBASE_PROJECT_ID=tripolimedia-f9812
 FIREBASE_CLIENT_EMAIL=<service_account_email>
 FIREBASE_PRIVATE_KEY="<service_account_private_key>"
 
 # Contentful (cuando esté listo)
-CONTENTFUL_SPACE_ID=
-CONTENTFUL_ACCESS_TOKEN=
-CONTENTFUL_PREVIEW_ACCESS_TOKEN=
+CONTENTFUL_SPACE_ID=<tu_space_id>
+CONTENTFUL_ACCESS_TOKEN=<tu_access_token>
+CONTENTFUL_PREVIEW_ACCESS_TOKEN=<tu_preview_token>
 CONTENTFUL_ENVIRONMENT=master
 ```
 
