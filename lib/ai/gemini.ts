@@ -1,5 +1,6 @@
 import type { TripoliSource } from "./tripoliKnowledge";
 import { toolDeclarations, executeTool } from "./contentfulTools";
+import { GoogleGenAI } from "@google/genai";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -13,16 +14,8 @@ export type ChatAnswer = {
 
 const NOT_FOUND_MESSAGES = {
   EN: "We don't have that information published yet, but I can help with other topics.",
-  ES: "A\u00fan no contamos con esa informaci\u00f3n publicada, pero puedo ayudarte con otros temas.",
+  ES: "Aún no contamos con esa información publicada, pero puedo ayudarte con otros temas.",
 } as const;
-
-let cachedGeminiModule: typeof import("@google/generative-ai") | null = null;
-const loadGeminiModule = async () => {
-  if (!cachedGeminiModule) {
-    cachedGeminiModule = await import("@google/generative-ai");
-  }
-  return cachedGeminiModule;
-};
 
 /**
  * Detects the language of a user query
@@ -74,8 +67,6 @@ const resolveLanguage = (question: string, lang: "EN" | "ES"): "EN" | "ES" => {
 
 /**
  * Builds the system instruction for Gemini (identity, rules, tool instructions, constraints).
- * This is passed via the systemInstruction config so Gemini treats it as authoritative,
- * which makes tool calling significantly more reliable.
  */
 const buildSystemInstruction = (
   lang: "EN" | "ES",
@@ -136,12 +127,12 @@ const buildSystemInstruction = (
         "- NEVER break character or mention that you are Claude, Anthropic, or a generic AI.",
         "- SOURCE ACCURACY: Only cite sources that exist in the SOURCES section. If a source is not provided, do not cite it.",
         "- CATEGORY LISTS: When listing the main categories, you MUST ALWAYS format them as a numbered list (1 to 6), each on its own line, NEVER as a comma-separated list in a single paragraph. Use this exact format:\n'Tripoli Media covers the following categories:\n1. Consumo y Retail\n2. Entretenimiento y Cultura\n3. Industria TI\n4. Infraestructura Social\n5. Política y Leyes\n6. Sector Salud'",
-        "- SUBCATEGORY LISTS: When listing subcategories of a category, you MUST ALWAYS format them as a bulleted list on separate lines, NEVER as a comma-separated list in a single paragraph. Use this exact format:\n'The subcategories of [Category] are:\n- Subcategory 1\n- Subcategory 2\n- Subcategory 3'",
+        "- SUBCATEGORY LISTS: When listing subcategories of a category, you MUST ALWAYS format them as a bulleted list on separate lines, NEVER as a comma-separated list in a single paragraph. Use this exact format:\n'The subcategories of [Category] are:\n- Subcategoría 1\n- Subcategoría 2\n- Subcategoría 3'",
         "",
-        "OUTPUT FORMAT:",
-        "Return a JSON object with:",
-        '- "answer": Your response text (string)',
-        '- "sources": Array of objects with "title", "url", and optional "excerpt" fields. ONLY include sources you actually used from the SOURCES section.',
+        "FORMATO DE SALIDA:",
+        "Devuelve un objeto JSON con:",
+        '- "answer": Tu texto de respuesta (string)',
+        '- "sources": Array de objetos con campos "title", "url", y opcionalmente "excerpt". SOLO incluye fuentes que realmente usaste de la sección FUENTES.',
       ]
       : [
         "INSTRUCCIONES PRINCIPALES:",
@@ -271,45 +262,43 @@ export const generateTripoliAnswer = async ({
     throw new Error("Missing GEMINI_API_KEY. Set it in the server environment.");
   }
 
-  const { GoogleGenerativeAI } = await loadGeminiModule();
-  const genAI = new GoogleGenerativeAI(apiKey);
+  const client = new GoogleGenAI({ apiKey });
 
   const responseLang = resolveLanguage(question, lang);
   const isFirstMessage = chatHistory.length === 0;
 
-  // Build system instruction (identity, rules, tool instructions, constraints)
-  // Passing this via systemInstruction config makes Gemini treat it as authoritative,
-  // which significantly improves tool-calling reliability.
+  // Build system instruction
   const systemInstruction = buildSystemInstruction(responseLang, isFirstMessage, currentDate, currentTime);
-
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    systemInstruction,
-    tools: [{ functionDeclarations: toolDeclarations }] as any,
-  });
 
   // Build the user message with sources, history, and question
   const userMessage = buildUserMessage(question, sources, chatHistory, responseLang);
 
-  // Use the chat API to support multi-turn function calling
-  const chat = model.startChat({});
-
-  let result;
-  let response;
+  // Initialize chat with the new SDK
+  // We use `gemini-2.5-flash` as requested
+  const chat = client.chats.create({
+    model: "gemini-2.5-flash",
+    config: {
+      systemInstruction,
+      tools: [{ functionDeclarations: toolDeclarations }],
+    }
+  });
 
   // Retry logic with exponential backoff
+  let response;
   let attempt = 0;
   const maxRetries = 3;
   while (attempt <= maxRetries) {
     try {
-      result = await chat.sendMessage(userMessage);
-      response = result.response;
+      // Use sendMessage allowing tool usage
+      response = await chat.sendMessage({
+        message: userMessage,
+      });
       break; // Success
     } catch (error: any) {
       if (attempt === maxRetries) throw error;
 
       const isRetryable = error.status === 503 || error.status === 500 || error.message?.includes("Overloaded") || error.message?.includes("quota");
-      if (!isRetryable) throw error;
+      if (!isRetryable && error.code !== 429) throw error;
 
       const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -317,36 +306,43 @@ export const generateTripoliAnswer = async ({
     }
   }
 
-  // Function calling loop: execute tools and feed results back (max 3 rounds)
+  if (!response) throw new Error("Failed to get response from Gemini.");
+
+  // Tool execution loop
   let rounds = 0;
+
   while (rounds < 3) {
-    const functionCalls = response.functionCalls();
+    // Check for tool calls in the response candidates
+    // Note: new SDK response objects might vary, but typically have `functionCalls` getter
+    const functionCalls = response.functionCalls;
+
     if (!functionCalls || functionCalls.length === 0) break;
 
-    const functionResponseParts: any[] = [];
+    const functionResponses: any[] = [];
     for (const fc of functionCalls) {
       const toolResult = await executeTool(fc.name, fc.args as Record<string, any>);
-      functionResponseParts.push({
-        functionResponse: {
-          name: fc.name,
-          response: toolResult,
-        },
+      functionResponses.push({
+        id: fc.id, // Important: pass the call ID back in new SDK
+        name: fc.name,
+        response: { result: toolResult },
       });
     }
 
-    result = await chat.sendMessage(functionResponseParts);
-    response = result.response;
+    // Send tool results back
+    response = await chat.sendMessage({
+      message: functionResponses.map(fr => ({
+        functionResponse: {
+          name: fr.name,
+          id: fr.id,
+          response: fr.response
+        }
+      }))
+    });
     rounds++;
   }
 
-  // Extract the final text response
-  let text: string;
-  try {
-    text = response.text();
-  } catch {
-    // Safety fallback if response is still a function call
-    text = "";
-  }
+  // Extract final text
+  const text = response.text || "";
 
   const parsed = extractJson(text);
   const fallbackSources = sources.map((source) => ({
@@ -370,8 +366,6 @@ export const generateTripoliAnswer = async ({
     };
   }
 
-  // For tool-sourced answers, the model may reference article URLs
-  // that aren't in the static knowledge base. Allow those through.
   if (!parsed.sources || parsed.sources.length === 0) {
     return {
       answer: parsed.answer,
@@ -382,7 +376,6 @@ export const generateTripoliAnswer = async ({
   const allowedByUrl = new Map(sources.map((source) => [source.url, source]));
   const normalizedSources = parsed.sources
     .map((source) => {
-      // Allow sources from the static knowledge base
       const match = allowedByUrl.get(source.url);
       if (match) {
         return {
@@ -391,7 +384,6 @@ export const generateTripoliAnswer = async ({
           excerpt: source.excerpt || buildExcerpt(match.content),
         };
       }
-      // Also allow sources from tool results (article URLs)
       if (source.url && source.title) {
         return {
           title: source.title,

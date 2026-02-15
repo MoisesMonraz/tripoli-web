@@ -374,7 +374,7 @@ export default function Header() {
   return (
     <>
       <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-50">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 px-3 sm:px-4 py-4 sm:py-6 lg:px-8">
+        <div className="mx-auto grid w-full md:max-w-[96%] xl:max-w-[80%] grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 px-3 sm:px-4 py-4 sm:py-6">
           <div className="flex items-center gap-1.5 sm:gap-3">
             <button
               type="button"
@@ -442,7 +442,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hidden w-full items-center justify-center pb-3 md:mx-auto md:flex md:max-w-6xl">
+        <div className="hidden w-full items-center justify-center pb-3 md:mx-auto md:flex md:max-w-[96%] xl:max-w-[80%]">
           {renderNav()}
         </div>
 
@@ -480,8 +480,8 @@ export default function Header() {
         className={`fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
           }`}
       >
-        <div className="relative w-full flex items-center gap-1.5 sm:gap-3 px-2 py-2 sm:px-1 lg:px-2">
-          <div className="flex items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
+        <div className="relative w-full md:max-w-[96%] xl:max-w-[80%] md:mx-auto flex items-center gap-1.5 sm:gap-3 px-2 py-2 sm:px-1">
+          <div className="flex md:hidden items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
             <button
               type="button"
               aria-expanded={isMenuOpen}
@@ -530,14 +530,14 @@ export default function Header() {
             </div>
           </div>
 
-          <Link href="/" className="flex items-center justify-center absolute left-[50%] -translate-x-1/2 md:left-[7.5%] md:-translate-x-1/2 top-1/2 -translate-y-1/2" aria-label="Ir a la pagina principal">
+          <Link href="/" className="flex items-center justify-center absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 md:flex-shrink-0" aria-label="Ir a la pagina principal">
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </Link>
 
-          <div className="hidden md:block pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="hidden md:flex md:flex-1 md:items-center md:justify-center pointer-events-auto">
             {renderNav()}
           </div>
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto pr-2 sm:pr-1 lg:pr-2">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto md:ml-0">
             {renderRightControls()}
           </div>
         </div>
