@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenAI } from "@google/genai";
 
 // In-memory cache for translations (persists during server lifetime)
 const translationCache = new Map<string, string>();
-
-let cachedGeminiModule: typeof import("@google/generative-ai") | null = null;
-const loadGeminiModule = async () => {
-    if (!cachedGeminiModule) {
-        cachedGeminiModule = await import("@google/generative-ai");
-    }
-    return cachedGeminiModule;
-};
 
 /**
  * POST /api/translate
@@ -49,7 +42,7 @@ export async function POST(request: NextRequest) {
         const results: string[] = [];
         const textsToTranslate: { index: number; text: string }[] = [];
 
-        texts.forEach((text, index) => {
+        texts.forEach((text: string, index: number) => {
             const cacheKey = `${targetLang}:${text}`;
             const cached = translationCache.get(cacheKey);
             if (cached) {
@@ -64,9 +57,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ translations: results });
         }
 
-        // Translate uncached texts
-        const { GoogleGenerativeAI } = await loadGeminiModule();
-        const genAI = new GoogleGenerativeAI(apiKey);
+        // Translate uncached texts using @google/genai SDK
+        const ai = new GoogleGenAI({ apiKey });
 
         const sourceLang = targetLang === "EN" ? "Spanish" : "English";
         const targetLangFull = targetLang === "EN" ? "English" : "Spanish";
@@ -88,16 +80,18 @@ Example:
 Input: ["El Orgullo del Pacífico: La Expansión Regional de Kiosko", "Volkswagen presenta nuevo modelo eléctrico"]
 Output: ["The Pride of the Pacific: Kiosko's Regional Expansion", "Volkswagen unveils new electric model"]`;
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction,
-        });
-
         const textsForAI = textsToTranslate.map(t => t.text);
         const prompt = `Translate these texts:\n${JSON.stringify(textsForAI, null, 2)}`;
 
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                systemInstruction,
+            },
+        });
+
+        const responseText = response.text ?? "";
 
         // Parse JSON response
         let translations: string[] = [];
