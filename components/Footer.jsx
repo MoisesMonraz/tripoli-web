@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import logoSrc from "../Imagenes/Logos/TripoliMedia.png";
+import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
 import facebookSrc from "../Imagenes/Logos/Facebook.png";
 import xSrc from "../Imagenes/Logos/X azul.png";
 import xDarkSrc from "../Imagenes/Logos/X azul.png";
