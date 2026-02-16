@@ -13,13 +13,13 @@ const nextConfig = {
       {
         source: "/:path*",
         has: [{ type: "host", value: "tripolimedia.com" }],
-        destination: "https://tripoli.media/:path*",
+        destination: "https://www.tripoli.media/:path*",
         permanent: true,
       },
       {
         source: "/:path*",
         has: [{ type: "host", value: "www.tripolimedia.com" }],
-        destination: "https://tripoli.media/:path*",
+        destination: "https://www.tripoli.media/:path*",
         permanent: true,
       },
     ];

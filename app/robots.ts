@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "Bingbot", allow: "/", disallow: ["/api/*", "/_next/*"] },
       { userAgent: ["AhrefsBot", "SemrushBot", "DotBot", "MJ12bot"], disallow: "/" },
     ],
-    host: "https://tripoli.media",
-    sitemap: "https://tripoli.media/sitemap.xml",
+    host: "https://www.tripoli.media",
+    sitemap: "https://www.tripoli.media/sitemap.xml",
   };
 }

@@ -9,7 +9,7 @@ import { MetadataRoute } from 'next';
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
 
-const SITE_URL = 'https://tripoli.media';
+const SITE_URL = 'https://www.tripoli.media';
 
 /**
  * Categorías principales y sus subcategorías

@@ -442,7 +442,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hidden w-full items-center justify-center pb-3 md:mx-auto md:flex md:max-w-[96%] xl:max-w-[80%]">
+        <div className="hidden w-full items-center justify-center pb-3 mx-auto md:flex max-w-[70rem]">
           {renderNav()}
         </div>
 
@@ -534,10 +534,10 @@ export default function Header() {
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </Link>
 
-          <div className="hidden md:flex md:flex-1 md:items-center md:justify-center pointer-events-auto">
+          <div className="hidden md:flex pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[70rem] items-center justify-center">
             {renderNav()}
           </div>
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto md:ml-0">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
             {renderRightControls()}
           </div>
         </div>

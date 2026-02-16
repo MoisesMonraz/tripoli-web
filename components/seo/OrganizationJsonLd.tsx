@@ -2,19 +2,19 @@ export default function OrganizationJsonLd() {
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": "https://tripoli.media/#organization",
+    "@id": "https://www.tripoli.media/#organization",
     name: "Tripoli Media",
     alternateName: "Tripoli Publishing House",
-    url: "https://tripoli.media",
+    url: "https://www.tripoli.media",
     logo: {
       "@type": "ImageObject",
-      "@id": "https://tripoli.media/#logo",
-      url: "https://tripoli.media/Logos/logo-tripoli.png",
-      contentUrl: "https://tripoli.media/Logos/logo-tripoli.png",
+      "@id": "https://www.tripoli.media/#logo",
+      url: "https://www.tripoli.media/Logos/logo-tripoli.png",
+      contentUrl: "https://www.tripoli.media/Logos/logo-tripoli.png",
       caption: "Tripoli Media Logo",
       inLanguage: "es-MX",
     },
-    image: "https://tripoli.media/Logos/logo-tripoli.png",
+    image: "https://www.tripoli.media/Logos/logo-tripoli.png",
     description:
       "Tripoli Media is a digital publishing house and media agency specializing in professional news coverage and sectoral analysis across six key industries in Mexico.",
     slogan: "Posiciona y destaca tu negocio",
@@ -50,18 +50,18 @@ export default function OrganizationJsonLd() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": "https://tripoli.media/#website",
+    "@id": "https://www.tripoli.media/#website",
     name: "Tripoli Media",
-    url: "https://tripoli.media",
+    url: "https://www.tripoli.media",
     description:
       "Plataforma profesional de noticias y análisis sectorial para agencias de medios.",
-    publisher: { "@id": "https://tripoli.media/#organization" },
+    publisher: { "@id": "https://www.tripoli.media/#organization" },
     inLanguage: ["es-MX", "en-US"],
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://tripoli.media/buscar?q={search_term_string}",
+        urlTemplate: "https://www.tripoli.media/buscar?q={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },

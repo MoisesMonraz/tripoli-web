@@ -16,7 +16,7 @@ import OrganizationJsonLd from "../components/seo/OrganizationJsonLd";
  * Esta metadata se hereda en todas las páginas a menos que se sobreescriba.
  */
 export const metadata = {
-  metadataBase: new URL("https://tripoli.media"),
+  metadataBase: new URL("https://www.tripoli.media"),
   title: {
     template: "%s | Tripoli Media",
     default: "Tripoli Media",
@@ -50,7 +50,7 @@ export const metadata = {
     title: "Tripoli Media",
     description:
       "Tripoli Media is a digital publishing house and media agency specializing in professional news and analysis across six key sectors.",
-    url: "https://tripoli.media",
+    url: "https://www.tripoli.media",
     locale: "es_MX",
     alternateLocale: ["en_US"],
     images: [
@@ -84,19 +84,21 @@ export const metadata = {
     },
   },
   alternates: {
-    canonical: "https://tripoli.media",
+    canonical: "https://www.tripoli.media",
     languages: {
-      "es-MX": "https://tripoli.media",
-      "en-US": "https://tripoli.media/en",
+      "es-MX": "https://www.tripoli.media",
+      "en-US": "https://www.tripoli.media/en",
     },
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "256x256" },
+      { url: "/favicon.ico", sizes: "48x48" },
       { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
   manifest: "/manifest.json",
   formatDetection: { telephone: false, address: false, email: false },
