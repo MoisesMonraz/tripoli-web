@@ -166,7 +166,7 @@ export default function Footer() {
               className={`no-underline hover:no-underline transition text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-100 ${isTermsActive ? "font-semibold" : "font-normal hover:font-semibold"
                 }`}
             >
-              T\u00E9rminos y Condiciones
+              Términos y Condiciones
             </Link>
           </div>
 
