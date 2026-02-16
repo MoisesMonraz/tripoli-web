@@ -211,9 +211,7 @@ export default function RegistrationModal() {
                   </button>
                 </form>
 
-                <p className="mt-4 text-center text-xs text-slate-500">
-                  Sin spam. Puedes darte de baja en cualquier momento.
-                </p>
+
               </>
             )}
           </div>
