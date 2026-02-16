@@ -14,7 +14,7 @@ type IncomingMessage = {
 type ChatRequest = {
   message: string;
   history?: IncomingMessage[];
-  lang?: "EN" | "ES";
+  lang?: string;
   currentDate?: string;
   currentTime?: string;
   captchaToken?: string | null;
@@ -22,30 +22,12 @@ type ChatRequest = {
 
 const MAX_HISTORY_ITEMS = 10;
 const MAX_HISTORY_MESSAGE_LENGTH = 800;
-const NO_SOURCES_MESSAGE = {
-  EN: "We don't have that information published yet, but I can help with other topics.",
-  ES: "A\u00fan no contamos con esa informaci\u00f3n publicada, pero puedo ayudarte con otros temas.",
-} as const;
-const GENERIC_ERROR_MESSAGE = {
-  EN: "Something went wrong. Please try again in a moment.",
-  ES: "Ocurri\u00f3 un error. Por favor, int\u00e9ntalo de nuevo en un momento.",
-} as const;
-const INVALID_REQUEST_MESSAGE = {
-  EN: "Please send a valid question so I can help you.",
-  ES: "Por favor, env\u00eda una pregunta v\u00e1lida para poder ayudarte.",
-} as const;
-const TOO_LONG_MESSAGE = {
-  EN: "Your message is too long. Please shorten it.",
-  ES: "Tu mensaje es demasiado largo. Por favor, ac\u00f3rtalo.",
-} as const;
-const RATE_LIMIT_MESSAGE = {
-  EN: "You're asking too quickly. Please wait a moment and try again.",
-  ES: "Est\u00e1s preguntando muy r\u00e1pido. Por favor, espera un momento y vuelve a intentar.",
-} as const;
-const CAPTCHA_ERROR_MESSAGE = {
-  EN: "We could not verify your request. Please try again.",
-  ES: "No pudimos verificar tu solicitud. Int\u00e9ntalo de nuevo.",
-} as const;
+const NO_SOURCES_MESSAGE = "A\u00fan no contamos con esa informaci\u00f3n publicada, pero puedo ayudarte con otros temas.";
+const GENERIC_ERROR_MESSAGE = "Ocurri\u00f3 un error. Por favor, int\u00e9ntalo de nuevo en un momento.";
+const INVALID_REQUEST_MESSAGE = "Por favor, env\u00eda una pregunta v\u00e1lida para poder ayudarte.";
+const TOO_LONG_MESSAGE = "Tu mensaje es demasiado largo. Por favor, ac\u00f3rtalo.";
+const RATE_LIMIT_MESSAGE = "Est\u00e1s preguntando muy r\u00e1pido. Por favor, espera un momento y vuelve a intentar.";
+const CAPTCHA_ERROR_MESSAGE = "No pudimos verificar tu solicitud. Int\u00e9ntalo de nuevo.";
 
 const getRequestOrigin = (request: NextRequest) => {
   const origin = request.headers.get("origin");
@@ -103,25 +85,23 @@ const sanitizeHistory = (history?: IncomingMessage[]) => {
 };
 
 export async function POST(request: NextRequest) {
-  let lang: "EN" | "ES" = "ES";
   try {
     let body: ChatRequest | null = null;
 
     const originError = validateOrigin(request);
     if (originError) {
-      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE[lang], sources: [] }, { status: 403 });
+      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE, sources: [] }, { status: 403 });
     }
 
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.includes("application/json")) {
-      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE[lang], sources: [] }, { status: 415 });
+      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE, sources: [] }, { status: 415 });
     }
 
     try {
       body = (await request.json()) as ChatRequest;
-      lang = body?.lang === "EN" ? "EN" : "ES";
     } catch {
-      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE[lang], sources: [] }, { status: 400 });
+      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE, sources: [] }, { status: 400 });
     }
 
     const ip = getClientIp(request);
@@ -132,22 +112,22 @@ export async function POST(request: NextRequest) {
       namespace: "chat",
     });
     if (rateLimit.limited) {
-      return NextResponse.json({ answer: RATE_LIMIT_MESSAGE[lang], sources: [] }, { status: 429 });
+      return NextResponse.json({ answer: RATE_LIMIT_MESSAGE, sources: [] }, { status: 429 });
     }
 
     const captchaToken = body?.captchaToken ?? request.headers.get("x-captcha-token");
     const captchaResult = await verifyTurnstileToken(captchaToken ?? null, ip);
     if (!captchaResult.ok) {
-      return NextResponse.json({ answer: CAPTCHA_ERROR_MESSAGE[lang], sources: [] }, { status: 403 });
+      return NextResponse.json({ answer: CAPTCHA_ERROR_MESSAGE, sources: [] }, { status: 403 });
     }
 
     const message = body?.message?.trim() ?? "";
     if (!message) {
-      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE[lang], sources: [] }, { status: 400 });
+      return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE, sources: [] }, { status: 400 });
     }
 
     if (message.length > 800) {
-      return NextResponse.json({ answer: TOO_LONG_MESSAGE[lang], sources: [] }, { status: 413 });
+      return NextResponse.json({ answer: TOO_LONG_MESSAGE, sources: [] }, { status: 413 });
     }
 
     const history = sanitizeHistory(body?.history);
@@ -197,14 +177,14 @@ CONTEXTO: Categoría: ${article.categoryName || ""}. Subcategoría: ${article.su
     }
 
     if (!Array.isArray(sources) || sources.length === 0) {
-      return NextResponse.json({ answer: NO_SOURCES_MESSAGE[lang], sources: [] });
+      return NextResponse.json({ answer: NO_SOURCES_MESSAGE, sources: [] });
     }
 
     const result = await generateTripoliAnswer({
       question: message,
       sources,
       chatHistory: history,
-      lang,
+      lang: "ES",
       currentDate: body?.currentDate,
       currentTime: body?.currentTime,
     });
@@ -213,7 +193,7 @@ CONTEXTO: Categoría: ${article.categoryName || ""}. Subcategoría: ${article.su
   } catch (error: any) {
     console.error("CHAT_ERROR:", error?.message || error);
     return NextResponse.json({
-      answer: GENERIC_ERROR_MESSAGE[lang],
+      answer: GENERIC_ERROR_MESSAGE,
       sources: []
     }, { status: 500 });
   }

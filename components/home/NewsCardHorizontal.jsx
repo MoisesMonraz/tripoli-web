@@ -4,8 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useFavorites } from "../favorites/FavoritesContext";
-import { useTranslatedText } from "@/hooks/useTranslation";
-import { useLanguage } from "../LanguageProvider";
 
 const formatFullSpanishDate = (dateInput) => {
   if (!dateInput) return "";
@@ -121,10 +119,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
     ? `/${category}/${subcategory}/articulo/${slug}`
     : `/articulo/${slug}`;
 
-  // Translation support
-  const { language } = useLanguage();
-  const translatedTitle = useTranslatedText(title || "");
-  const displayTitle = language === "EN" ? translatedTitle : title;
+  const displayTitle = title;
 
   const formattedDate =
     formatFullSpanishDate(dateISO) || formatFullSpanishDate(date) || date || "";

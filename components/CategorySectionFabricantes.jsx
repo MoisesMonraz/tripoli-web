@@ -1,25 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useLanguage } from "./LanguageProvider";
 import NewsCarousel from "./home/NewsCarousel";
 import BannerFabricantesProveedores from "./banners/BannerFabricantesProveedores";
 
 export default function CategorySectionFabricantes({ posts }) {
-  const { language } = useLanguage();
-  const heading = language === "EN" ? "Manufacturers & Suppliers" : "Fabricantes y Proveedores";
-  const newsLabel = language === "EN" ? "Latest news" : "Últimas noticias";
+  const heading = "Fabricantes y Proveedores";
+  const newsLabel = "Últimas noticias";
 
-  const localizedPosts = (posts || []).map((post, idx) =>
-    language === "EN"
-      ? post
-      : {
-          ...post,
-          title: post.titleEs ?? `Título ${idx + 1}`,
-          excerpt: post.excerptEs ?? "Vista previa corta aquí...",
-          date: post.dateEs ?? "Noviembre 2025",
-        }
-  );
+  const localizedPosts = (posts || []).map((post, idx) => ({
+    ...post,
+    title: post.titleEs ?? `Título ${idx + 1}`,
+    excerpt: post.excerptEs ?? "Vista previa corta aquí...",
+    date: post.dateEs ?? "Noviembre 2025",
+  }));
 
   return (
     <section className="flex flex-col gap-2 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">

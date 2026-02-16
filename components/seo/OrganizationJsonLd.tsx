@@ -23,13 +23,13 @@ export default function OrganizationJsonLd() {
       name: "Mexico",
       sameAs: "https://en.wikipedia.org/wiki/Mexico",
     },
-    knowsLanguage: ["es", "en"],
+    knowsLanguage: ["es"],
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+52-33-2817-5756",
       contactType: "Customer Service",
       areaServed: "MX",
-      availableLanguage: ["Spanish", "English"],
+      availableLanguage: ["Spanish"],
     },
     address: {
       "@type": "PostalAddress",
@@ -56,7 +56,7 @@ export default function OrganizationJsonLd() {
     description:
       "Plataforma profesional de noticias y análisis sectorial para agencias de medios.",
     publisher: { "@id": "https://www.tripoli.media/#organization" },
-    inLanguage: ["es-MX", "en-US"],
+    inLanguage: "es-MX",
     potentialAction: {
       "@type": "SearchAction",
       target: {

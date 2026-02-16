@@ -3,35 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerIndustriaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Industria T.I..png";
 
 export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header IT Industry" : "Banner Header Industria TI",
-    fabricantes: isEnglish ? "Technology Manufacturers" : "Fabricantes de Tecnología",
-    cadenas: isEnglish ? "IT Wholesalers" : "Mayoristas TI",
-    conveniencia: isEnglish ? "Distribution Channels" : "Canales de Distribución",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerFabricantes: isEnglish ? "Banner Technology Manufacturers" : "Banner Fabricantes de Tecnología",
-    bannerCadenas: isEnglish ? "Banner IT Wholesalers" : "Banner Mayoristas TI",
-    bannerConveniencia: isEnglish ? "Banner Distribution Channels" : "Banner Canales de Distribución",
+    bannerHeader: "Banner Header Industria TI",
+    fabricantes: "Fabricantes de Tecnología",
+    cadenas: "Mayoristas TI",
+    conveniencia: "Canales de Distribución",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerFabricantes: "Banner Fabricantes de Tecnología",
+    bannerCadenas: "Banner Mayoristas TI",
+    bannerConveniencia: "Banner Canales de Distribución",
   };
 
   const barVars = {

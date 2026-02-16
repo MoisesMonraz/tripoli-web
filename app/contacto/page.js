@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import { useLanguage } from "../../components/LanguageProvider";
 import AnimatedServiceBorderBox from "../../components/ui/AnimatedServiceBorderBox";
 import CalBookingEmbed from "../../components/contact/CalBookingEmbed";
 
@@ -59,27 +58,15 @@ const Phone = ({ className = "" }) => (
 );
 
 export default function ContactoPage() {
-  const { language } = useLanguage();
-  const isEN = language === "EN";
-  const copy = isEN
-    ? {
-      contactLabel: "Contact",
-      contactTitle: "Get in touch with us",
-      whatsappAria: "Send message via WhatsApp",
-      emailAria: "Send email to contacto@tripoli.media (Gmail)",
-      mapTitle: "Tripoli Media location",
-      mapLinkAria: "Open address in Google Maps",
-      addressLabel: "P. de los Virreyes 45, Puerta de Hierro, 45116 Zapopan, Jal.",
-    }
-    : {
-      contactLabel: "Contacto",
-      contactTitle: "Ponte en contacto con nosotros",
-      whatsappAria: "Enviar mensaje por WhatsApp",
-      emailAria: "Enviar correo a contacto@tripoli.media (Gmail)",
-      mapTitle: "Ubicacion Tripoli Media",
-      mapLinkAria: "Abrir direccion en Google Maps",
-      addressLabel: "P. de los Virreyes 45, Puerta de Hierro, 45116 Zapopan, Jal.",
-    };
+  const copy = {
+    contactLabel: "Contacto",
+    contactTitle: "Ponte en contacto con nosotros",
+    whatsappAria: "Enviar mensaje por WhatsApp",
+    emailAria: "Enviar correo a contacto@tripoli.media (Gmail)",
+    mapTitle: "Ubicacion Tripoli Media",
+    mapLinkAria: "Abrir direccion en Google Maps",
+    addressLabel: "P. de los Virreyes 45, Puerta de Hierro, 45116 Zapopan, Jal.",
+  };
 
   return (
     <main

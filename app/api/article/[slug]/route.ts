@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from 'contentful';
 
-// Locale mapping - Spanish in en-US, English in es (due to legacy setup)
+// Locale mapping - Spanish in en-US (due to legacy Contentful setup)
 const LOCALE_MAP: Record<string, string> = {
   ES: 'en-US',
-  EN: 'es',
 };
 
 function slugify(text: string): string {

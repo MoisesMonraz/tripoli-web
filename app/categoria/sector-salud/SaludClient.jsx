@@ -3,35 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerSaludHero from "../../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.png";
 
 export default function SaludClient({ fabricantesData, institucionesData, especialistasData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-          ...post,
-          title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
-          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
-          date: post.dateEs ?? post.date ?? "Noviembre 2025",
-        }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header Health Sector" : "Banner Header Sector Salud",
-    fabricantes: isEnglish ? "Equipment & Supplies Manufacturers" : "Fabricantes de equipos e insumos",
-    cadenas: isEnglish ? "Healthcare Institutions" : "Instituciones de Salud",
-    conveniencia: isEnglish ? "Medical Specialists" : "Especialistas Médicos",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerFabricantes: isEnglish ? "Banner Equipment & Supplies Manufacturers" : "Banner Fabricantes de equipos e insumos",
-    bannerCadenas: isEnglish ? "Banner Healthcare Institutions" : "Banner Instituciones de Salud",
-    bannerConveniencia: isEnglish ? "Banner Medical Specialists" : "Banner Especialistas Médicos",
+    bannerHeader: "Banner Header Sector Salud",
+    fabricantes: "Fabricantes de equipos e insumos",
+    cadenas: "Instituciones de Salud",
+    conveniencia: "Especialistas Médicos",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerFabricantes: "Banner Fabricantes de equipos e insumos",
+    bannerCadenas: "Banner Instituciones de Salud",
+    bannerConveniencia: "Banner Especialistas Médicos",
   };
 
   const tailSlides = defaultSlides.slice(1);

@@ -3,38 +3,30 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
 import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Tiendas-de-Conveniencia.png";
 
 export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header Consumer & Retail" : "Banner Header Consumo y Retail",
-    fabricantes: isEnglish ? "Manufacturers & Suppliers" : "Fabricantes y Proveedores",
-    cadenas: isEnglish ? "Retail Chains" : "Cadenas Comerciales",
-    conveniencia: isEnglish ? "Convenience Stores" : "Tiendas de Conveniencia",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerFabricantes: isEnglish ? "Banner Manufacturers & Suppliers" : "Banner Fabricantes y Proveedores",
-    bannerCadenas: isEnglish ? "Banner Retail Chains" : "Banner Cadenas Comerciales",
-    bannerConveniencia: isEnglish ? "Banner Convenience Stores" : "Banner Tiendas de Conveniencia",
+    bannerHeader: "Banner Header Consumo y Retail",
+    fabricantes: "Fabricantes y Proveedores",
+    cadenas: "Cadenas Comerciales",
+    conveniencia: "Tiendas de Conveniencia",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerFabricantes: "Banner Fabricantes y Proveedores",
+    bannerCadenas: "Banner Cadenas Comerciales",
+    bannerConveniencia: "Banner Tiendas de Conveniencia",
   };
 
   const tailSlides = defaultSlides.slice(1);

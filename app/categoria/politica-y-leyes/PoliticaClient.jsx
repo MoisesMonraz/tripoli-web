@@ -3,35 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerPoliticaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Politica y Leyes.png";
 
 export default function PoliticaClient({ organismosData, administracionData, juridicosData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-          ...post,
-          title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
-          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
-          date: post.dateEs ?? post.date ?? "Noviembre 2025",
-        }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Titulo ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqui...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header Politics & Law" : "Banner Header Politica y Leyes",
-    fabricantes: isEnglish ? "Public Agencies" : "Organismos Públicos",
-    cadenas: isEnglish ? "State & Local Administration" : "Administración Pública",
-    conveniencia: isEnglish ? "Legal Services" : "Servicios Jurídicos",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerFabricantes: isEnglish ? "Banner Public Agencies" : "Banner Organismos Públicos",
-    bannerCadenas: isEnglish ? "Banner State & Local Administration" : "Banner Administración Pública",
-    bannerConveniencia: isEnglish ? "Banner Legal Services" : "Banner Servicios Jurídicos",
+    bannerHeader: "Banner Header Politica y Leyes",
+    fabricantes: "Organismos Públicos",
+    cadenas: "Administración Pública",
+    conveniencia: "Servicios Jurídicos",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerFabricantes: "Banner Organismos Públicos",
+    bannerCadenas: "Banner Administración Pública",
+    bannerConveniencia: "Banner Servicios Jurídicos",
   };
 
   const tailSlides = defaultSlides.slice(1);

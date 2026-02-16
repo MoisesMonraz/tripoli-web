@@ -5,9 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import BannerHeader from "../BannerHeader";
 import SubcategoryBanner from "../banners/SubcategoryBanner";
-import { useLanguage } from "../LanguageProvider";
 import { useFavorites } from "../favorites/FavoritesContext";
-import { useTranslatedTexts } from "@/hooks/useTranslation";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
 
@@ -130,7 +128,6 @@ export default function SubcategoryListPageClient({
   initialPosts = [], // Accept pre-fetched data
   BannerComponent = SubcategoryBanner,
 }) {
-  const { language } = useLanguage();
   const [showAll, setShowAll] = useState(false);
 
   const INITIAL_LIMIT = 10;
@@ -138,22 +135,18 @@ export default function SubcategoryListPageClient({
   // Use initialPosts directly instead of useEffect
   const posts = initialPosts;
 
-  // Extract titles for batch translation
-  const postTitles = useMemo(() => (posts || []).map(post => post.title || ""), [posts]);
-  const translatedTitles = useTranslatedTexts(postTitles);
-
   const localizedPosts = useMemo(
     () =>
-      (posts || []).map((post, idx) => ({
+      (posts || []).map((post) => ({
         ...post,
-        title: language === "EN" ? translatedTitles[idx] || post.title : post.title,
+        title: post.title,
         excerpt: post.excerpt ?? "Vista previa corta aquí...",
         date: post.date ?? "Noviembre 2025",
       })),
-    [posts, language, translatedTitles]
+    [posts]
   );
 
-  const heading = language === "EN" ? title : titleEs ?? title;
+  const heading = titleEs ?? title;
   const isFabricantesEquipoInsumos = subcategorySlug === "fabricantes-equipos-insumos";
   const isFestivalesEventosArtistas = subcategorySlug === "festivales-eventos-y-artistas";
   const isDesarrolladoresProyectos = subcategorySlug === "desarrolladores-de-proyectos";
@@ -164,7 +157,7 @@ export default function SubcategoryListPageClient({
       : isDesarrolladoresProyectos
         ? "text-[13.5px] sm:text-lg lg:text-xl"
         : "text-lg lg:text-xl";
-  const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
+  const buttonLabel = "Ver más noticias";
   const barVars = {
     "--bar-base": barColor,
     "--bar-mid": gradientMid || gradientFrom || barColor,

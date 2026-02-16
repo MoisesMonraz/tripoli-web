@@ -5,20 +5,19 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
-import { useLanguage } from "./LanguageProvider";
 
 const navItems = [
-  { key: "home", href: "/", path: "/", labels: { ES: "Inicio", EN: "Home" } },
+  { key: "home", href: "/", path: "/", label: "Inicio" },
   {
     key: "consumo",
     href: "/categoria/consumo-y-retail",
     path: "/categoria/consumo-y-retail",
     categorySlug: "consumo-y-retail",
-    labels: { ES: "Consumo y Retail", EN: "Consumer & Retail" },
+    label: "Consumo y Retail",
     subcategories: [
-      { slug: "fabricantes-y-proveedores", labels: { ES: "Fabricantes y Proveedores", EN: "Manufacturers & Suppliers" } },
-      { slug: "cadenas-comerciales", labels: { ES: "Cadenas Comerciales", EN: "Retail Chains" } },
-      { slug: "tiendas-de-conveniencia", labels: { ES: "Tiendas de Conveniencia", EN: "Convenience Stores" } },
+      { slug: "fabricantes-y-proveedores", label: "Fabricantes y Proveedores" },
+      { slug: "cadenas-comerciales", label: "Cadenas Comerciales" },
+      { slug: "tiendas-de-conveniencia", label: "Tiendas de Conveniencia" },
     ],
   },
   {
@@ -26,11 +25,11 @@ const navItems = [
     href: "/categoria/entretenimiento-y-cultura",
     path: "/categoria/entretenimiento-y-cultura",
     categorySlug: "entretenimiento-y-cultura",
-    labels: { ES: "Entretenimiento y Cultura", EN: "Entertainment & Culture" },
+    label: "Entretenimiento y Cultura",
     subcategories: [
-      { slug: "productoras-de-contenido", labels: { ES: "Productoras de Contenido", EN: "Content Producers" } },
-      { slug: "recintos-culturales", labels: { ES: "Recintos Culturales", EN: "Cultural Venues" } },
-      { slug: "festivales-eventos-y-artistas", labels: { ES: "Festivales, Eventos y Artistas", EN: "Festivals, Events & Artists" } },
+      { slug: "productoras-de-contenido", label: "Productoras de Contenido" },
+      { slug: "recintos-culturales", label: "Recintos Culturales" },
+      { slug: "festivales-eventos-y-artistas", label: "Festivales, Eventos y Artistas" },
     ],
   },
   {
@@ -38,11 +37,11 @@ const navItems = [
     href: "/categoria/industria-ti",
     path: "/categoria/industria-ti",
     categorySlug: "industria-ti",
-    labels: { ES: "Industria TI", EN: "IT Industry" },
+    label: "Industria TI",
     subcategories: [
-      { slug: "fabricantes-de-tecnologia", labels: { ES: "Fabricantes de Tecnología", EN: "Technology Manufacturers" } },
-      { slug: "mayoristas-ti", labels: { ES: "Mayoristas TI", EN: "IT Wholesalers" } },
-      { slug: "canales-de-distribucion", labels: { ES: "Canales de Distribuci\u00f3n", EN: "Distribution Channels" } },
+      { slug: "fabricantes-de-tecnologia", label: "Fabricantes de Tecnología" },
+      { slug: "mayoristas-ti", label: "Mayoristas TI" },
+      { slug: "canales-de-distribucion", label: "Canales de Distribuci\u00f3n" },
     ],
   },
   {
@@ -50,11 +49,11 @@ const navItems = [
     href: "/categoria/infraestructura-social",
     path: "/categoria/infraestructura-social",
     categorySlug: "infraestructura-social",
-    labels: { ES: "Infraestructura Social", EN: "Social Infrastructure" },
+    label: "Infraestructura Social",
     subcategories: [
-      { slug: "proveedores-de-materiales", labels: { ES: "Proveedores de Materiales", EN: "Materials Suppliers" } },
-      { slug: "desarrolladores-de-proyectos", labels: { ES: "Desarrolladores de Proyectos", EN: "Project Developers" } },
-      { slug: "promotores-inmobiliarios", labels: { ES: "Promotores Inmobiliarios", EN: "Real Estate Developers" } },
+      { slug: "proveedores-de-materiales", label: "Proveedores de Materiales" },
+      { slug: "desarrolladores-de-proyectos", label: "Desarrolladores de Proyectos" },
+      { slug: "promotores-inmobiliarios", label: "Promotores Inmobiliarios" },
     ],
   },
   {
@@ -62,11 +61,11 @@ const navItems = [
     href: "/categoria/politica-y-leyes",
     path: "/categoria/politica-y-leyes",
     categorySlug: "politica-y-leyes",
-    labels: { ES: "Pol\u00edtica y Leyes", EN: "Politics & Law" },
+    label: "Pol\u00edtica y Leyes",
     subcategories: [
-      { slug: "organismos-publicos", labels: { ES: "Organismos P\u00fablicos", EN: "Public Agencies" } },
-      { slug: "administracion-publica", labels: { ES: "Administraci\u00f3n P\u00fablica", EN: "Public Administration" } },
-      { slug: "servicios-juridicos", labels: { ES: "Servicios Jur\u00eddicos", EN: "Legal Services" } },
+      { slug: "organismos-publicos", label: "Organismos P\u00fablicos" },
+      { slug: "administracion-publica", label: "Administraci\u00f3n P\u00fablica" },
+      { slug: "servicios-juridicos", label: "Servicios Jur\u00eddicos" },
     ],
   },
   {
@@ -74,18 +73,17 @@ const navItems = [
     href: "/categoria/sector-salud",
     path: "/categoria/sector-salud",
     categorySlug: "sector-salud",
-    labels: { ES: "Sector Salud", EN: "Health Sector" },
+    label: "Sector Salud",
     subcategories: [
-      { slug: "fabricantes-equipos-insumos", labels: { ES: "Fabricantes de Equipo e Insumos", EN: "Equipment & Supplies Manufacturers" } },
-      { slug: "instituciones-de-salud", labels: { ES: "Instituciones de Salud", EN: "Healthcare Institutions" } },
-      { slug: "especialistas-medicos", labels: { ES: "Especialistas M\u00e9dicos", EN: "Medical Specialists" } },
+      { slug: "fabricantes-equipos-insumos", label: "Fabricantes de Equipo e Insumos" },
+      { slug: "instituciones-de-salud", label: "Instituciones de Salud" },
+      { slug: "especialistas-medicos", label: "Especialistas M\u00e9dicos" },
     ],
   },
 ];
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
-  const { language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStickyVisible, setIsStickyVisible] = useState(false);
   const [dateDisplay, setDateDisplay] = useState("");
@@ -131,7 +129,7 @@ export default function Header() {
     let active = true;
 
     const computeDisplays = (baseDate) => {
-      const locale = language === "EN" ? "en-US" : "es-MX";
+      const locale = "es-MX";
       const month = baseDate.toLocaleString(locale, { month: "2-digit" });
       const day = baseDate.toLocaleString(locale, { day: "2-digit" });
       const year = baseDate.toLocaleString(locale, { year: "numeric" });
@@ -174,7 +172,7 @@ export default function Header() {
       clearInterval(tickInterval);
       clearInterval(syncInterval);
     };
-  }, [language]);
+  }, []);
 
   const navLinkStyles =
     "relative px-1.5 py-2 text-[0.779rem] md:text-[0.876rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
@@ -252,9 +250,9 @@ export default function Header() {
               <Link
                 href={item.href}
                 className={`${navLinkStyles} ${hoverTextClass} ${groupHoverTextClass} ${isActive ? activeTextClass : ""}`}
-                aria-label={item.labels[language]}
+                aria-label={item.label}
               >
-                <span>{item.labels[language] ?? item.labels.ES}</span>
+                <span>{item.label}</span>
                 <span
                   className={`absolute left-2.5 right-2.5 bottom-[6px] h-[1.5px] origin-left transition duration-200 ease-out ${isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                     } ${underlineClass}`}
@@ -269,7 +267,7 @@ export default function Header() {
                       href={`/categoria/${item.categorySlug}/${sub.slug}`}
                       className="block px-4 py-1.5 text-sm text-slate-700 whitespace-nowrap transition-colors hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-700"
                     >
-                      {sub.labels?.[language] ?? sub.labels?.ES ?? sub.slug}
+                      {sub.label}
                     </Link>
                   ))}
                 </div>
@@ -360,14 +358,6 @@ export default function Header() {
         </span>
       </button>
 
-      <button
-        type="button"
-        aria-label="Cambiar idioma"
-        onClick={() => setLanguage((prev) => (prev === "ES" ? "EN" : "ES"))}
-        className="flex h-9 sm:h-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-2.5 sm:px-3 text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
-      >
-        {language}
-      </button>
     </>
   );
 
@@ -462,7 +452,7 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                     >
-                      <span className="truncate">- {item.labels[language]}</span>
+                      <span className="truncate">- {item.label}</span>
                     </a>
                   </li>
                 )
@@ -571,7 +561,7 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                       className={`flex items-center justify-between rounded-xl px-2 py-1.5 text-[0.5rem] sm:text-sm font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] transition hover:bg-slate-100 hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] dark:hover:bg-slate-800 dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff] ${isActive ? "font-bold text-slate-900 dark:text-slate-50" : "text-slate-700 dark:text-slate-100"}`}
                     >
-                      <span className="truncate">- {item.labels[language]}</span>
+                      <span className="truncate">- {item.label}</span>
                     </a>
                   </li>
                 )

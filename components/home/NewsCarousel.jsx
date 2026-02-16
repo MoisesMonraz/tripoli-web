@@ -1,35 +1,32 @@
 "use client";
 
-import { useLanguage } from "../LanguageProvider";
 import NewsCardHorizontal from "./NewsCardHorizontal";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
 
 export default function NewsCarousel({ posts = [], compact = false }) {
-  const { language } = useLanguage();
-
   // Create placeholder posts if array is empty to maintain carousel structure
   const placeholderPosts = [
     {
       slug: "placeholder-1",
-      title: language === "EN" ? "No articles available yet" : "Sin artículos disponibles",
-      excerpt: language === "EN" ? "New content coming soon..." : "Nuevo contenido próximamente...",
+      title: "Sin artículos disponibles",
+      excerpt: "Nuevo contenido próximamente...",
       image: placeholderImage,
-      date: language === "EN" ? "Coming Soon" : "Próximamente",
+      date: "Próximamente",
     },
     {
       slug: "placeholder-2",
-      title: language === "EN" ? "No articles available yet" : "Sin artículos disponibles",
-      excerpt: language === "EN" ? "New content coming soon..." : "Nuevo contenido próximamente...",
+      title: "Sin artículos disponibles",
+      excerpt: "Nuevo contenido próximamente...",
       image: placeholderImage,
-      date: language === "EN" ? "Coming Soon" : "Próximamente",
+      date: "Próximamente",
     },
     {
       slug: "placeholder-3",
-      title: language === "EN" ? "No articles available yet" : "Sin artículos disponibles",
-      excerpt: language === "EN" ? "New content coming soon..." : "Nuevo contenido próximamente...",
+      title: "Sin artículos disponibles",
+      excerpt: "Nuevo contenido próximamente...",
       image: placeholderImage,
-      date: language === "EN" ? "Coming Soon" : "Próximamente",
+      date: "Próximamente",
     },
   ];
 

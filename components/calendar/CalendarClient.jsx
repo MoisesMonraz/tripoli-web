@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useLanguage } from "../LanguageProvider";
-
 function getMonthMatrix(year, month) {
   const firstDay = new Date(year, month, 1);
   const startWeekday = (firstDay.getDay() + 6) % 7; // Monday = 0
@@ -59,9 +57,6 @@ export default function CalendarClient({ articles = [] }) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(formatDateKey(today));
-  const { language } = useLanguage();
-  const isEN = language === "EN";
-
   // Group articles by date key (YYYY-MM-DD), normalizing the ISO string
   const postsByDate = useMemo(() => {
     const map = {};
@@ -87,17 +82,16 @@ export default function CalendarClient({ articles = [] }) {
     setSelectedDate(key);
   };
 
-  const locale = isEN ? "en-US" : "es-MX";
-  const monthName = viewDate.toLocaleString(locale, { month: "long" });
+  const monthName = viewDate.toLocaleString("es-MX", { month: "long" });
   const capitalizedMonth = `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)}`;
-  const monthLabel = isEN ? `${capitalizedMonth} ${viewDate.getFullYear()}` : `${capitalizedMonth} de ${viewDate.getFullYear()}`;
-  const weekdayLabels = isEN ? ["M", "T", "W", "T", "F", "S", "S"] : ["L", "M", "X", "J", "V", "S", "D"];
+  const monthLabel = `${capitalizedMonth} de ${viewDate.getFullYear()}`;
+  const weekdayLabels = ["L", "M", "X", "J", "V", "S", "D"];
   const [selYear, selMonth, selDay] = selectedDate.split("-");
   const formattedSelectedDate = `${selDay}/${selMonth}/${selYear}`;
 
-  const publicationsLabel = isEN ? "Publications" : "Publicaciones";
-  const noPostsLabel = isEN ? "No articles published on this date." : "No hay artículos publicados en esta fecha.";
-  const notesLabel = selectedPosts.length === 1 ? (isEN ? "article" : "artículo") : isEN ? "articles" : "artículos";
+  const publicationsLabel = "Publicaciones";
+  const noPostsLabel = "No hay artículos publicados en esta fecha.";
+  const notesLabel = selectedPosts.length === 1 ? "artículo" : "artículos";
 
   return (
     <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-8 py-6 sm:py-10">
@@ -105,21 +99,21 @@ export default function CalendarClient({ articles = [] }) {
 
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           <div>
-            <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{isEN ? "Editorial calendar" : "Calendario editorial"}</p>
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Calendario editorial</p>
             <h1 className="text-lg sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">{monthLabel}</h1>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={handlePrev}
               className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
-              aria-label={isEN ? "Previous month" : "Mes anterior"}
+              aria-label="Mes anterior"
             >
               ‹
             </button>
             <button
               onClick={handleNext}
               className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
-              aria-label={isEN ? "Next month" : "Mes siguiente"}
+              aria-label="Mes siguiente"
             >
               ›
             </button>

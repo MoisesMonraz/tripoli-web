@@ -1,7 +1,7 @@
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { LanguageProvider } from "../components/LanguageProvider";
+
 import { FavoritesProvider } from "../components/favorites/FavoritesContext";
 import ScrollToTop from "../components/ScrollToTop";
 import AIChatWidget from "../components/ai/AIChatWidget";
@@ -52,7 +52,6 @@ export const metadata = {
       "Tripoli Media is a digital publishing house and media agency specializing in professional news and analysis across six key sectors.",
     url: "https://www.tripoli.media",
     locale: "es_MX",
-    alternateLocale: ["en_US"],
     images: [
       {
         url: "/opengraph-image.png",
@@ -87,7 +86,6 @@ export const metadata = {
     canonical: "https://www.tripoli.media",
     languages: {
       "es-MX": "https://www.tripoli.media",
-      "en-US": "https://www.tripoli.media/en",
     },
   },
   icons: {
@@ -111,18 +109,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
-        <LanguageProvider>
-          <FavoritesProvider>
-            <OrganizationJsonLd />
-            <ScrollToTop />
-            <Header />
-            {children}
-            <Footer />
-            <AccessGateModal />
-            <RegistrationModal />
-            <AIChatWidget />
-          </FavoritesProvider>
-        </LanguageProvider>
+        <FavoritesProvider>
+          <OrganizationJsonLd />
+          <ScrollToTop />
+          <Header />
+          {children}
+          <Footer />
+          <AccessGateModal />
+          <RegistrationModal />
+          <AIChatWidget />
+        </FavoritesProvider>
       </body>
     </html>
   );

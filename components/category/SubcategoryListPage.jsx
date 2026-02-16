@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BannerHeader from "../BannerHeader";
 import SubcategoryBanner from "../banners/SubcategoryBanner";
-import { useLanguage } from "../LanguageProvider";
-
 const defaultFetcher = async (category, subcategory, { order = "date_desc", limit = 50 } = {}) => {
   const placeholderImage =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='16'%3EConsumo%3C/text%3E%3C/svg%3E";
@@ -42,7 +40,6 @@ export default function SubcategoryListPage({
   fetchPosts = defaultFetcher,
   BannerComponent = SubcategoryBanner,
 }) {
-  const { language } = useLanguage();
   const [posts, setPosts] = useState([]);
   const [showAll, setShowAll] = useState(false);
 
@@ -54,21 +51,17 @@ export default function SubcategoryListPage({
 
   const localizedPosts = useMemo(
     () =>
-      (posts || []).map((post, idx) =>
-        language === "EN"
-          ? post
-          : {
-              ...post,
-              title: post.titleEs ?? `T\u30f4tulo ${idx + 1}`,
-              excerpt: post.excerptEs ?? "Vista previa corta aqu\u30f4...",
-              date: post.dateEs ?? "Noviembre 2025",
-            }
-      ),
-    [posts, language]
+      (posts || []).map((post, idx) => ({
+        ...post,
+        title: post.titleEs ?? `Titulo ${idx + 1}`,
+        excerpt: post.excerptEs ?? "Vista previa corta aqui...",
+        date: post.dateEs ?? "Noviembre 2025",
+      })),
+    [posts]
   );
 
-  const heading = language === "EN" ? title : titleEs ?? title;
-  const buttonLabel = language === "EN" ? "View more news" : "Ver más noticias";
+  const heading = titleEs ?? title;
+  const buttonLabel = "Ver más noticias";
   const barVars = {
     "--bar-base": barColor,
     "--bar-mid": gradientMid || gradientFrom || barColor,

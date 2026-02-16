@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import React, { useEffect, useMemo, useRef, useState, type KeyboardEvent, useCallback } from "react";
-import { useLanguage } from "../LanguageProvider";
 import Image from "next/image";
 import botIcon from "../../Imagenes/Logos/AIIcon.png";
 import { useTurnstile } from "../security/useTurnstile";
@@ -106,7 +105,6 @@ const renderTextWithLinks = (text: string) => {
  * Manages the chat state, message history, and API communication.
  */
 function useChatEngine(
-  isEnglish: boolean,
   options?: {
     isCaptchaEnabled?: boolean;
     getCaptchaToken?: () => Promise<string | null>;
@@ -148,9 +146,7 @@ function useChatEngine(
             const errorMsg: ChatMessage = {
               id: createId(),
               role: "assistant",
-              content: isEnglish
-                ? "We could not verify your request. Please try again."
-                : "No pudimos verificar tu solicitud. Inténtalo de nuevo.",
+              content: "No pudimos verificar tu solicitud. Inténtalo de nuevo.",
             };
             setMessages((prev) => [...prev, errorMsg]);
             setIsLoading(false);
@@ -164,9 +160,9 @@ function useChatEngine(
           body: JSON.stringify({
             message: trimmed,
             history,
-            lang: isEnglish ? "EN" : "ES",
-            currentDate: new Date().toLocaleDateString(isEnglish ? "en-US" : "es-MX", { day: "2-digit", month: "2-digit", year: "numeric" }),
-            currentTime: new Date().toLocaleTimeString(isEnglish ? "en-US" : "es-MX", { hour: "2-digit", minute: "2-digit", hour12: false, hourCycle: "h23" }) + " hrs",
+            lang: "ES",
+            currentDate: new Date().toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric" }),
+            currentTime: new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false, hourCycle: "h23" }) + " hrs",
             captchaToken,
           }),
         });
@@ -181,9 +177,7 @@ function useChatEngine(
         if (!response.ok) {
           const errorContent =
             data?.answer ||
-            (isEnglish
-              ? "Sorry, I'm having trouble right now. Please try again."
-              : "Lo siento, tengo problemas en este momento. Inténtalo de nuevo.");
+            "Lo siento, tengo problemas en este momento. Inténtalo de nuevo.";
           const assistantMsg: ChatMessage = {
             id: createId(),
             role: "assistant",
@@ -201,7 +195,7 @@ function useChatEngine(
         const assistantMsg: ChatMessage = {
           id: createId(),
           role: "assistant",
-          content: data.answer || (isEnglish ? "No answer received." : "No recibí respuesta."),
+          content: data.answer || "No recibí respuesta.",
           sources: data.sources || [],
         };
 
@@ -213,16 +207,14 @@ function useChatEngine(
         const errorMsg: ChatMessage = {
           id: createId(),
           role: "assistant",
-          content: isEnglish
-            ? "Sorry, I'm having trouble connecting right now. Please try again."
-            : "Lo siento, tengo problemas de conexión en este momento. Inténtalo de nuevo.",
+          content: "Lo siento, tengo problemas de conexión en este momento. Inténtalo de nuevo.",
         };
         setMessages((prev) => [...prev, errorMsg]);
       } finally {
         setIsLoading(false);
       }
     },
-    [history, isEnglish]
+    [history]
   );
 
   return { messages, isLoading, sendMessage };
@@ -362,8 +354,6 @@ function useDarkMode() {
 
 export default function AIChatWidget() {
   // 1. Context & State
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -375,7 +365,7 @@ export default function AIChatWidget() {
   } = useTurnstile();
 
   // 2. Custom Hooks (Logic Brain)
-  const { messages, isLoading, sendMessage } = useChatEngine(isEnglish, {
+  const { messages, isLoading, sendMessage } = useChatEngine({
     isCaptchaEnabled,
     getCaptchaToken,
     resetCaptcha,
@@ -385,26 +375,19 @@ export default function AIChatWidget() {
   const isDarkMode = useDarkMode();
 
   // 3. UI Strings & Constants
-  const strings = useMemo(
-    () => ({
-      title: isEnglish ? "Hi, I'm Tripoli, your personal assistant!" : "¡Hola, soy Tripoli, tu asistente personal!",
-      helper: isEnglish
-        ? "Ask me about news, services, contact, and other topics related to Tripoli Media."
-        : "Pregúntame sobre noticias, servicios, contacto y otros temas relacionados con Tripoli Media",
-      placeholder: isEnglish ? "Type your question" : "Escribe tu pregunta",
-      send: isEnglish ? "Send" : "Enviar",
-      thinking: isEnglish ? "Thinking..." : "Pensando...",
-      sources: isEnglish ? "Sources" : "Fuentes",
-      ariaDialog: isEnglish ? "Tripoli Media Assistant" : "Asistente de Tripoli Media",
-      ariaClose: isEnglish ? "Close chat" : "Cerrar chat",
-      ariaOpen: isEnglish ? "Open Tripoli Media Assistant" : "Abrir asistente de Tripoli Media",
-    }),
-    [isEnglish]
-  );
+  const strings = {
+    title: "¡Hola, soy Tripoli, tu asistente personal!",
+    helper: "Pregúntame sobre noticias, servicios, contacto y otros temas relacionados con Tripoli Media",
+    placeholder: "Escribe tu pregunta",
+    send: "Enviar",
+    thinking: "Pensando...",
+    sources: "Fuentes",
+    ariaDialog: "Asistente de Tripoli Media",
+    ariaClose: "Cerrar chat",
+    ariaOpen: "Abrir asistente de Tripoli Media",
+  };
 
-  const welcomeMessage = isEnglish
-    ? "Hi, I'm Tripoli Bot - your virtual assistant to help you find exactly what you need!"
-    : <>¡Hola! Soy Tripoli tu asistente virtual.<br />Te ayudaré a encontrar, de forma detallada, la información que necesitas.</>;
+  const welcomeMessage = <>¡Hola! Soy Tripoli tu asistente virtual.<br />Te ayudaré a encontrar, de forma detallada, la información que necesitas.</>;
 
   // 4. Effects (Auto-scroll)
   useEffect(() => {
@@ -573,7 +556,7 @@ export default function AIChatWidget() {
               </button>
               <div className="pr-3 sm:pr-4 text-left">
                 <p className="block sm:hidden whitespace-nowrap">
-                  {isEnglish ? "Hi, I'm Tripoli Bot - your assistant!" : "¡Hola! Soy Trípoli tu asistente virtual."}
+                  ¡Hola! Soy Trípoli tu asistente virtual.
                 </p>
                 <p className="hidden sm:block">
                   {welcomeMessage}

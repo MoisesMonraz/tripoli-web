@@ -3,24 +3,22 @@
 import { useState } from "react";
 import { servicesData } from "./servicesData";
 import AnimatedServiceBorderBox from "../ui/AnimatedServiceBorderBox";
-import { useLanguage } from "../LanguageProvider";
 
 export default function ServicesList() {
   const [openIds, setOpenIds] = useState([]);
-  const { language } = useLanguage();
 
   return (
     <section className="max-w-[70rem] mx-auto w-full px-4 sm:px-6 md:px-4">
       <div className="flex flex-col gap-3 sm:gap-4">
         {servicesData.map((service) => {
           const isOpen = openIds.includes(service.id);
-          const title = service.title[language] ?? service.title.ES;
-          const tagline = service.tagline[language] ?? service.tagline.ES;
-          const tone = service.tone?.[language] ?? service.tone?.ES;
-          const bullets = service.bullets[language] ?? service.bullets.ES;
-          const introLabel = service.introLabel?.[language] ?? (language === "EN" ? "Expanded Content" : "Contenido detallado");
-          const description = service.description?.[language] ?? service.description?.ES;
-          const closing = service.closing?.[language] ?? service.closing?.ES;
+          const title = service.title;
+          const tagline = service.tagline;
+          const tone = service.tone;
+          const bullets = service.bullets;
+          const introLabel = service.introLabel ?? "Contenido detallado";
+          const description = service.description;
+          const closing = service.closing;
 
           return (
             <AnimatedServiceBorderBox

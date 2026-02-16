@@ -1,11 +1,9 @@
 ﻿"use client";
 
 import NewsCarousel from "./home/NewsCarousel";
-import { useLanguage } from "./LanguageProvider";
 
 export default function CategorySubsection({
   title,
-  titleEn,
   posts = [],
   barColor = "#fdc652",
   titleBgColor = "#f39200",
@@ -14,22 +12,16 @@ export default function CategorySubsection({
   titleTextColor = "#fee5c8",
   BannerComponent,
   labelEs,
-  labelEn,
 }) {
-  const { language } = useLanguage();
-  const label = language === "EN" ? labelEn ?? "Updates" : labelEs ?? "Novedades";
-  const heading = language === "EN" ? titleEn ?? title : title;
+  const label = labelEs ?? "Novedades";
+  const heading = title;
 
-  const localizedPosts = (posts || []).slice(0, 5).map((post, idx) =>
-    language === "EN"
-      ? post
-      : {
-          ...post,
-          title: post.titleEs ?? `Titulo ${idx + 1}`,
-          excerpt: post.excerptEs ?? "Vista previa corta aqui...",
-          date: post.dateEs ?? "Noviembre 2025",
-        }
-  );
+  const localizedPosts = (posts || []).slice(0, 5).map((post, idx) => ({
+    ...post,
+    title: post.titleEs ?? `Titulo ${idx + 1}`,
+    excerpt: post.excerptEs ?? "Vista previa corta aqui...",
+    date: post.dateEs ?? "Noviembre 2025",
+  }));
 
   return (
     <section className="flex flex-col gap-2 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">

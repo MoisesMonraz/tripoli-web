@@ -1,18 +1,11 @@
 "use client";
 
-import { useLanguage } from "../LanguageProvider";
-
 export default function ServicesIntro() {
-  const { language } = useLanguage();
-
   const headline = "TRIPOLI MEDIA SERVICES";
 
-  const description =
-    language === "EN"
-      ? "Discover our suite of editorial, analytics, and web solutions focused on solving visibility and digital performance challenges to achieve strategic, measurable positioning grounded in data."
-      : "Conoce nuestra oferta de soluciones editoriales, analíticas y web, enfocadas en resolver retos de visibilidad y desempeño digital para lograr un posicionamiento estratégico y medible basado en datos.";
+  const description = "Conoce nuestra oferta de soluciones editoriales, analíticas y web, enfocadas en resolver retos de visibilidad y desempeño digital para lograr un posicionamiento estratégico y medible basado en datos.";
 
-  const label = language === "EN" ? "Services" : "Servicios";
+  const label = "Servicios";
 
   return (
     <section className="max-w-[70rem] mx-auto w-full px-4 sm:px-6 md:px-4">

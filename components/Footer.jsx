@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useLanguage } from "./LanguageProvider";
 import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
 import facebookSrc from "../Imagenes/Logos/Facebook.png";
 import xSrc from "../Imagenes/Logos/X azul.png";
@@ -58,8 +57,6 @@ const iconFilters = {
 };
 
 export default function Footer() {
-  const { language } = useLanguage();
-  const isEN = language === "EN";
   const pathname = usePathname();
   const isPrivacyActive = pathname === "/aviso-de-privacidad" || pathname.startsWith("/aviso-de-privacidad/");
   const isTermsActive = pathname === "/terminos-y-condiciones" || pathname.startsWith("/terminos-y-condiciones/");
@@ -88,19 +85,19 @@ export default function Footer() {
           <div className="order-1 md:col-start-1 md:row-start-1 flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 text-[14px] sm:text-[16px] font-semibold tracking-[0.05em] text-slate-700 dark:text-slate-200 font-raleway">
             <FooterNavLink
               href="/conocenos"
-              label={isEN ? "Know us" : "Con\u00F3cenos"}
+              label="Conócenos"
               isActive={pathname === "/conocenos" || pathname.startsWith("/conocenos/")}
             />
             <span className="text-slate-300">|</span>
             <FooterNavLink
               href="/servicios"
-              label={isEN ? "Services" : "Servicios"}
+              label="Servicios"
               isActive={pathname === "/servicios" || pathname.startsWith("/servicios/")}
             />
             <span className="text-slate-300">|</span>
             <FooterNavLink
               href="/contacto"
-              label={isEN ? "Contact" : "Contacto"}
+              label="Contacto"
               isActive={pathname === "/contacto" || pathname.startsWith("/contacto/")}
             />
           </div>
@@ -109,7 +106,7 @@ export default function Footer() {
           <div className="order-2 w-full flex flex-row items-center justify-center gap-6 md:contents">
             {/* Logo Part */}
             <div className="md:col-start-2 md:row-start-1 flex items-center justify-center">
-              <Link href="/" aria-label={isEN ? "Go to homepage" : "Ir a la pagina principal"}>
+              <Link href="/" aria-label="Ir a la pagina principal">
                 <Image src={logoSrc} alt="Tripoli Media" width={34} height={34} className="h-[30px] w-[30px] sm:h-[34px] sm:w-[34px] object-contain" />
               </Link>
             </div>
@@ -180,7 +177,7 @@ export default function Footer() {
               className={`no-underline hover:no-underline transition text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-100 ${isPrivacyActive ? "font-semibold" : "font-normal hover:font-semibold"
                 }`}
             >
-              {isEN ? "Privacy Notice" : "Aviso de Privacidad"}
+              Aviso de Privacidad
             </Link>
             <span className="text-slate-300">|</span>
             <Link
@@ -189,13 +186,13 @@ export default function Footer() {
               className={`no-underline hover:no-underline transition text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-100 ${isTermsActive ? "font-semibold" : "font-normal hover:font-semibold"
                 }`}
             >
-              {isEN ? "Terms and Conditions" : "T\u00E9rminos y Condiciones"}
+              T\u00E9rminos y Condiciones
             </Link>
           </div>
 
           {/* 4. Copyright - order-4 mobile, Col 1 Row 2 desktop */}
           <div className="order-4 md:col-start-1 md:row-start-2 w-fit mx-auto md:w-auto md:mx-0 text-center md:text-left text-xs text-slate-500 dark:text-slate-400">
-            {isEN ? "2026 Tripoli Media. All rights reserved." : "\u00A9 2026 Tripoli Media. Todos los derechos reservados."}
+{"\u00A9 2026 Tripoli Media. Todos los derechos reservados."}
           </div>
         </div>
       </div>

@@ -1,37 +1,29 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useLanguage } from "../LanguageProvider";
 import NewsCarousel from "./NewsCarousel";
 import BannerConsumoRetail from "./BannerConsumoRetail";
 
 export default function CategorySection({
   title,
-  titleEn,
   slug,
   titleHref,
   posts,
   BannerComponent = BannerConsumoRetail,
 }) {
-  const { language } = useLanguage();
-
   const linkHref = titleHref || `/categoria/${slug}`;
   const themeKey = slug || "default";
 
-  const heading = language === "EN" ? titleEn || title : title || titleEn;
-  const newsLabel = language === "EN" ? "Latest news" : "\u00daltimas noticias";
-  const moreNewsLabel = language === "EN" ? "See more news" : "Ver m\u00e1s noticias";
+  const heading = title;
+  const newsLabel = "\u00daltimas noticias";
+  const moreNewsLabel = "Ver m\u00e1s noticias";
 
-  const localizedPosts = (posts || []).map((post, idx) =>
-    language === "EN"
-      ? post
-      : {
-          ...post,
-          title: post.titleEs ?? post.title ?? `T\u00edtulo ${idx + 1}`,
-          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqu\u00ed...",
-          date: post.dateEs ?? post.date ?? "Noviembre 2025",
-        }
-  );
+  const localizedPosts = (posts || []).map((post, idx) => ({
+    ...post,
+    title: post.titleEs ?? post.title ?? `T\u00edtulo ${idx + 1}`,
+    excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aqu\u00ed...",
+    date: post.dateEs ?? post.date ?? "Noviembre 2025",
+  }));
 
   return (
     <section className="flex flex-col gap-4 px-4 max-w-[70rem] mx-auto w-full sm:px-[12px] md:px-4">

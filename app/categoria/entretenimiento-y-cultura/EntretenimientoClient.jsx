@@ -3,38 +3,30 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerEntretenimientoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Entretenimiento y Cultura.png";
 import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Productoras-de-Contenido.png";
 import bannerRecintos from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Recintos-Culturales.png";
 import bannerFestivales from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Festivales-Eventos-y-Artistas.png";
 
 export default function EntretenimientoClient({ productorasData, recintosData, festivalesData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-          ...post,
-          title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
-          excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
-          date: post.dateEs ?? post.date ?? "Noviembre 2025",
-        }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header Entertainment & Culture" : "Banner Header Entretenimiento y Cultura",
-    fabricantes: isEnglish ? "Content Producers" : "Productoras de Contenido",
-    cadenas: isEnglish ? "Cultural Venues" : "Recintos Culturales",
-    conveniencia: isEnglish ? "Festivals, Events & Artists" : "Festivales, Eventos y Artistas",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerFabricantes: isEnglish ? "Banner Content Producers" : "Banner Productoras de Contenido",
-    bannerCadenas: isEnglish ? "Banner Cultural Venues" : "Banner Recintos Culturales",
-    bannerConveniencia: isEnglish ? "Banner Festivals, Events & Artists" : "Banner Festivales, Eventos y Artistas",
+    bannerHeader: "Banner Header Entretenimiento y Cultura",
+    fabricantes: "Productoras de Contenido",
+    cadenas: "Recintos Culturales",
+    conveniencia: "Festivales, Eventos y Artistas",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerFabricantes: "Banner Productoras de Contenido",
+    bannerCadenas: "Banner Recintos Culturales",
+    bannerConveniencia: "Banner Festivales, Eventos y Artistas",
   };
 
   const barVars = {

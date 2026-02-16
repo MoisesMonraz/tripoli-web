@@ -3,35 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import { useLanguage } from "../../../components/LanguageProvider";
 import bannerInfraHero from "../../../Imagenes/Banners-Pagina-Web/Banner Infraestructura Social.png";
 
 export default function InfraestructuraClient({ proveedoresData, desarrolladoresData, promotoresData }) {
-  const { language } = useLanguage();
-  const isEnglish = language === "EN";
-
   const getLocalizedPosts = (posts) =>
-    (posts || []).map((post, idx) =>
-      isEnglish
-        ? post
-        : {
-            ...post,
-            title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
-            excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
-            date: post.dateEs ?? post.date ?? "Noviembre 2025",
-          }
-    );
+    (posts || []).map((post, idx) => ({
+      ...post,
+      title: post.titleEs ?? post.title ?? `Título ${idx + 1}`,
+      excerpt: post.excerptEs ?? post.excerpt ?? "Vista previa corta aquí...",
+      date: post.dateEs ?? post.date ?? "Noviembre 2025",
+    }));
 
   const labels = {
-    bannerHeader: isEnglish ? "Banner Header Social Infrastructure" : "Banner Header Infraestructura Social",
-    proveedores: isEnglish ? "Materials Suppliers" : "Proveedores de Materiales",
-    desarrolladores: isEnglish ? "Project Developers" : "Desarrolladores de Proyectos",
-    promotores: isEnglish ? "Real Estate Developers" : "Promotores Inmobiliarios",
-    novedades: isEnglish ? "Latest news" : "Novedades",
-    verMas: isEnglish ? "See more news" : "Ver más noticias",
-    bannerProveedores: isEnglish ? "Banner Materials Suppliers" : "Banner Proveedores de Materiales",
-    bannerDesarrolladores: isEnglish ? "Banner Project Developers" : "Banner Desarrolladores de Proyectos",
-    bannerPromotores: isEnglish ? "Banner Real Estate Developers" : "Banner Promotores Inmobiliarios",
+    bannerHeader: "Banner Header Infraestructura Social",
+    proveedores: "Proveedores de Materiales",
+    desarrolladores: "Desarrolladores de Proyectos",
+    promotores: "Promotores Inmobiliarios",
+    novedades: "Novedades",
+    verMas: "Ver más noticias",
+    bannerProveedores: "Banner Proveedores de Materiales",
+    bannerDesarrolladores: "Banner Desarrolladores de Proyectos",
+    bannerPromotores: "Banner Promotores Inmobiliarios",
   };
 
   const tailSlides = defaultSlides.slice(1);

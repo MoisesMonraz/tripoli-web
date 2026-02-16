@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useFavorites } from "../../components/favorites/FavoritesContext";
-import { useLanguage } from "../../components/LanguageProvider";
-import { useTranslatedTexts } from "@/hooks/useTranslation";
 
 const formatFullSpanishDate = (dateInput) => {
     if (!dateInput) return "";
@@ -29,51 +27,21 @@ const formatFullSpanishDate = (dateInput) => {
     return formatter.format(dateValue);
 };
 
-const formatFullEnglishDate = (dateInput) => {
-    if (!dateInput) return "";
-    const dateValue = new Date(dateInput);
-    if (Number.isNaN(dateValue.getTime())) return "";
-    return new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    }).format(dateValue);
-};
-
-// UI text translations
 const UI_TEXT = {
-    ES: {
-        label: "Favoritos",
-        title: "Artículos guardados como favoritos",
-        emptyTitle: "No tienes artículos guardados",
-        emptyDescription: "Cuando encuentres un artículo que te interese, haz clic en la estrella para guardarlo aquí.",
-        exploreButton: "Explorar artículos",
-        author: "por: Tripoli Publishing House",
-        removeLabel: "Quitar de favoritos",
-    },
-    EN: {
-        label: "Favorites",
-        title: "Articles saved as favorites",
-        emptyTitle: "You have no saved articles",
-        emptyDescription: "When you find an article you like, click the star to save it here.",
-        exploreButton: "Explore articles",
-        author: "by: Tripoli Publishing House",
-        removeLabel: "Remove from favorites",
-    },
+    label: "Favoritos",
+    title: "Artículos guardados como favoritos",
+    emptyTitle: "No tienes artículos guardados",
+    emptyDescription: "Cuando encuentres un artículo que te interese, haz clic en la estrella para guardarlo aquí.",
+    exploreButton: "Explorar artículos",
+    author: "por: Tripoli Publishing House",
+    removeLabel: "Quitar de favoritos",
 };
 
 export default function FavoritosClient() {
     const { favorites, removeFavorite, isLoaded } = useFavorites();
-    const { language } = useLanguage();
-    const t = UI_TEXT[language] || UI_TEXT.ES;
+    const t = UI_TEXT;
 
-    // Extract titles for batch translation
-    const articleTitles = useMemo(() => favorites.map(article => article.title || ""), [favorites]);
-    const translatedTitles = useTranslatedTexts(articleTitles);
-
-    // Format date based on language
-    const formatDate = language === "EN" ? formatFullEnglishDate : formatFullSpanishDate;
+    const formatDate = formatFullSpanishDate;
 
     if (!isLoaded) {
         return (
@@ -135,12 +103,12 @@ export default function FavoritosClient() {
                     </div>
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {favorites.map((article, index) => {
+                        {favorites.map((article) => {
                             const articleHref = article.category && article.subcategory
                                 ? `/${article.category}/${article.subcategory}/articulo/${article.slug}`
                                 : `/articulo/${article.slug}`;
                             const formattedDate = formatDate(article.date);
-                            const displayTitle = language === "EN" ? translatedTitles[index] || article.title : article.title;
+                            const displayTitle = article.title;
 
                             return (
                                 <article

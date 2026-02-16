@@ -1,70 +1,25 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLanguage } from "../LanguageProvider";
 import ArticleContent from "./ArticleContent";
 import SocialShareBar from "./SocialShareBar";
-import { getCachedTranslation, saveCachedTranslation } from "../../lib/translationCache";
 
 /**
- * Extract all text nodes from Rich Text for translation
+ * Format date in Spanish
  */
-function collectTextsFromRichText(node, texts) {
-  if (!node || typeof node !== "object") return;
-  if (node.nodeType === "text" && node.value?.trim()) {
-    texts.push(node.value);
-  }
-  if (Array.isArray(node.content)) {
-    node.content.forEach((child) => collectTextsFromRichText(child, texts));
-  }
-}
-
-/**
- * Replace text nodes in Rich Text with translations
- */
-function applyTranslationsToRichText(node, translationMap) {
-  if (!node || typeof node !== "object") return node;
-
-  if (node.nodeType === "text" && node.value?.trim()) {
-    return {
-      ...node,
-      value: translationMap.get(node.value) || node.value,
-    };
-  }
-
-  if (Array.isArray(node.content)) {
-    return {
-      ...node,
-      content: node.content.map((child) =>
-        applyTranslationsToRichText(child, translationMap)
-      ),
-    };
-  }
-
-  return node;
-}
-
-/**
- * Format date based on language
- */
-const formatDate = (dateInput, language = "ES") => {
+const formatDate = (dateInput) => {
   if (!dateInput) return "";
   const date = new Date(dateInput);
   if (Number.isNaN(date.getTime())) return "";
 
-  const locale = language === "EN" ? "en-US" : "es-MX";
-  const formatter = new Intl.DateTimeFormat(locale, {
+  const formatter = new Intl.DateTimeFormat("es-MX", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-
-  if (language === "EN") {
-    return formatter.format(date);
-  }
 
   const parts = formatter.formatToParts(date).reduce((acc, part) => {
     if (part.type !== "literal") acc[part.type] = part.value;
@@ -126,37 +81,34 @@ const ContentBlock = ({ content, className = "" }) => {
 
 // Category translations
 const categoryTranslations = {
-  "consumo-y-retail": { ES: "Consumo y Retail", EN: "Consumer & Retail" },
-  "entretenimiento-y-cultura": { ES: "Entretenimiento y Cultura", EN: "Entertainment & Culture" },
-  "industria-ti": { ES: "Industria TI", EN: "IT Industry" },
-  "infraestructura-social": { ES: "Infraestructura Social", EN: "Social Infrastructure" },
-  "politica-y-leyes": { ES: "Politica y Leyes", EN: "Politics & Law" },
-  "sector-salud": { ES: "Sector Salud", EN: "Health Sector" },
+  "consumo-y-retail": "Consumo y Retail",
+  "entretenimiento-y-cultura": "Entretenimiento y Cultura",
+  "industria-ti": "Industria TI",
+  "infraestructura-social": "Infraestructura Social",
+  "politica-y-leyes": "Politica y Leyes",
+  "sector-salud": "Sector Salud",
 };
 
 const subcategoryTranslations = {
-  "fabricantes-y-proveedores": { ES: "Fabricantes y Proveedores", EN: "Manufacturers & Suppliers" },
-  "cadenas-comerciales": { ES: "Cadenas Comerciales", EN: "Retail Chains" },
-  "tiendas-de-conveniencia": { ES: "Tiendas de Conveniencia", EN: "Convenience Stores" },
-  "productoras-de-contenido": { ES: "Productoras de Contenido", EN: "Content Producers" },
-  "recintos-culturales": { ES: "Recintos Culturales", EN: "Cultural Venues" },
-  "festivales-eventos-y-artistas": { ES: "Festivales, Eventos y Artistas", EN: "Festivals, Events & Artists" },
-  "fabricantes-de-tecnologia": { ES: "Fabricantes de Tecnologia", EN: "Technology Manufacturers" },
-  "mayoristas-ti": { ES: "Mayoristas TI", EN: "IT Wholesalers" },
-  "canales-de-distribucion": { ES: "Canales de Distribucion", EN: "Distribution Channels" },
-  "proveedores-de-materiales": { ES: "Proveedores de Materiales", EN: "Materials Suppliers" },
-  "desarrolladores-de-proyectos": { ES: "Desarrolladores de Proyectos", EN: "Project Developers" },
-  "promotores-inmobiliarios": { ES: "Promotores Inmobiliarios", EN: "Real Estate Developers" },
-  "organismos-publicos": { ES: "Organismos Publicos", EN: "Public Agencies" },
-  "administracion-publica": { ES: "Administracion Publica", EN: "Public Administration" },
-  "servicios-juridicos": { ES: "Servicios Juridicos", EN: "Legal Services" },
-  "fabricantes-equipos-insumos": { ES: "Fabricantes de Equipo e Insumos", EN: "Equipment & Supplies Manufacturers" },
-  "instituciones-de-salud": { ES: "Instituciones de Salud", EN: "Healthcare Institutions" },
-  "especialistas-medicos": { ES: "Especialistas Medicos", EN: "Medical Specialists" },
+  "fabricantes-y-proveedores": "Fabricantes y Proveedores",
+  "cadenas-comerciales": "Cadenas Comerciales",
+  "tiendas-de-conveniencia": "Tiendas de Conveniencia",
+  "productoras-de-contenido": "Productoras de Contenido",
+  "recintos-culturales": "Recintos Culturales",
+  "festivales-eventos-y-artistas": "Festivales, Eventos y Artistas",
+  "fabricantes-de-tecnologia": "Fabricantes de Tecnologia",
+  "mayoristas-ti": "Mayoristas TI",
+  "canales-de-distribucion": "Canales de Distribucion",
+  "proveedores-de-materiales": "Proveedores de Materiales",
+  "desarrolladores-de-proyectos": "Desarrolladores de Proyectos",
+  "promotores-inmobiliarios": "Promotores Inmobiliarios",
+  "organismos-publicos": "Organismos Publicos",
+  "administracion-publica": "Administracion Publica",
+  "servicios-juridicos": "Servicios Juridicos",
+  "fabricantes-equipos-insumos": "Fabricantes de Equipo e Insumos",
+  "instituciones-de-salud": "Instituciones de Salud",
+  "especialistas-medicos": "Especialistas Medicos",
 };
-
-// Cache key for localStorage
-const getCacheKey = (slug) => `tm_article_translation_${slug}`;
 
 /**
  * ArticlePageClient - Full article page with automatic AI translation
@@ -167,223 +119,14 @@ export default function ArticlePageClient({
   categorySlug,
   subcategorySlug,
 }) {
-  const { language } = useLanguage();
-  const [article, setArticle] = useState(initialArticle);
-  const [isLoading, setIsLoading] = useState(false);
-  const [translationError, setTranslationError] = useState(null);
-  const translationCacheRef = useRef({ ES: initialArticle });
+  const article = initialArticle;
+  const isLoading = false;
+  const translationError = null;
 
-  /**
-   * Translate article using Gemini API with Firebase persistent cache
-   */
-  const translateArticle = useCallback(async () => {
-    // Check memory cache first (instant)
-    if (translationCacheRef.current.EN) {
-      setArticle(translationCacheRef.current.EN);
-      return;
-    }
-
-    // Check Firebase cache (shared across all users)
-    try {
-      const firebaseCached = await getCachedTranslation(slug);
-      if (firebaseCached) {
-        console.log("[Translation] Found in Firebase cache");
-        translationCacheRef.current.EN = firebaseCached;
-        setArticle(firebaseCached);
-        return;
-      }
-    } catch (e) {
-      console.warn("[Translation] Firebase cache check failed:", e.message);
-      // Continue to localStorage fallback
-    }
-
-    // Check localStorage cache (fallback for offline)
-    try {
-      const cached = localStorage.getItem(getCacheKey(slug));
-      if (cached) {
-        const parsedCache = JSON.parse(cached);
-        if (parsedCache.timestamp && Date.now() - parsedCache.timestamp < 7 * 24 * 60 * 60 * 1000) {
-          console.log("[Translation] Found in localStorage cache");
-          translationCacheRef.current.EN = parsedCache.article;
-          setArticle(parsedCache.article);
-          return;
-        }
-      }
-    } catch (e) {
-      // Ignore localStorage errors
-    }
-
-    setIsLoading(true);
-    setTranslationError(null);
-
-    try {
-      // Collect all texts to translate
-      const textsToTranslate = [];
-      const spanishArticle = translationCacheRef.current.ES || initialArticle;
-
-      // Add title
-      if (spanishArticle.title) {
-        textsToTranslate.push(spanishArticle.title);
-      }
-
-      // Add excerpt
-      if (spanishArticle.excerpt) {
-        textsToTranslate.push(spanishArticle.excerpt);
-      }
-
-      // Add image captions (pies de foto)
-      const captionFields = ["imageCaption", "image1Caption", "image2Caption", "image3Caption"];
-      captionFields.forEach((field) => {
-        if (spanishArticle[field]?.trim()) {
-          textsToTranslate.push(spanishArticle[field]);
-        }
-      });
-
-      // Collect from Rich Text fields
-      const richTextFields = ["introduccion", "body1", "body2", "cierre", "fuentes"];
-      richTextFields.forEach((field) => {
-        if (spanishArticle[field]) {
-          collectTextsFromRichText(spanishArticle[field], textsToTranslate);
-        }
-      });
-
-      console.log(`[Translation] Translating ${textsToTranslate.length} text segments`);
-
-      // Helper function to translate a batch with retry
-      const translateBatchWithRetry = async (batch, retries = 2) => {
-        for (let attempt = 0; attempt <= retries; attempt++) {
-          try {
-            const response = await fetch("/api/translate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ texts: batch, targetLang: "EN" }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({}));
-              throw new Error(errorData.error || `HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.translations || batch;
-          } catch (error) {
-            console.warn(`[Translation] Batch attempt ${attempt + 1} failed:`, error.message);
-            if (attempt === retries) {
-              // On final failure, return original texts
-              console.error("[Translation] All retry attempts failed, using original texts");
-              return batch;
-            }
-            // Wait before retry
-            await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
-          }
-        }
-        return batch;
-      };
-
-      // Translate in batches of 15 (smaller batches for reliability)
-      const allTranslations = [];
-      const BATCH_SIZE = 15;
-
-      for (let i = 0; i < textsToTranslate.length; i += BATCH_SIZE) {
-        const batch = textsToTranslate.slice(i, i + BATCH_SIZE);
-        const translations = await translateBatchWithRetry(batch);
-        allTranslations.push(...translations);
-      }
-
-      // Create translation map
-      const translationMap = new Map();
-      textsToTranslate.forEach((text, i) => {
-        if (allTranslations[i] && allTranslations[i] !== text) {
-          translationMap.set(text, allTranslations[i]);
-        }
-      });
-
-      // Build translated article
-      const translatedArticle = {
-        ...spanishArticle,
-        title: translationMap.get(spanishArticle.title) || spanishArticle.title,
-        excerpt: spanishArticle.excerpt
-          ? translationMap.get(spanishArticle.excerpt) || spanishArticle.excerpt
-          : "",
-      };
-
-      // Apply translations to image captions
-      captionFields.forEach((field) => {
-        if (spanishArticle[field]?.trim()) {
-          translatedArticle[field] = translationMap.get(spanishArticle[field]) || spanishArticle[field];
-        }
-      });
-
-      // Apply translations to Rich Text fields
-      richTextFields.forEach((field) => {
-        if (spanishArticle[field]) {
-          translatedArticle[field] = applyTranslationsToRichText(
-            spanishArticle[field],
-            translationMap
-          );
-        }
-      });
-
-      // Cache in memory
-      translationCacheRef.current.EN = translatedArticle;
-
-      // Save to Firebase (persistent, shared across all users)
-      try {
-        await saveCachedTranslation(slug, translatedArticle);
-        console.log("[Translation] Saved to Firebase cache");
-      } catch (e) {
-        console.warn("[Translation] Firebase save failed:", e.message);
-      }
-
-      // Also cache in localStorage (backup for offline)
-      try {
-        localStorage.setItem(
-          getCacheKey(slug),
-          JSON.stringify({
-            article: translatedArticle,
-            timestamp: Date.now(),
-          })
-        );
-      } catch (e) {
-        // Ignore localStorage errors
-      }
-
-      setArticle(translatedArticle);
-      console.log("[Translation] Article translated successfully");
-    } catch (error) {
-      console.error("[Translation] Fatal error:", error);
-      setTranslationError("Translation failed. Showing original content.");
-      setArticle(translationCacheRef.current.ES || initialArticle);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [slug, initialArticle]);
-
-  useEffect(() => {
-    if (language === "ES") {
-      setArticle(translationCacheRef.current.ES || initialArticle);
-      setTranslationError(null);
-    } else if (language === "EN") {
-      translateArticle();
-    }
-  }, [language, translateArticle, initialArticle]);
-
-  // Get translated category/subcategory labels
-  const getCategoryLabel = () => {
-    const translations = categoryTranslations[categorySlug];
-    if (translations) return translations[language] || translations.ES;
-    return (article.category || categorySlug || "").replace(/-/g, " ");
-  };
-
-  const getSubcategoryLabel = () => {
-    const translations = subcategoryTranslations[subcategorySlug];
-    if (translations) return translations[language] || translations.ES;
-    return (article.subcategory || subcategorySlug || "").replace(/-/g, " ");
-  };
-
-  const categoryLabel = getCategoryLabel();
-  const subcategoryLabel = getSubcategoryLabel();
-  const formattedDate = formatDate(article.dateISO, language) || article.date || "";
+  // Get category/subcategory labels
+  const categoryLabel = categoryTranslations[categorySlug] || (article.category || categorySlug || "").replace(/-/g, " ");
+  const subcategoryLabel = subcategoryTranslations[subcategorySlug] || (article.subcategory || subcategorySlug || "").replace(/-/g, " ");
+  const formattedDate = formatDate(article.dateISO) || article.date || "";
   const hasModularContent = article.introduccion || article.body1 || article.body2;
 
   return (
@@ -525,7 +268,7 @@ export default function ArticlePageClient({
             <ol className="flex items-center gap-1.5">
               <li>
                 <Link href="/" className="transition-colors hover:text-[#00BFFF]">
-                  {language === "EN" ? "Home" : "Inicio"}
+                  Inicio
                 </Link>
               </li>
               <li className="text-slate-300 dark:text-slate-600">/</li>
