@@ -6,7 +6,7 @@ import { useLanguage } from "../../components/LanguageProvider";
 const content = {
   ES: [
     "I. IDENTIDAD Y DOMICILIO DEL RESPONSABLE",
-    "TRIPOLI MEDIA (en adelante \"El Responsable\"), con domicilio para oír y recibir notificaciones en P.º de los Virreyes 45, Puerta de Hierro, C.P. 45116, Zapopan, Jalisco, es el responsable del uso y protección de sus datos personales, y al respecto le informa lo siguiente:",
+    "TRIPOLI MEDIA (en adelante \"El Responsable\"), con domicilio para oír y recibir notificaciones en Av. Juan Palomar y Arias 1180, C.P. 45110, Zapopan, Jalisco, es el responsable del uso y protección de sus datos personales, y al respecto le informa lo siguiente:",
     "II. FINALIDADES DEL TRATAMIENTO",
     "Los datos personales que recabamos de usted, los utilizaremos para las siguientes finalidades que son necesarias para el servicio que solicita:",
     "- Verificar su identidad y permitir el registro de su cuenta de usuario.",
