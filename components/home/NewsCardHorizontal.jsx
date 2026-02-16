@@ -165,7 +165,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           </div>
 
           {/* Bottom: Metadata + Actions */}
-          <div className="flex items-end justify-between w-full mt-1">
+          <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
               <span className="text-[5.25px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
                 por: Tripoli Publishing House
@@ -175,9 +175,9 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
               </time>
             </div>
 
-            {/* Actions */}
+            {/* Actions aligned to right */}
             {!isPlaceholder && (
-              <div className="flex items-center gap-0.5 shrink-0 mb-0.5">
+              <div className="flex items-center justify-end gap-0.5 w-full">
                 <CopyLinkButton url={fullUrl} />
                 <span className="h-3 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" />
                 <CardFavoriteButton articleSlug={slug} articleData={articleData} />
