@@ -152,29 +152,39 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
             </Link>
           )}
         </div>
-        <div className="flex flex-1 flex-col items-start text-left justify-start gap-1 overflow-hidden px-3 py-2">
-          {isPlaceholder ? (
-            <h3 className="text-[8px] leading-tight font-semibold text-slate-900 dark:text-slate-50">{displayTitle}</h3>
-          ) : (
-            <Link href={articleHref} className="text-[8px] leading-tight font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff]">
-              {displayTitle}
-            </Link>
-          )}
-          <span className="text-[5.25px] font-sans font-semibold text-slate-800 dark:text-slate-200">
-            por: Tripoli Publishing House
-          </span>
-          <time className="text-[5.25px] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
-            {formattedDate}
-          </time>
-        </div>
-        {/* Mobile Action Icons */}
-        {!isPlaceholder && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-0.5 z-10">
-            <CopyLinkButton url={fullUrl} />
-            <span className="h-3 w-px bg-slate-300 dark:bg-slate-600" />
-            <CardFavoriteButton articleSlug={slug} articleData={articleData} />
+        <div className="flex flex-1 flex-col justify-between overflow-hidden px-3 py-2">
+          {/* Top: Title */}
+          <div className="flex items-start">
+            {isPlaceholder ? (
+              <h3 className="text-[8px] leading-tight font-semibold text-slate-900 dark:text-slate-50 line-clamp-3">{displayTitle}</h3>
+            ) : (
+              <Link href={articleHref} className="text-[8px] leading-tight font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] line-clamp-3">
+                {displayTitle}
+              </Link>
+            )}
           </div>
-        )}
+
+          {/* Bottom: Metadata + Actions */}
+          <div className="flex items-end justify-between w-full mt-1">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[5.25px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
+                por: Tripoli Publishing House
+              </span>
+              <time className="text-[5.25px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
+                {formattedDate}
+              </time>
+            </div>
+
+            {/* Actions */}
+            {!isPlaceholder && (
+              <div className="flex items-center gap-0.5 shrink-0 mb-0.5">
+                <CopyLinkButton url={fullUrl} />
+                <span className="h-3 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" />
+                <CardFavoriteButton articleSlug={slug} articleData={articleData} />
+              </div>
+            )}
+          </div>
+        </div>
       </article>
 
       {/* Desktop Layout - Horizontal card with image flush to edges */}
