@@ -52,12 +52,12 @@ export default function CategorySection({
       </div>
 
       <div className="flex flex-col gap-1">
-        <p className="text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">{newsLabel}</p>
+        <p className="text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">{newsLabel}</p>
         <NewsCarousel posts={localizedPosts} />
         <Link
           href={linkHref}
           className="
-            group relative text-right text-[14px] font-bold uppercase tracking-[0.08em]
+            group relative text-right text-[10.5px] sm:text-[14px] font-bold uppercase tracking-[0.08em]
             text-slate-700 dark:text-slate-200
             transition-colors duration-200
             hover:text-[#00BFFF] dark:hover:text-[#33ceff]
