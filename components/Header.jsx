@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
+import logoSrc from "../Imagenes/Logos/TripoliMedia.png";
 
 const navItems = [
   { key: "home", href: "/", path: "/", label: "Inicio" },

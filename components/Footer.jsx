@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
+import logoSrc from "../Imagenes/Logos/TripoliMedia.png";
 import facebookSrc from "../Imagenes/Logos/Facebook.png";
 import xSrc from "../Imagenes/Logos/X azul.png";
 import xDarkSrc from "../Imagenes/Logos/X azul.png";
@@ -192,7 +192,7 @@ export default function Footer() {
 
           {/* 4. Copyright - order-4 mobile, Col 1 Row 2 desktop */}
           <div className="order-4 md:col-start-1 md:row-start-2 w-fit mx-auto md:w-auto md:mx-0 text-center md:text-left text-xs text-slate-500 dark:text-slate-400">
-{"\u00A9 2026 Tripoli Media. Todos los derechos reservados."}
+            {"\u00A9 2026 Tripoli Media. Todos los derechos reservados."}
           </div>
         </div>
       </div>
