@@ -374,8 +374,8 @@ export default function Header() {
   return (
     <>
       <header data-header="main" className="font-raleway border-b border-slate-200/70 bg-white/85 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/85 relative z-50">
-        <div className="mx-auto grid w-full md:max-w-[96%] xl:max-w-[80%] grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 px-3 sm:px-4 py-4 sm:py-6">
-          <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="mx-auto flex w-full max-w-[70rem] items-center px-3 sm:px-4 py-4 sm:py-6">
+          <div className="flex flex-1 items-center gap-1.5 sm:gap-3 min-w-0">
             <button
               type="button"
               aria-expanded={isMenuOpen}
@@ -426,7 +426,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="col-start-2 col-end-3 flex items-center justify-center">
+          <div className="flex items-center justify-center shrink-0 px-2 sm:px-4">
             <Link href="/" className="group flex items-center gap-2 sm:gap-5 text-[#00BFFF] transition hover:opacity-95 dark:text-[#33ceff]" aria-label="Ir a la pagina principal">
               <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center">
                 <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" priority />
@@ -437,7 +437,7 @@ export default function Header() {
             </Link>
           </div>
 
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3">
+          <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 min-w-0">
             {renderRightControls()}
           </div>
         </div>
@@ -480,14 +480,15 @@ export default function Header() {
         className={`fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/95 font-raleway backdrop-blur-lg shadow-md shadow-slate-900/5 transition-all duration-200 dark:border-slate-800/70 dark:bg-slate-950/90 dark:shadow-black/30 ${isStickyVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
           }`}
       >
-        <div className="relative w-full md:max-w-[96%] xl:max-w-[80%] md:mx-auto flex items-center gap-1.5 sm:gap-3 px-2 py-2 sm:px-1">
-          <div className="flex md:hidden items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
+        {/* Mobile sticky layout */}
+        <div className="relative flex md:hidden items-center gap-1.5 sm:gap-3 px-2 py-2">
+          <div className="flex items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
             <button
               type="button"
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="md:hidden flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
             >
               {isMenuOpen ? (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
@@ -500,10 +501,10 @@ export default function Header() {
               )}
             </button>
 
-            <div className="md:hidden group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
+            <div className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
               <Link
                 href="/calendario"
-                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
+                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
                 style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
                 aria-label="Ir al calendario editorial"
               >
@@ -530,14 +531,26 @@ export default function Header() {
             </div>
           </div>
 
-          <Link href="/" className="flex items-center justify-center absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 md:flex-shrink-0" aria-label="Ir a la pagina principal">
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2" aria-label="Ir a la pagina principal">
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </Link>
 
-          <div className="hidden md:flex pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[70rem] items-center justify-center">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
+            {renderRightControls()}
+          </div>
+        </div>
+
+        {/* Desktop sticky layout */}
+        <div className="hidden md:flex items-center w-full py-2">
+          <div className="flex-1 flex items-center justify-center min-w-0">
+            <Link href="/" aria-label="Ir a la pagina principal">
+              <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
+            </Link>
+          </div>
+          <div className="flex-[0_1_70rem] max-w-[70rem] flex items-center justify-center min-w-0">
             {renderNav()}
           </div>
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
+          <div className="flex-1 flex items-center justify-end min-w-0 pr-4">
             {renderRightControls()}
           </div>
         </div>
