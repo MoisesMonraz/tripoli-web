@@ -5,9 +5,22 @@ import { useLanguage } from "../../components/LanguageProvider";
 
 const content = {
   ES: [
-    "El acceso y uso del sitio web de Tripoli Media implica la aceptación plena y sin reservas de los presentes Términos y Condiciones. La información, contenidos y servicios descritos en este sitio tienen carácter informativo y están relacionados con servicios de publicidad digital, campañas publicitarias, analítica de datos, medición de resultados y comunicación digital. Tripoli Media se reserva el derecho de modificar, actualizar o eliminar, en cualquier momento y sin previo aviso, la información, servicios y contenidos publicados.",
-    "Los servicios de publicidad, gestión de campañas y analítica ofrecidos por Tripoli Media se prestarán conforme a los alcances, objetivos y condiciones que, en su caso, sean acordados de manera específica con cada cliente. Tripoli Media no garantiza resultados específicos derivados de campañas publicitarias o estrategias digitales, ya que estos pueden variar en función de factores externos como presupuesto, mercado, competencia, plataformas publicitarias y comportamiento del usuario.",
-    "Todos los contenidos, textos, diseños, logotipos y materiales publicados en este sitio son propiedad de Tripoli Media o se utilizan con la debida autorización, y se encuentran protegidos por la legislación aplicable en materia de propiedad intelectual. Queda prohibido su uso, reproducción o distribución sin autorización expresa.",
+    "1. ACEPTACIÓN DE LOS TÉRMINOS",
+    "Al ingresar y utilizar este portal de Internet, cuyo nombre de dominio es tripoli.media, propiedad de TRIPOLI MEDIA, con domicilio en Av. Juan Palomar y Arias 1180, C.P. 45110, Zapopan, Jalisco, el usuario está aceptando los Términos y Condiciones de Uso contenidos en este convenio y declara expresamente su aceptación utilizando para tal efecto medios electrónicos, en términos de lo dispuesto por el artículo 1803 del Código Civil Federal.",
+    "2. USO DEL SITIO Y CUENTAS DE USUARIO",
+    "El usuario se compromete a utilizar el contenido del sitio de forma lícita y sin fines contrarios a la moral o al orden público. TRIPOLI MEDIA se reserva el derecho de retirar el acceso o cancelar la cuenta de cualquier usuario que realice comentarios ofensivos, spam, o intente vulnerar la seguridad del sitio.",
+    "3. PROPIEDAD INTELECTUAL (DERECHOS DE AUTOR)",
+    "Todo el contenido publicado en este sitio, incluyendo artículos, reportajes, análisis, logotipos, imágenes, código fuente y diseño, son propiedad exclusiva de TRIPOLI MEDIA o de sus licenciantes, y están protegidos por la Ley Federal del Derecho de Autor y la Ley Federal de Protección a la Propiedad Industrial.",
+    "Prohibición de Reproducción: Queda estrictamente prohibida la reproducción total o parcial, traducción, transformación, distribución o extracción de datos (data scraping) de los contenidos de este sitio sin la autorización previa y por escrito de TRIPOLI MEDIA. El uso no autorizado será perseguido legalmente.",
+    "4. LIMITACIÓN DE RESPONSABILIDAD",
+    "Las opiniones expresadas por los autores, colaboradores y columnistas en este sitio web son responsabilidad exclusiva de ellos y no necesariamente reflejan la postura oficial de TRIPOLI MEDIA. La información se proporciona \"tal cual\" con fines informativos; TRIPOLI MEDIA no garantiza la exactitud o integridad de la información para la toma de decisiones financieras, legales o de inversión por parte del usuario.",
+    "5. MODIFICACIONES",
+    "TRIPOLI MEDIA podrá en cualquier momento y cuando lo considere conveniente, sin necesidad de avisar al usuario, realizar correcciones, adiciones, mejoras o modificaciones al contenido, presentación, información, servicios, áreas, bases de datos y demás elementos de dicho sitio, sin que ello de lugar ni derecho a ninguna reclamación o indemnización.",
+    "6. LEGISLACIÓN APLICABLE Y JURISDICCIÓN",
+    "Este convenio estará sujeto y será interpretado de acuerdo con las leyes federales vigentes en México. En caso de controversia, las partes aceptan someterse a la jurisdicción de los tribunales competentes de la ciudad de Zapopan, Jalisco, renunciando a cualquier otro fuero que pudiera corresponderles por razón de sus domicilios presentes o futuros.",
+    "7. CONTACTO",
+    "Para cualquier duda, aclaración o reclamación relacionada con los servicios o el uso del sitio web, el usuario puede contactar a TRIPOLI MEDIA a través del correo electrónico: contacto@tripoli.media.",
+    "Última actualización: Febrero 2026.",
   ],
   EN: [
     "Access to and use of Tripoli Media's website implies full and unconditional acceptance of these Terms and Conditions. The information, content, and services described on this site are for informational purposes and relate to digital advertising services, advertising campaigns, data analytics, results measurement, and digital communications. Tripoli Media reserves the right to modify, update, or remove the information, services, and content published at any time and without prior notice.",
