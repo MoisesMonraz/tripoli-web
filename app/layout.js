@@ -6,7 +6,7 @@ import { FavoritesProvider } from "../components/favorites/FavoritesContext";
 import ScrollToTop from "../components/ScrollToTop";
 import AIChatWidget from "../components/ai/AIChatWidget";
 import AccessGateModal from "../components/AccessGateModal";
-import RegistrationModal from "../components/RegistrationModal";
+
 import OrganizationJsonLd from "../components/seo/OrganizationJsonLd";
 
 /**
@@ -116,7 +116,6 @@ export default function RootLayout({ children }) {
           {children}
           <Footer />
           <AccessGateModal />
-          <RegistrationModal />
           <AIChatWidget />
         </FavoritesProvider>
       </body>
