@@ -156,9 +156,9 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           {/* Top: Title */}
           <div className="flex items-start">
             {isPlaceholder ? (
-              <h3 className="text-[8px] leading-tight font-semibold text-slate-900 dark:text-slate-50 line-clamp-3">{displayTitle}</h3>
+              <h3 className="text-[9.5px] leading-tight font-semibold text-slate-900 dark:text-slate-50 line-clamp-3">{displayTitle}</h3>
             ) : (
-              <Link href={articleHref} className="text-[8px] leading-tight font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] line-clamp-3">
+              <Link href={articleHref} className="text-[9.5px] leading-tight font-semibold text-slate-900 transition hover:text-[#00BFFF] dark:text-slate-50 dark:hover:text-[#33ceff] line-clamp-3">
                 {displayTitle}
               </Link>
             )}
@@ -167,10 +167,10 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           {/* Bottom: Metadata + Actions */}
           <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[6.5px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
+              <span className="text-[8px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
                 por: Tripoli Publishing House
               </span>
-              <time className="text-[6.5px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
+              <time className="text-[8px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
                 {formattedDate}
               </time>
             </div>
