@@ -167,10 +167,10 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           {/* Bottom: Metadata + Actions */}
           <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
-              <span className="text-[5.25px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
+              <span className="text-[6.5px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
                 por: Tripoli Publishing House
               </span>
-              <time className="text-[5.25px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
+              <time className="text-[6.5px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
                 {formattedDate}
               </time>
             </div>
