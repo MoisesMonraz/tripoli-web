@@ -542,7 +542,7 @@ export default function Header() {
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </Link>
 
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 flex-shrink-0 ml-auto">
             {renderRightControls()}
           </div>
         </div>
@@ -557,7 +557,7 @@ export default function Header() {
           <div className="flex-[0_1_70rem] max-w-[70rem] flex items-center justify-center min-w-0">
             {renderNav()}
           </div>
-          <div className="flex-1 flex items-center justify-end min-w-0 pr-4">
+          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 min-w-0 pr-4">
             {renderRightControls()}
           </div>
         </div>
