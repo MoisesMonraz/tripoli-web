@@ -223,7 +223,7 @@ export default function SubcategoryListPageClient({
                       )}
                       <div className="mt-3 flex items-center gap-1.5 text-[7.5px] font-sans pr-16">
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          por: Tripoli Publishing House
+                          por: {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Tripoli Publishing House"}
                         </span>
                         <span className="text-slate-300 dark:text-slate-600">|</span>
                         <time className="text-slate-500 dark:text-slate-400 truncate">
@@ -259,7 +259,7 @@ export default function SubcategoryListPageClient({
                       </p>
                       <div className="mt-1 flex items-center gap-2 text-[11px] font-sans">
                         <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
-                          por: Tripoli Publishing House
+                          por: {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Tripoli Publishing House"}
                         </span>
                         <span className="text-slate-300 dark:text-slate-600">|</span>
                         <time className="text-slate-500 dark:text-slate-400">
