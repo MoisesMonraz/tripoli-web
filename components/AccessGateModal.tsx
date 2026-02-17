@@ -186,9 +186,9 @@ export default function AccessGateModal() {
         .tm-chat-header-animated {
           background-image: linear-gradient(
             90deg,
-            #c9e8fb,
-            #009fe3,
-            #c9e8fb
+            #0082b9,
+            #83d0f5,
+            #0082b9
           );
           background-size: 300% 100%;
           animation: tmHeaderFlow 12.5s linear infinite;
