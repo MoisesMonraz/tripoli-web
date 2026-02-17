@@ -227,6 +227,13 @@ export default function AccessGateModal() {
                       <li className="flex items-start gap-3">
                         <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
+                          <p className="font-semibold text-white">Agenda VIP</p>
+                          <p className="text-white/80">Invitaciones a eventos espectaculares y networking de alto nivel.</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
+                        <div>
                           <p className="font-semibold text-white">Alertas en tiempo real</p>
                           <p className="text-white/80">Insights y tendencias clave para tu industria.</p>
                         </div>
@@ -234,22 +241,15 @@ export default function AccessGateModal() {
                       <li className="flex items-start gap-3">
                         <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
-                          <p className="font-semibold text-white">Portafolio avanzado</p>
-                          <p className="text-white/80">Guarda y organiza los temas que mas importan.</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
-                        <div>
-                          <p className="font-semibold text-white">Graficos personalizados</p>
-                          <p className="text-white/80">Visualiza indicadores y desempeno de mercado.</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
-                        <div>
                           <p className="font-semibold text-white">App movil sincronizada</p>
                           <p className="text-white/80">Accede desde cualquier dispositivo sin perder contexto.</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-white" />
+                        <div>
+                          <p className="font-semibold text-white">Portafolio avanzado</p>
+                          <p className="text-white/80">Guarda y organiza los temas que mas importan.</p>
                         </div>
                       </li>
                     </ul>
