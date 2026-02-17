@@ -22,7 +22,7 @@ export const metadata = {
     default: "Tripoli Media",
   },
   description:
-    "Tripoli Media is a digital publishing house and media agency specializing in professional news coverage and sectoral analysis across six key industries: Consumer & Retail, Entertainment & Culture, IT Industry, Social Infrastructure, Politics & Law, and Healthcare.",
+    "Tripoli Media es un ecosistema digital que transforma empresas gracias a sus servicios editoriales, de analítica avanzada y soluciones web.",
   applicationName: "Tripoli Media",
   authors: [{ name: "Tripoli Media" }],
   creator: "Tripoli Media",
@@ -54,7 +54,7 @@ export const metadata = {
     locale: "es_MX",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: "/Imagenes/Logos/01.png",
         width: 1200,
         height: 630,
         alt: "Tripoli Media — Digital Publishing House & Media Agency",
