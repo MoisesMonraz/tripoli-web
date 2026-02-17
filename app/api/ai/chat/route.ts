@@ -104,6 +104,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ answer: INVALID_REQUEST_MESSAGE, sources: [] }, { status: 400 });
     }
 
+    // Temporary diagnostic: check service availability
+    if (body?.message?.trim() === "__health") {
+      return NextResponse.json({
+        answer: "OK",
+        services: {
+          gemini: Boolean(process.env.GEMINI_API_KEY),
+          contentful: Boolean(process.env.CONTENTFUL_SPACE_ID && process.env.CONTENTFUL_ACCESS_TOKEN),
+          upstash: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
+          turnstile: Boolean(process.env.TURNSTILE_SECRET_KEY),
+          allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean),
+        },
+        sources: [],
+      });
+    }
+
     const ip = getClientIp(request);
     try {
       const rateLimit = await isRateLimited({
