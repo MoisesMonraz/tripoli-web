@@ -106,15 +106,28 @@ export async function POST(request: NextRequest) {
 
     // Temporary diagnostic: check service availability
     if (body?.message?.trim() === "__health") {
+      const diagnostics: Record<string, any> = {
+        gemini: Boolean(process.env.GEMINI_API_KEY),
+        contentful: Boolean(process.env.CONTENTFUL_SPACE_ID && process.env.CONTENTFUL_ACCESS_TOKEN),
+        upstash: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
+        turnstile: Boolean(process.env.TURNSTILE_SECRET_KEY),
+        allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean),
+      };
+      // Test Gemini API connectivity
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const testClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+        const testResponse = await testClient.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: "Say OK",
+        });
+        diagnostics.geminiTest = testResponse.text ? "OK" : "empty_response";
+      } catch (e: any) {
+        diagnostics.geminiTest = `ERROR: ${e?.message || String(e)}`;
+      }
       return NextResponse.json({
         answer: "OK",
-        services: {
-          gemini: Boolean(process.env.GEMINI_API_KEY),
-          contentful: Boolean(process.env.CONTENTFUL_SPACE_ID && process.env.CONTENTFUL_ACCESS_TOKEN),
-          upstash: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
-          turnstile: Boolean(process.env.TURNSTILE_SECRET_KEY),
-          allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean),
-        },
+        services: diagnostics,
         sources: [],
       });
     }
