@@ -105,20 +105,28 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = getClientIp(request);
-    const rateLimit = await isRateLimited({
-      key: ip,
-      max: 12,
-      windowMs: 60_000,
-      namespace: "chat",
-    });
-    if (rateLimit.limited) {
-      return NextResponse.json({ answer: RATE_LIMIT_MESSAGE, sources: [] }, { status: 429 });
+    try {
+      const rateLimit = await isRateLimited({
+        key: ip,
+        max: 12,
+        windowMs: 60_000,
+        namespace: "chat",
+      });
+      if (rateLimit.limited) {
+        return NextResponse.json({ answer: RATE_LIMIT_MESSAGE, sources: [] }, { status: 429 });
+      }
+    } catch (rateLimitError: any) {
+      console.error("RATE_LIMIT_ERROR:", rateLimitError?.message || rateLimitError);
     }
 
-    const captchaToken = body?.captchaToken ?? request.headers.get("x-captcha-token");
-    const captchaResult = await verifyTurnstileToken(captchaToken ?? null, ip);
-    if (!captchaResult.ok) {
-      return NextResponse.json({ answer: CAPTCHA_ERROR_MESSAGE, sources: [] }, { status: 403 });
+    try {
+      const captchaToken = body?.captchaToken ?? request.headers.get("x-captcha-token");
+      const captchaResult = await verifyTurnstileToken(captchaToken ?? null, ip);
+      if (!captchaResult.ok) {
+        return NextResponse.json({ answer: CAPTCHA_ERROR_MESSAGE, sources: [] }, { status: 403 });
+      }
+    } catch (captchaError: any) {
+      console.error("CAPTCHA_ERROR:", captchaError?.message || captchaError);
     }
 
     const message = body?.message?.trim() ?? "";
@@ -180,14 +188,23 @@ CONTEXTO: Categoría: ${article.categoryName || ""}. Subcategoría: ${article.su
       return NextResponse.json({ answer: NO_SOURCES_MESSAGE, sources: [] });
     }
 
-    const result = await generateTripoliAnswer({
-      question: message,
-      sources,
-      chatHistory: history,
-      lang: "ES",
-      currentDate: body?.currentDate,
-      currentTime: body?.currentTime,
-    });
+    let result;
+    try {
+      result = await generateTripoliAnswer({
+        question: message,
+        sources,
+        chatHistory: history,
+        lang: "ES",
+        currentDate: body?.currentDate,
+        currentTime: body?.currentTime,
+      });
+    } catch (geminiError: any) {
+      console.error("GEMINI_ERROR:", geminiError?.message || geminiError);
+      return NextResponse.json({
+        answer: GENERIC_ERROR_MESSAGE,
+        sources: []
+      }, { status: 500 });
+    }
 
     return NextResponse.json(result);
   } catch (error: any) {

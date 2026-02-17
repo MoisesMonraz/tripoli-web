@@ -53,8 +53,12 @@ export const isRateLimited = async ({
 }: RateLimitConfig): Promise<RateLimitResult> => {
   const limiter = getLimiter(namespace, max, windowMs);
   if (limiter) {
-    const result = await limiter.limit(key);
-    return { limited: !result.success, source: "upstash" };
+    try {
+      const result = await limiter.limit(key);
+      return { limited: !result.success, source: "upstash" };
+    } catch (error) {
+      console.error("Upstash rate limit error, falling back to memory:", error);
+    }
   }
 
   const now = Date.now();
