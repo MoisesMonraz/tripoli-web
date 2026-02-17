@@ -228,14 +228,14 @@ export default function AccessGateModal() {
                         <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">Agenda VIP</p>
-                          <p className="text-white/80">Invitaciones a eventos espectaculares y networking de alto nivel.</p>
+                          <p className="text-white/80">Invitaciones a eventos especiales y networking de alto nivel.</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
                         <span className="mt-2 h-2 w-2 rounded-full bg-white" />
                         <div>
                           <p className="font-semibold text-white">Alertas en tiempo real</p>
-                          <p className="text-white/80">Insights y tendencias clave para tu industria.</p>
+                          <p className="text-white/80">Conoce al momento las noticias, insights y tendencias clave para tu industria.</p>
                         </div>
                       </li>
                       <li className="flex items-start gap-3">
