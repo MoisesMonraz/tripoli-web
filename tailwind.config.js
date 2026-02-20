@@ -9,6 +9,7 @@ module.exports = {
     extend: {
       screens: {
         nav: "1100px",
+        "sticky-nav": "1250px",
       },
       fontFamily: {
         sans: ['"Raleway"', '"Space Grotesk"', '"Sora"', "system-ui", "sans-serif"],

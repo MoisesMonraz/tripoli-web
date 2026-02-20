@@ -490,7 +490,7 @@ export default function Header() {
           }`}
       >
         {/* Mobile sticky layout */}
-        <div className="relative flex nav:hidden items-center gap-1.5 px-2 py-2">
+        <div className="relative flex sticky-nav:hidden items-center gap-1.5 px-2 py-2">
           <div className="flex items-center justify-start ml-2 flex-shrink-0 gap-2">
             <button
               type="button"
@@ -544,13 +544,13 @@ export default function Header() {
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 object-contain" />
           </Link>
 
-          <div className="flex items-center justify-end gap-1.5 nav:gap-3 flex-shrink-0 ml-auto">
+          <div className="flex items-center justify-end gap-1.5 sticky-nav:gap-3 flex-shrink-0 ml-auto">
             {renderRightControls(true)}
           </div>
         </div>
 
         {/* Desktop sticky layout */}
-        <div className="hidden nav:flex items-center w-full py-2">
+        <div className="hidden sticky-nav:flex items-center w-full py-2">
           <div className="flex-1 flex items-center justify-center min-w-0">
             <Link href="/" aria-label="Ir a la pagina principal">
               <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
@@ -559,13 +559,13 @@ export default function Header() {
           <div className="w-full mx-auto max-w-[70rem] flex items-center justify-center min-w-0">
             {renderNav()}
           </div>
-          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 nav:gap-3 min-w-0 pr-4">
+          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 sticky-nav:gap-3 min-w-0 pr-4">
             {renderRightControls(true)}
           </div>
         </div>
 
         {isMenuOpen && (
-          <nav className="nav:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
+          <nav className="sticky-nav:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
             <ul className="w-fit max-w-[70%] space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => {
                 const matchPath = item.path ?? item.href ?? "";
