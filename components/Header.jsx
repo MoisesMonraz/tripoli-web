@@ -112,7 +112,7 @@ export default function Header() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) setIsMenuOpen(false);
+      if (window.innerWidth >= 1100) setIsMenuOpen(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -175,7 +175,7 @@ export default function Header() {
   }, []);
 
   const navLinkStyles =
-    "relative px-1.5 py-2 text-[0.779rem] md:text-[0.876rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
+    "relative px-1.5 py-2 text-[0.779rem] nav:text-[0.876rem] font-semibold uppercase tracking-[0.05em] text-slate-700 whitespace-nowrap leading-tight transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00BFFF] dark:text-slate-200 dark:focus-visible:outline-[#33ceff]";
 
   const renderNav = () => (
     <nav className="flex flex-1 items-center justify-center">
@@ -260,7 +260,7 @@ export default function Header() {
               </Link>
 
               {hasDropdown && (
-                <div className="absolute top-full left-0 z-[60] hidden w-max translate-y-2 rounded-md border border-slate-200 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 ease-out pointer-events-none group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto dark:border-slate-700 dark:bg-slate-800 md:block space-y-1">
+                <div className="absolute top-full left-0 z-[60] hidden w-max translate-y-2 rounded-md border border-slate-200 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 ease-out pointer-events-none group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto dark:border-slate-700 dark:bg-slate-800 nav:block space-y-1">
                   {item.subcategories.map((sub) => (
                     <Link
                       key={sub.slug}
@@ -390,7 +390,7 @@ export default function Header() {
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="md:hidden flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+              className="nav:hidden flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
             >
               {isMenuOpen ? (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
@@ -406,7 +406,7 @@ export default function Header() {
             <div className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
               <Link
                 href="/calendario"
-                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] md:text-[0.82rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
+                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] nav:text-[0.82rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
                 style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
                 aria-label="Ir al calendario editorial"
               >
@@ -446,17 +446,17 @@ export default function Header() {
             </Link>
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 min-w-0">
+          <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2.5 nav:gap-3 min-w-0">
             {renderRightControls()}
           </div>
         </div>
 
-        <div className="hidden md:flex w-full mx-auto max-w-[70rem] items-center justify-center pb-3">
+        <div className="hidden nav:flex w-full mx-auto max-w-[70rem] items-center justify-center pb-3">
           {renderNav()}
         </div>
 
         {isMenuOpen && (
-          <nav className="md:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
+          <nav className="nav:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
             <ul className="w-fit max-w-[70%] space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => {
                 const matchPath = item.path ?? item.href ?? "";
@@ -490,7 +490,7 @@ export default function Header() {
           }`}
       >
         {/* Mobile sticky layout */}
-        <div className="relative flex md:hidden items-center gap-1.5 sm:gap-3 px-2 py-2">
+        <div className="relative flex nav:hidden items-center gap-1.5 sm:gap-3 px-2 py-2">
           <div className="flex items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
             <button
               type="button"
@@ -544,13 +544,13 @@ export default function Header() {
             <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </Link>
 
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 flex-shrink-0 ml-auto">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 nav:gap-3 flex-shrink-0 ml-auto">
             {renderRightControls(true)}
           </div>
         </div>
 
         {/* Desktop sticky layout */}
-        <div className="hidden md:flex items-center w-full py-2">
+        <div className="hidden nav:flex items-center w-full py-2">
           <div className="flex-1 flex items-center justify-center min-w-0">
             <Link href="/" aria-label="Ir a la pagina principal">
               <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
@@ -559,13 +559,13 @@ export default function Header() {
           <div className="w-full mx-auto max-w-[70rem] flex items-center justify-center min-w-0">
             {renderNav()}
           </div>
-          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 min-w-0 pr-4">
+          <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 nav:gap-3 min-w-0 pr-4">
             {renderRightControls(true)}
           </div>
         </div>
 
         {isMenuOpen && (
-          <nav className="md:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
+          <nav className="nav:hidden absolute left-0 right-0 top-full mt-[5px] px-3 pb-3 z-50">
             <ul className="w-fit max-w-[70%] space-y-1 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/30">
               {navItems.map((item) => {
                 const matchPath = item.path ?? item.href ?? "";

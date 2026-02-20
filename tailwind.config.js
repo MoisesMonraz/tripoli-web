@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        nav: "1100px",
+      },
       fontFamily: {
         sans: ['"Raleway"', '"Space Grotesk"', '"Sora"', "system-ui", "sans-serif"],
         raleway: ['"Raleway"', "system-ui", "sans-serif"],
