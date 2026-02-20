@@ -286,7 +286,7 @@ export default function Header() {
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         aria-pressed={isDark}
         onClick={() => setIsDark((prev) => !prev)}
-        className={`group flex h-9 w-9 ${stickyMode ? "" : "sm:h-10 sm:w-auto"} items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/80 ${stickyMode ? "px-0" : "px-0 sm:pl-3 sm:pr-2"} text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]`}
+        className={`group flex h-9 w-9 ${stickyMode ? "sm:h-10 sm:w-10" : "sm:h-10 sm:w-auto"} items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/80 ${stickyMode ? "px-0" : "px-0 sm:pl-3 sm:pr-2"} text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]`}
       >
         {/* Icono solo para móvil (o siempre en stickyMode) */}
         <span className={`${stickyMode ? "flex" : "flex sm:hidden"} w-full items-center justify-center`} aria-hidden="true">
@@ -294,7 +294,7 @@ export default function Header() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="h-4 w-4"
+              className="h-[20px] w-[20px] sm:h-[24px] sm:w-[24px]"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -307,7 +307,7 @@ export default function Header() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="h-4 w-4"
+              className="h-[20px] w-[20px] sm:h-[24px] sm:w-[24px]"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -334,7 +334,7 @@ export default function Header() {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                className="h-4 w-4"
+                className="h-[20px] w-[20px] sm:h-[24px] sm:w-[24px]"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
@@ -347,7 +347,7 @@ export default function Header() {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                className="h-4 w-4"
+                className="h-[20px] w-[20px] sm:h-[24px] sm:w-[24px]"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
