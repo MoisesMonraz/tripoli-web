@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       screens: {
-        nav: "1100px",
-        "sticky-nav": "1250px",
+        nav: "1150px",
+        "sticky-nav": "1350px",
       },
       fontFamily: {
         sans: ['"Raleway"', '"Space Grotesk"', '"Sora"', "system-ui", "sans-serif"],
