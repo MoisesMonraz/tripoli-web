@@ -447,7 +447,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hidden w-full items-center justify-center pb-3 mx-auto md:flex max-w-[70rem]">
+        <div className="hidden md:flex w-full mx-auto max-w-[70rem] items-center justify-center pb-3">
           {renderNav()}
         </div>
 
