@@ -205,7 +205,7 @@ export default function CalendarClient({ articles = [] }) {
                         {/* Author + Date — matches article view header */}
                         <div className="mt-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-sans text-slate-500 dark:text-slate-400">
                           <span className="font-semibold text-slate-700 dark:text-slate-200">
-                            {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Juan Ignacio Armenta"}
+                            {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : post.slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
                           </span>
                           <span className="text-slate-300 dark:text-slate-600">|</span>
                           <time dateTime={post.dateISO}>{longDate}</time>

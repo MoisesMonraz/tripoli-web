@@ -141,7 +141,7 @@ export default function FavoritosClient() {
                                         )}
                                         <div className="mt-auto pt-3 flex items-center gap-2 text-[10px] font-sans">
                                             <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                                por: {article.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Juan Ignacio Armenta"}
+                                                por: {article.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : article.slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
                                             </span>
                                             <span className="text-slate-300 dark:text-slate-600">|</span>
                                             <time className="text-slate-500 dark:text-slate-400">
