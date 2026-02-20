@@ -294,7 +294,7 @@ export default function Header() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="h-4 w-4 sm:h-[24px] sm:w-[24px]"
+              className="h-4 w-4"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
@@ -307,7 +307,7 @@ export default function Header() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="h-4 w-4 sm:h-[24px] sm:w-[24px]"
+              className="h-4 w-4"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
