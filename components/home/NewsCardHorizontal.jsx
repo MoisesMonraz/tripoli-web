@@ -168,7 +168,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
               <span className="text-[7.2px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
-                por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Tripoli Publishing House"}
+                por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Juan Ignacio Armenta"}
               </span>
               <time className="text-[7.2px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
                 {formattedDate}
@@ -210,7 +210,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           )}
           <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-300 line-clamp-2">{excerpt}</p>
           <span className="text-[0.68rem] font-sans font-semibold text-slate-800 dark:text-slate-200">
-            por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Tripoli Publishing House"}
+            por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : "Juan Ignacio Armenta"}
           </span>
           <time className="text-[0.68rem] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
             {formattedDate}
