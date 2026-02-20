@@ -279,17 +279,17 @@ export default function Header() {
     </nav>
   );
 
-  const renderRightControls = () => (
+  const renderRightControls = (stickyMode = false) => (
     <>
       <button
         type="button"
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         aria-pressed={isDark}
         onClick={() => setIsDark((prev) => !prev)}
-        className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/80 px-0 sm:pl-3 sm:pr-2 text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+        className={`group flex h-9 w-9 ${stickyMode ? "" : "sm:h-10 sm:w-auto"} items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/80 ${stickyMode ? "px-0" : "px-0 sm:pl-3 sm:pr-2"} text-[0.65rem] sm:text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]`}
       >
-        {/* Icono solo para móvil */}
-        <span className="flex sm:hidden w-full items-center justify-center" aria-hidden="true">
+        {/* Icono solo para móvil (o siempre en stickyMode) */}
+        <span className={`${stickyMode ? "flex" : "flex sm:hidden"} w-full items-center justify-center`} aria-hidden="true">
           {isDark ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -319,43 +319,47 @@ export default function Header() {
             </svg>
           )}
         </span>
-        {/* Switch para desktop */}
-        <span className="hidden sm:flex relative h-6 w-11 items-center rounded-full bg-slate-100 transition dark:bg-slate-800">
-          <span
-            className={`absolute left-1 h-4 w-4 rounded-full bg-gradient-to-br from-[#00BFFF] to-[#33ceff] shadow-md shadow-sky-400/40 transition ${isDark ? "translate-x-5 bg-gradient-to-br from-[#33ceff] to-[#66deff]" : ""
-              }`}
-          />
-        </span>
-        <span className="hidden sm:inline-flex w-6 items-center justify-center" aria-hidden="true">
-          {isDark ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M14.5 2.5A9 9 0 1 0 21.5 15 A7 7 0 0 1 14.5 2.5Z" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-            </svg>
-          )}
-        </span>
+        {/* Switch para desktop (oculto en stickyMode) */}
+        {!stickyMode && (
+          <span className="hidden sm:flex relative h-6 w-11 items-center rounded-full bg-slate-100 transition dark:bg-slate-800">
+            <span
+              className={`absolute left-1 h-4 w-4 rounded-full bg-gradient-to-br from-[#00BFFF] to-[#33ceff] shadow-md shadow-sky-400/40 transition ${isDark ? "translate-x-5 bg-gradient-to-br from-[#33ceff] to-[#66deff]" : ""
+                }`}
+            />
+          </span>
+        )}
+        {!stickyMode && (
+          <span className="hidden sm:inline-flex w-6 items-center justify-center" aria-hidden="true">
+            {isDark ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14.5 2.5A9 9 0 1 0 21.5 15 A7 7 0 0 1 14.5 2.5Z" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+            )}
+          </span>
+        )}
       </button>
 
       {/* Favorites Star Icon */}
@@ -541,7 +545,7 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 flex-shrink-0 ml-auto">
-            {renderRightControls()}
+            {renderRightControls(true)}
           </div>
         </div>
 
@@ -556,7 +560,7 @@ export default function Header() {
             {renderNav()}
           </div>
           <div className="flex-1 flex items-center justify-end gap-1.5 sm:gap-2.5 md:gap-3 min-w-0 pr-4">
-            {renderRightControls()}
+            {renderRightControls(true)}
           </div>
         </div>
 
