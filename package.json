@@ -18,9 +18,12 @@
     "dotenv": "^17.2.3",
     "firebase": "^12.8.0",
     "firebase-admin": "^12.6.0",
+    "framer-motion": "^12.34.3",
+    "html-to-image": "^1.11.13",
     "next": "16.1.6",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
