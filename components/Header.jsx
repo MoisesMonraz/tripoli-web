@@ -546,7 +546,7 @@ export default function Header() {
         </div>
 
         {/* Desktop sticky layout */}
-        <div className="hidden md:flex items-center w-full max-w-[70rem] mx-auto py-2">
+        <div className="hidden md:flex items-center w-full py-2">
           <div className="flex-1 flex items-center justify-center min-w-0">
             <Link href="/" aria-label="Ir a la pagina principal">
               <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-8 w-8 object-contain" />
