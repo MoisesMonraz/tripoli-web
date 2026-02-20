@@ -490,14 +490,14 @@ export default function Header() {
           }`}
       >
         {/* Mobile sticky layout */}
-        <div className="relative flex nav:hidden items-center gap-1.5 sm:gap-3 px-2 py-2">
-          <div className="flex items-center justify-start ml-2 sm:ml-4 flex-shrink-0 gap-2 sm:gap-3">
+        <div className="relative flex nav:hidden items-center gap-1.5 px-2 py-2">
+          <div className="flex items-center justify-start ml-2 flex-shrink-0 gap-2">
             <button
               type="button"
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Cerrar menu" : "Abrir menu"}
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff] dark:focus-visible:outline-[#33ceff]"
             >
               {isMenuOpen ? (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
@@ -510,17 +510,17 @@ export default function Header() {
               )}
             </button>
 
-            <div className="group flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 sm:px-4 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
+            <div className="group flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 px-0 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-[#33ceff]">
               <Link
                 href="/calendario"
-                className="flex items-center gap-1.5 sm:gap-2 text-[0.65rem] sm:text-[0.74rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
+                className="flex items-center gap-1.5 text-[0.65rem] font-semibold tracking-[0.08em] transition group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff]"
                 style={{ fontFamily: "'Space Grotesk', 'Sora', system-ui, sans-serif" }}
                 aria-label="Ir al calendario editorial"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  className="flex sm:hidden h-4 w-4"
+                  className="flex h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
@@ -533,18 +533,18 @@ export default function Header() {
                   <line x1="8" y1="2" x2="8" y2="6" />
                   <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
-                <span className="hidden sm:inline whitespace-nowrap">{dateDisplay}</span>
-                <span className="hidden sm:inline h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
-                <span className="hidden sm:inline whitespace-nowrap">{timeDisplay}</span>
+                <span className="hidden whitespace-nowrap">{dateDisplay}</span>
+                <span className="hidden h-4 w-px bg-slate-300/80 dark:bg-slate-700/80" aria-hidden="true" />
+                <span className="hidden whitespace-nowrap">{timeDisplay}</span>
               </Link>
             </div>
           </div>
 
           <Link href="/" className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2" aria-label="Ir a la pagina principal">
-            <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
+            <Image src={logoSrc} alt="Tripoli Media" width={32} height={32} className="h-7 w-7 object-contain" />
           </Link>
 
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 nav:gap-3 flex-shrink-0 ml-auto">
+          <div className="flex items-center justify-end gap-1.5 nav:gap-3 flex-shrink-0 ml-auto">
             {renderRightControls(true)}
           </div>
         </div>
