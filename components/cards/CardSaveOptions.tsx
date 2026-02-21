@@ -230,7 +230,7 @@ export default function CardSaveOptions({
             {/* ── 2×2 contact info grid ── */}
             <div className="grid grid-cols-2 gap-2">
                 {/* top-left: WhatsApp */}
-                {card.whatsapp && (
+                {card.whatsapp ? (
                     <a
                         href={`https://wa.me/${card.whatsapp.replace(/[\s+]/g, "")}`}
                         target="_blank"
@@ -243,10 +243,17 @@ export default function CardSaveOptions({
                         </span>
                         <span className="truncate">WhatsApp</span>
                     </a>
+                ) : (
+                    <div className={`${contactCellClass} opacity-40 cursor-not-allowed`}>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "#25D36615", color: "#25D366" }}>
+                            <IconWhatsApp />
+                        </span>
+                        <span className="truncate">WhatsApp</span>
+                    </div>
                 )}
 
                 {/* top-right: LinkedIn */}
-                {card.linkedin && (
+                {card.linkedin ? (
                     <a
                         href={card.linkedin}
                         target="_blank"
@@ -259,6 +266,13 @@ export default function CardSaveOptions({
                         </span>
                         <span className="truncate">LinkedIn</span>
                     </a>
+                ) : (
+                    <div className={`${contactCellClass} opacity-40 cursor-not-allowed`}>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "#0A66C215", color: "#0A66C2" }}>
+                            <IconLinkedIn />
+                        </span>
+                        <span className="truncate">LinkedIn</span>
+                    </div>
                 )}
 
                 {/* bottom-left: Phone */}
