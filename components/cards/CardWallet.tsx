@@ -62,17 +62,37 @@ export default function CardWallet({ cards }: CardWalletProps) {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 style={{ perspective: "1200px" }}
             >
-                {cards.map((card, index) => (
-                    <BusinessCard
-                        key={card.id}
-                        card={card}
-                        isExpanded={expandedIndex === index}
-                        onToggle={() => handleToggle(index)}
-                        stackIndex={index}
-                        totalCards={cards.length}
-                        expandedIndex={expandedIndex}
-                    />
-                ))}
+                {cards.map((card, index) => {
+                    let visualIndex = index;
+                    let visualExpanded = expandedIndex;
+
+                    if (expandedIndex !== null) {
+                        if (index === expandedIndex) {
+                            visualIndex = 0;
+                        } else {
+                            let pos = 0;
+                            for (let i = 0; i < cards.length; i++) {
+                                if (i === expandedIndex) continue;
+                                if (i === index) break;
+                                pos++;
+                            }
+                            visualIndex = pos + 1;
+                        }
+                        visualExpanded = 0;
+                    }
+
+                    return (
+                        <BusinessCard
+                            key={card.id}
+                            card={card}
+                            isExpanded={expandedIndex === index}
+                            onToggle={() => handleToggle(index)}
+                            stackIndex={visualIndex}
+                            totalCards={cards.length}
+                            expandedIndex={visualExpanded}
+                        />
+                    );
+                })}
             </motion.div>
 
             {/* hint text */}
