@@ -92,6 +92,7 @@ export default function CardSaveOptions({
 }: CardSaveOptionsProps) {
     const [isExporting, setIsExporting] = useState(false);
     const [walletLoading, setWalletLoading] = useState<"apple" | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleSaveContact = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -114,6 +115,8 @@ export default function CardSaveOptions({
     const handleCopy = async (e: React.MouseEvent) => {
         e.stopPropagation();
         await copyContactInfo(card);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 5000);
     };
 
     const handleShare = async (e: React.MouseEvent) => {
@@ -155,7 +158,7 @@ export default function CardSaveOptions({
     const buttonActions = [
         { key: "apple", label: "Apple Wallet", icon: <IconApple />, handler: handleAppleWallet, loading: walletLoading === "apple" },
         { key: "png", label: "Descargar imagen", icon: <IconImage />, handler: handleDownloadImage, loading: isExporting },
-        { key: "copy", label: "Copiar info", icon: <IconCopy />, handler: handleCopy },
+        { key: "copy", label: "Copiar info", icon: copied ? <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> : <IconCopy />, handler: handleCopy },
         { key: "vcf", label: "Guardar contacto", icon: <IconContact />, handler: handleSaveContact },
         { key: "share", label: "Compartir", icon: <IconShare />, handler: handleShare },
     ];
