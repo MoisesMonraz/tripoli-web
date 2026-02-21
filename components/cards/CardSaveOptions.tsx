@@ -264,7 +264,7 @@ export default function CardSaveOptions({
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${accentColor}15`, color: accentColor }}>
                         <IconMail />
                     </span>
-                    <span className="truncate">{card.email}</span>
+                    <span className="truncate" style={{ fontSize: "0.75em" }}>{card.email}</span>
                 </a>
             </div>
 
