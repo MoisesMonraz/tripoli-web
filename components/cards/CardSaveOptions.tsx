@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import type { BusinessCard } from "@/data/cards";
 import {
     downloadVCard,
@@ -51,12 +51,6 @@ const IconApple = () => (
     </svg>
 );
 
-const IconCheck = () => (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-);
-
 /* ── contact info icons ── */
 const IconWhatsApp = () => (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
@@ -83,17 +77,6 @@ const IconMail = () => (
     </svg>
 );
 
-/* ── feedback toast types ── */
-type FeedbackType = "copied" | "saved" | "shared" | "downloaded" | "wallet-fallback" | null;
-
-const feedbackLabels: Record<NonNullable<FeedbackType>, string> = {
-    copied: "¡Copiado!",
-    saved: "¡Contacto guardado!",
-    shared: "¡Compartido!",
-    downloaded: "¡Imagen descargada!",
-    "wallet-fallback": "Wallet no disponible — vCard descargado",
-};
-
 /* ── component ── */
 interface CardSaveOptionsProps {
     card: BusinessCard;
@@ -107,21 +90,12 @@ export default function CardSaveOptions({
     cardRef,
     accentColor,
 }: CardSaveOptionsProps) {
-    const [feedback, setFeedback] = useState<FeedbackType>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [walletLoading, setWalletLoading] = useState<"apple" | null>(null);
-    const feedbackTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-    const showFeedback = (type: NonNullable<FeedbackType>) => {
-        if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
-        setFeedback(type);
-        feedbackTimeout.current = setTimeout(() => setFeedback(null), 2500);
-    };
 
     const handleSaveContact = (e: React.MouseEvent) => {
         e.stopPropagation();
         downloadVCard(card);
-        showFeedback("saved");
     };
 
     const handleDownloadImage = async (e: React.MouseEvent) => {
@@ -130,7 +104,6 @@ export default function CardSaveOptions({
         setIsExporting(true);
         try {
             await downloadCardAsImage(cardRef.current, card);
-            showFeedback("downloaded");
         } catch (err) {
             console.error("Image export failed:", err);
         } finally {
@@ -140,14 +113,12 @@ export default function CardSaveOptions({
 
     const handleCopy = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const success = await copyContactInfo(card);
-        if (success) showFeedback("copied");
+        await copyContactInfo(card);
     };
 
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const success = await shareCard(card);
-        if (success) showFeedback("shared");
+        await shareCard(card);
     };
 
     const handleAppleWallet = async (e: React.MouseEvent) => {
@@ -166,14 +137,11 @@ export default function CardSaveOptions({
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showFeedback("saved");
             } else {
                 downloadVCard(card);
-                showFeedback("wallet-fallback");
             }
         } catch {
             downloadVCard(card);
-            showFeedback("wallet-fallback");
         } finally {
             setWalletLoading(null);
         }
@@ -323,25 +291,6 @@ export default function CardSaveOptions({
                 {renderButton(buttonActions[4], 5)}
             </div>
 
-            {/* feedback toast */}
-            <AnimatePresence>
-                {feedback && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                        className="absolute -bottom-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-lg whitespace-nowrap"
-                        style={{
-                            backgroundColor: feedback === "wallet-fallback" ? "#f59e0b" : accentColor,
-                            borderColor: feedback === "wallet-fallback" ? "#f59e0b" : accentColor,
-                            color: "#ffffff",
-                        }}
-                    >
-                        <IconCheck />
-                        {feedbackLabels[feedback]}
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }
