@@ -188,15 +188,30 @@ export default function BusinessCard({
                         />
 
                         <div className="space-y-2.5">
-                            {/* email */}
-                            <a
-                                href={`mailto:${card.email}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                            >
-                                <span style={{ color: card.accentColor }}><IconMail /></span>
-                                <span className="truncate">{card.email}</span>
-                            </a>
+                            {/* linkedin icon + email on the same row */}
+                            <div className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-slate-700 dark:text-slate-300">
+                                {card.linkedin ? (
+                                    <a
+                                        href={card.linkedin}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="shrink-0 transition-opacity hover:opacity-70"
+                                        style={{ color: "#0A66C2" }}
+                                    >
+                                        <IconLinkedIn />
+                                    </a>
+                                ) : (
+                                    <span style={{ color: card.accentColor }}><IconMail /></span>
+                                )}
+                                <a
+                                    href={`mailto:${card.email}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="truncate transition-colors hover:text-slate-900 dark:hover:text-white"
+                                >
+                                    {card.email}
+                                </a>
+                            </div>
 
                             {/* phone */}
                             <a
@@ -219,20 +234,6 @@ export default function BusinessCard({
                                 >
                                     <span style={{ color: "#25D366" }}><IconWhatsApp /></span>
                                     <span>WhatsApp</span>
-                                </a>
-                            )}
-
-                            {/* linkedin */}
-                            {card.linkedin && (
-                                <a
-                                    href={card.linkedin}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                                >
-                                    <span style={{ color: "#0A66C2" }}><IconLinkedIn /></span>
-                                    <span>LinkedIn</span>
                                 </a>
                             )}
                         </div>
