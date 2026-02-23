@@ -281,17 +281,17 @@ export default function CardSaveOptions({
 
             {/* ── save action buttons grid ── */}
             <div className="grid grid-cols-2 gap-2">
-                {/* Row 1: Apple Wallet | Descargar imagen */}
-                {renderButton(buttonActions[0], 0)}
-                {renderButton(buttonActions[1], 1)}
+                {/* Row 1: Guardar contacto | Compartir */}
+                {renderButton(buttonActions[3], 0)}
+                {renderButton(buttonActions[4], 1)}
 
-                {/* Row 2: Código QR (CardQR component) | Copiar info */}
+                {/* Row 2: Copiar info | Código QR */}
+                {renderButton(buttonActions[2], 2)}
                 <CardQR card={card} accentColor={accentColor} />
-                {renderButton(buttonActions[2], 3)}
 
-                {/* Row 3: Guardar contacto | Compartir */}
-                {renderButton(buttonActions[3], 4)}
-                {renderButton(buttonActions[4], 5)}
+                {/* Row 3: Apple Wallet | Descargar imagen */}
+                {renderButton(buttonActions[0], 4)}
+                {renderButton(buttonActions[1], 5)}
             </div>
 
         </div>
