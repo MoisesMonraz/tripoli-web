@@ -6,6 +6,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.ctfassets.net",
       },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "tripolimedia-f9812.firebasestorage.app",
+      },
     ],
   },
   async redirects() {

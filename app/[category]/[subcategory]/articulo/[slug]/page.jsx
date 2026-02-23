@@ -13,20 +13,44 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
+  const { slug, category } = await params;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
     return { title: "Article Not Found | Tripoli Media" };
   }
 
+  const title = article.metaTitle || article.title;
+  const description = article.metaDescription || article.excerpt || article.title;
+  const url = `https://www.tripoli.media/${article.category || category}/${slug}`;
+
   return {
-    title: `${article.metaTitle || article.title} | Tripoli Media`,
-    description: article.metaDescription || article.excerpt,
+    title: `${title} | Tripoli Media`,
+    description,
+    alternates: { canonical: url },
     openGraph: {
-      title: article.metaTitle || article.title,
-      description: article.metaDescription || article.excerpt,
+      title,
+      description,
       type: "article",
+      url,
+      siteName: "Tripoli Media",
+      locale: "es_MX",
+      publishedTime: article.dateISO,
+      authors: [article.author],
+      section: article.categoryName,
+      images: [
+        {
+          url: article.image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
       images: [article.image],
     },
   };
