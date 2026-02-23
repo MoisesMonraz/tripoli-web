@@ -40,10 +40,12 @@ export default function SocialShareBar({ title, articleSlug, articleData }) {
                 );
                 break;
             case "linkedin":
+                // Copy article URL to clipboard so it can be pasted in the company share dialog
+                try { await navigator.clipboard.writeText(currentUrl); } catch {}
                 window.open(
-                    `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+                    "https://www.linkedin.com/company/109624465/admin/page-posts/published/?share=true",
                     "_blank",
-                    "noopener,noreferrer,width=600,height=500"
+                    "noopener,noreferrer,width=900,height=700"
                 );
                 break;
             case "instagram":
