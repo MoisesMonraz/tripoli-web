@@ -13,7 +13,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug, category } = await params;
+  const { slug, category, subcategory } = await params;
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -22,7 +22,11 @@ export async function generateMetadata({ params }) {
 
   const title = article.metaTitle || article.title;
   const description = article.metaDescription || article.excerpt || article.title;
-  const url = `https://www.tripoli.media/${article.category || category}/${slug}`;
+  const cat = article.category || category;
+  const sub = article.subcategory || subcategory;
+  const url = `https://www.tripoli.media/${cat}/${sub}/articulo/${slug}`;
+  const fallbackImage = "https://www.tripoli.media/opengraph-image.png";
+  const ogImage = article.image && !article.image.startsWith("data:") ? article.image : fallbackImage;
 
   return {
     title: `${title} | Tripoli Media`,
@@ -40,7 +44,7 @@ export async function generateMetadata({ params }) {
       section: article.categoryName,
       images: [
         {
-          url: article.image,
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: title,
@@ -51,7 +55,7 @@ export async function generateMetadata({ params }) {
       card: "summary_large_image",
       title,
       description,
-      images: [article.image],
+      images: [ogImage],
     },
   };
 }
