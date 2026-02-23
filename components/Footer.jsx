@@ -34,7 +34,7 @@ const MailIcon = ({ className = "" }) => (
 
 const socials = [
   { name: "Facebook", href: "https://www.facebook.com/TripoliMediaMX", src: facebookSrc, alt: "Facebook" },
-  { name: "LinkedIn", href: "https://www.linkedin.com/tripoli-media/", src: linkedinSrc, alt: "LinkedIn" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/company/tripoli-media", src: linkedinSrc, alt: "LinkedIn" },
   { name: "X", href: "https://x.com/TripoliMedia", src: xSrc, darkSrc: xDarkSrc, alt: "X" },
   {
     name: "Email",
