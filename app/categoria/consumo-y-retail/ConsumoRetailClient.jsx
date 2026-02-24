@@ -6,7 +6,7 @@ import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
-import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Tiendas-de-Conveniencia.png";
+import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Negocios-de-Conveniencia.png";
 
 export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData }) {
   const getLocalizedPosts = (posts) =>
