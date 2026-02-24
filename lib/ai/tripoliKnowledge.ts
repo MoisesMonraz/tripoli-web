@@ -119,8 +119,8 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     url: "/categoria/entretenimiento-y-cultura",
     section: "Categorías",
     content:
-      "Entretenimiento y Cultura incluye Productoras de Contenido, Recintos Culturales y Festivales, Eventos y Artistas.",
-    tags: ["entretenimiento", "cultura", "productoras", "contenido", "recintos", "culturales", "festivales", "eventos", "artistas"],
+      "Entretenimiento y Cultura incluye Productoras de Contenido, Promotores Culturales y Festivales, Eventos y Artistas.",
+    tags: ["entretenimiento", "cultura", "productoras", "contenido", "promotores", "culturales", "festivales", "eventos", "artistas"],
   },
   {
     id: "categoria-industria-ti",
@@ -231,7 +231,7 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     url: "/servicios",
     section: "Servicios",
     content:
-      "Atendemos las siguientes subcategorías específicas: 1. Consumo y Retail (Fabricantes y Proveedores, Cadenas Comerciales, Negocios de Conveniencia). 2. Entretenimiento y Cultura (Productoras de Contenido, Recintos Culturales, Festivales, Eventos y Artistas). 3. Industria TI (Fabricantes de Tecnología, Mayoristas TI, Canales de Distribución). 4. Infraestructura Social (Proveedores de Materiales, Desarrolladores de Proyectos, Promotores Inmobiliarios). 5. Política y Leyes (Organismos Públicos, Administración Pública, Servicios Jurídicos). 6. Sector Salud (Fabricantes de equipos e insumos, Instituciones de Salud, Especialistas Médicos).",
+      "Atendemos las siguientes subcategorías específicas: 1. Consumo y Retail (Fabricantes y Proveedores, Cadenas Comerciales, Negocios de Conveniencia). 2. Entretenimiento y Cultura (Productoras de Contenido, Promotores Culturales, Festivales, Eventos y Artistas). 3. Industria TI (Fabricantes de Tecnología, Mayoristas TI, Canales de Distribución). 4. Infraestructura Social (Proveedores de Materiales, Desarrolladores de Proyectos, Promotores Inmobiliarios). 5. Política y Leyes (Organismos Públicos, Administración Pública, Servicios Jurídicos). 6. Sector Salud (Fabricantes de equipos e insumos, Instituciones de Salud, Especialistas Médicos).",
     tags: [
       "fabricantes",
       "proveedores",

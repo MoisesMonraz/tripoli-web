@@ -27,7 +27,7 @@ const CATEGORIES = [
     slug: 'entretenimiento-y-cultura',
     subcategories: [
       'productoras-de-contenido',
-      'recintos-culturales',
+      'promotores-culturales',
       'festivales-eventos-y-artistas',
     ],
   },

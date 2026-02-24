@@ -28,7 +28,7 @@ const navItems = [
     label: "Entretenimiento y Cultura",
     subcategories: [
       { slug: "productoras-de-contenido", label: "Productoras de Contenido" },
-      { slug: "recintos-culturales", label: "Recintos Culturales" },
+      { slug: "promotores-culturales", label: "Promotores Culturales" },
       { slug: "festivales-eventos-y-artistas", label: "Festivales, Eventos y Artistas" },
     ],
   },

@@ -5,7 +5,7 @@ import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanne
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerEntretenimientoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Entretenimiento y Cultura.png";
 import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Productoras-de-Contenido.png";
-import bannerRecintos from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Recintos-Culturales.png";
+import bannerPromotores from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Promotores-Culturales.png";
 import bannerFestivales from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Festivales-Eventos-y-Artistas.png";
 
 export default function EntretenimientoClient({ productorasData, recintosData, festivalesData }) {
@@ -20,12 +20,12 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
   const labels = {
     bannerHeader: "Banner Header Entretenimiento y Cultura",
     fabricantes: "Productoras de Contenido",
-    cadenas: "Recintos Culturales",
+    cadenas: "Promotores Culturales",
     conveniencia: "Festivales, Eventos y Artistas",
     novedades: "Novedades",
     verMas: "Ver más noticias",
     bannerFabricantes: "Banner Productoras de Contenido",
-    bannerCadenas: "Banner Recintos Culturales",
+    bannerCadenas: "Banner Promotores Culturales",
     bannerConveniencia: "Banner Festivales, Eventos y Artistas",
   };
 
@@ -41,7 +41,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
     { id: "entretenimiento-productoras", src: bannerProductoras, alt: "Productoras de Contenido" },
     ...tailSlides,
   ];
-  const recintosSlides = [{ id: "entretenimiento-recintos", src: bannerRecintos, alt: "Recintos Culturales" }, ...tailSlides];
+  const recintosSlides = [{ id: "entretenimiento-promotores", src: bannerPromotores, alt: "Promotores Culturales" }, ...tailSlides];
   const festivalesSlides = [
     { id: "entretenimiento-festivales", src: bannerFestivales, alt: "Festivales, Eventos y Artistas" },
     ...tailSlides,
@@ -122,7 +122,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
         <BaseBanner slides={productorasSlides} />
       </section>
 
-      <SectionBlock title={labels.cadenas} posts={recintosData} titleHref="/categoria/entretenimiento-y-cultura/recintos-culturales" moreHref="/categoria/entretenimiento-y-cultura/recintos-culturales" />
+      <SectionBlock title={labels.cadenas} posts={recintosData} titleHref="/categoria/entretenimiento-y-cultura/promotores-culturales" moreHref="/categoria/entretenimiento-y-cultura/promotores-culturales" />
       <section aria-label={labels.bannerCadenas} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerCadenas}</h2>
         <BaseBanner slides={recintosSlides} />

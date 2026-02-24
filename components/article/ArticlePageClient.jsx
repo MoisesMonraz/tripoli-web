@@ -94,7 +94,7 @@ const subcategoryTranslations = {
   "cadenas-comerciales": "Cadenas Comerciales",
   "negocios-de-conveniencia": "Negocios de Conveniencia",
   "productoras-de-contenido": "Productoras de Contenido",
-  "recintos-culturales": "Recintos Culturales",
+  "promotores-culturales": "Promotores Culturales",
   "festivales-eventos-y-artistas": "Festivales, Eventos y Artistas",
   "fabricantes-de-tecnologia": "Fabricantes de Tecnologia",
   "mayoristas-ti": "Mayoristas TI",
