@@ -17,7 +17,7 @@ const navItems = [
     subcategories: [
       { slug: "fabricantes-y-proveedores", label: "Fabricantes y Proveedores" },
       { slug: "cadenas-comerciales", label: "Cadenas Comerciales" },
-      { slug: "tiendas-de-conveniencia", label: "Tiendas de Conveniencia" },
+      { slug: "negocios-de-conveniencia", label: "Negocios de Conveniencia" },
     ],
   },
   {

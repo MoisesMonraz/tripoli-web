@@ -92,7 +92,7 @@ const categoryTranslations = {
 const subcategoryTranslations = {
   "fabricantes-y-proveedores": "Fabricantes y Proveedores",
   "cadenas-comerciales": "Cadenas Comerciales",
-  "tiendas-de-conveniencia": "Tiendas de Conveniencia",
+  "negocios-de-conveniencia": "Negocios de Conveniencia",
   "productoras-de-contenido": "Productoras de Contenido",
   "recintos-culturales": "Recintos Culturales",
   "festivales-eventos-y-artistas": "Festivales, Eventos y Artistas",

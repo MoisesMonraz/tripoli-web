@@ -110,8 +110,8 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     url: "/categoria/consumo-y-retail",
     section: "Categorías",
     content:
-      "Consumo y Retail incluye Fabricantes y Proveedores, Cadenas Comerciales y Tiendas de Conveniencia.",
-    tags: ["consumo", "retail", "fabricantes", "proveedores", "cadenas", "comerciales", "conveniencia", "tiendas"],
+      "Consumo y Retail incluye Fabricantes y Proveedores, Cadenas Comerciales y Negocios de Conveniencia.",
+    tags: ["consumo", "retail", "fabricantes", "proveedores", "cadenas", "comerciales", "conveniencia", "negocios"],
   },
   {
     id: "categoria-entretenimiento",
@@ -231,7 +231,7 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     url: "/servicios",
     section: "Servicios",
     content:
-      "Atendemos las siguientes subcategorías específicas: 1. Consumo y Retail (Fabricantes y Proveedores, Cadenas Comerciales, Tiendas de Conveniencia). 2. Entretenimiento y Cultura (Productoras de Contenido, Recintos Culturales, Festivales, Eventos y Artistas). 3. Industria TI (Fabricantes de Tecnología, Mayoristas TI, Canales de Distribución). 4. Infraestructura Social (Proveedores de Materiales, Desarrolladores de Proyectos, Promotores Inmobiliarios). 5. Política y Leyes (Organismos Públicos, Administración Pública, Servicios Jurídicos). 6. Sector Salud (Fabricantes de equipos e insumos, Instituciones de Salud, Especialistas Médicos).",
+      "Atendemos las siguientes subcategorías específicas: 1. Consumo y Retail (Fabricantes y Proveedores, Cadenas Comerciales, Negocios de Conveniencia). 2. Entretenimiento y Cultura (Productoras de Contenido, Recintos Culturales, Festivales, Eventos y Artistas). 3. Industria TI (Fabricantes de Tecnología, Mayoristas TI, Canales de Distribución). 4. Infraestructura Social (Proveedores de Materiales, Desarrolladores de Proyectos, Promotores Inmobiliarios). 5. Política y Leyes (Organismos Públicos, Administración Pública, Servicios Jurídicos). 6. Sector Salud (Fabricantes de equipos e insumos, Instituciones de Salud, Especialistas Médicos).",
     tags: [
       "fabricantes",
       "proveedores",

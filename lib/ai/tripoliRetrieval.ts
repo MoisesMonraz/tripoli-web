@@ -285,7 +285,7 @@ const synonymDictionary: Record<string, string[]> = {
   tiendas: ["stores", "shops", "comercios", "locales"],
   stores: ["tiendas", "shops", "comercios"],
   conveniencia: ["convenience", "oxxo", "7eleven"],
-  convenience: ["conveniencia", "tiendas"],
+  convenience: ["conveniencia", "negocios"],
   productoras: ["producers", "production", "produccion"],
   producers: ["productoras", "production", "produccion"],
   recintos: ["venues", "lugares", "espacios", "auditorios"],

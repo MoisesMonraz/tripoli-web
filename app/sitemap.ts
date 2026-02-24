@@ -20,7 +20,7 @@ const CATEGORIES = [
     subcategories: [
       'fabricantes-y-proveedores',
       'cadenas-comerciales',
-      'tiendas-de-conveniencia',
+      'negocios-de-conveniencia',
     ],
   },
   {

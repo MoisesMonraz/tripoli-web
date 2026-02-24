@@ -21,12 +21,12 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
     bannerHeader: "Banner Header Consumo y Retail",
     fabricantes: "Fabricantes y Proveedores",
     cadenas: "Cadenas Comerciales",
-    conveniencia: "Tiendas de Conveniencia",
+    conveniencia: "Negocios de Conveniencia",
     novedades: "Novedades",
     verMas: "Ver más noticias",
     bannerFabricantes: "Banner Fabricantes y Proveedores",
     bannerCadenas: "Banner Cadenas Comerciales",
-    bannerConveniencia: "Banner Tiendas de Conveniencia",
+    bannerConveniencia: "Banner Negocios de Conveniencia",
   };
 
   const tailSlides = defaultSlides.slice(1);
@@ -37,7 +37,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
   ];
   const cadenasSlides = [{ id: "consumo-cadenas", src: bannerCadenas, alt: "Cadenas Comerciales" }, ...tailSlides];
   const convenienciaSlides = [
-    { id: "consumo-conveniencia", src: bannerConveniencia, alt: "Tiendas de Conveniencia" },
+    { id: "consumo-conveniencia", src: bannerConveniencia, alt: "Negocios de Conveniencia" },
     ...tailSlides,
   ];
 
@@ -171,8 +171,8 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
       <SectionBlock
         title={labels.conveniencia}
         posts={convenienciaData}
-        titleHref="/categoria/consumo-y-retail/tiendas-de-conveniencia"
-        moreHref="/categoria/consumo-y-retail/tiendas-de-conveniencia"
+        titleHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
+        moreHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
       />
       <section aria-label={labels.bannerConveniencia} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>

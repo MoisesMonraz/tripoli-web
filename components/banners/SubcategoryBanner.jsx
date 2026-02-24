@@ -4,7 +4,7 @@ import BaseBanner from "./BaseBanner";
 
 const bannerMap = {
   "cadenas-comerciales": "/images/banners/subcategorias/banner-cadenas-comerciales.png",
-  "tiendas-de-conveniencia": "/images/banners/subcategorias/banner-tiendas-de-conveniencia.png",
+  "negocios-de-conveniencia": "/images/banners/subcategorias/banner-negocios-de-conveniencia.png",
   "productoras-de-contenido": "/images/banners/subcategorias/banner-productoras-de-contenido.png",
   "recintos-culturales": "/images/banners/subcategorias/banner-recintos-culturales.png",
   "festivales-eventos-y-artistas": "/images/banners/subcategorias/banner-festivales-eventos-artistas.png",

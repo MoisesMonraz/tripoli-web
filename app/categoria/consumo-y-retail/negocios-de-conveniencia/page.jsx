@@ -1,15 +1,15 @@
 import { getArticlesBySubcategory } from "../../../../lib/contentful";
 import SubcategoryListPageClient from "../../../../components/category/SubcategoryListPageClient";
-import BannerConveniencia from "../../../../components/tiendas-de-conveniencia/bannerheader";
+import BannerConveniencia from "../../../../components/negocios-de-conveniencia/bannerheader";
 
-export default async function TiendasDeConvenienciaPage() {
-  const posts = await getArticlesBySubcategory("consumo-y-retail", "tiendas-de-conveniencia", 50);
+export default async function NegociosDeConvenienciaPage() {
+  const posts = await getArticlesBySubcategory("consumo-y-retail", "negocios-de-conveniencia", 50);
 
   return (
     <SubcategoryListPageClient
-      titleEs="Tiendas de Conveniencia" title="Convenience Stores"
+      titleEs="Negocios de Conveniencia" title="Convenience Businesses"
       categorySlug="consumo-y-retail"
-      subcategorySlug="tiendas-de-conveniencia"
+      subcategorySlug="negocios-de-conveniencia"
       barColor="#f39200"
       gradientFrom="#fee5c8"
       gradientMid="#fdc652"
