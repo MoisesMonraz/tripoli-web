@@ -9,12 +9,12 @@ export default function OrganizationJsonLd() {
     logo: {
       "@type": "ImageObject",
       "@id": "https://www.tripoli.media/#logo",
-      url: "https://www.tripoli.media/Logos/logo-tripoli.png",
-      contentUrl: "https://www.tripoli.media/Logos/logo-tripoli.png",
+      url: "https://www.tripoli.media/Imagenes/Logos/01.png",
+      contentUrl: "https://www.tripoli.media/Imagenes/Logos/01.png",
       caption: "Tripoli Media Logo",
       inLanguage: "es-MX",
     },
-    image: "https://www.tripoli.media/Logos/logo-tripoli.png",
+    image: "https://www.tripoli.media/Imagenes/Logos/01.png",
     description:
       "Tripoli Media is a digital publishing house and media agency specializing in professional news coverage and sectoral analysis across six key industries in Mexico.",
     slogan: "Posiciona y destaca tu negocio",

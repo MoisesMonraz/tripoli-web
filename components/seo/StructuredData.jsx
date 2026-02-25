@@ -39,7 +39,7 @@ export default function StructuredData() {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
     name: 'Tripoli Media',
-    image: 'https://www.tripoli.media/opengraph-image.png',
+    image: 'https://www.tripoli.media/Imagenes/Logos/01.png',
     '@id': 'https://www.tripoli.media',
     url: 'https://www.tripoli.media',
     telephone: '+52 33 2817 5756',

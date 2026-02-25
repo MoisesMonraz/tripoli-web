@@ -25,7 +25,7 @@ export async function generateMetadata({ params }) {
   const cat = article.category || category;
   const sub = article.subcategory || subcategory;
   const url = `https://www.tripoli.media/${cat}/${sub}/articulo/${slug}`;
-  const fallbackImage = "https://www.tripoli.media/opengraph-image.png";
+  const fallbackImage = "https://www.tripoli.media/Imagenes/Logos/01.png";
   const ogImage = article.image && !article.image.startsWith("data:") ? article.image : fallbackImage;
 
   return {
@@ -71,8 +71,37 @@ export default async function ArticlePage({ params }) {
   const categorySlug = article.category || category;
   const subcategorySlug = article.subcategory || subcategory;
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: "https://www.tripoli.media",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: article.categoryName || categorySlug,
+        item: `https://www.tripoli.media/categoria/${categorySlug}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+        item: `https://www.tripoli.media/${categorySlug}/${subcategorySlug}/articulo/${slug}`,
+      },
+    ],
+  };
+
   return (
     <main className="bg-neutral-50 pb-12 md:pb-24 dark:bg-slate-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <ArticlePageClient
         initialArticle={article}
         slug={slug}

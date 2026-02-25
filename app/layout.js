@@ -69,7 +69,7 @@ export const metadata = {
     title: "Tripoli Media",
     description:
       "Professional news coverage and sectoral analysis across six key industries.",
-    images: ["/opengraph-image.png"],
+    images: ["/Imagenes/Logos/01.png"],
   },
   robots: {
     index: true,
