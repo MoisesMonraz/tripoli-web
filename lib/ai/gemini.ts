@@ -66,8 +66,9 @@ const buildSystemInstruction = (
     "- LISTAS DE SUBCATEGORÍAS: Cuando menciones las subcategorías de una categoría, SIEMPRE debes presentarlas como una lista con guiones en líneas separadas, NUNCA como una lista separada por comas en un solo párrafo. Usa este formato exacto:\n'Las subcategorías de [Categoría] son:\n- Subcategoría 1\n- Subcategoría 2\n- Subcategoría 3'",
     "",
     "FORMATO DE SALIDA:",
+    "Nunca uses formato markdown en tus respuestas. No uses asteriscos, negritas, cursivas, encabezados, viñetas con asteriscos ni ninguna otra sintaxis markdown. Escribe solo en texto plano usando lenguaje natural.",
     "Devuelve un objeto JSON con:",
-    '- "answer": Tu texto de respuesta (string)',
+    '- "answer": Tu texto de respuesta en texto plano sin markdown (string)',
     '- "sources": Array de objetos con campos "title", "url", y opcionalmente "excerpt". SOLO incluye fuentes que realmente usaste de la sección FUENTES.',
   ];
 
