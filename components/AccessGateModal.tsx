@@ -102,7 +102,7 @@ export default function AccessGateModal() {
     }
     const granted = getStoredConsent();
     setHasConsent(granted);
-    setIsOpen(!granted);
+    setIsOpen(false); // Modal disabled – registration moved to /registro page
     setIsReady(true);
   }, []);
 
