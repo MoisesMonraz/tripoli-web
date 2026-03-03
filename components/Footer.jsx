@@ -42,13 +42,13 @@ const UserIcon = ({ className = "" }) => (
     <defs>
       <mask id="tm-user-cutout">
         <rect width="24" height="24" fill="white" />
-        {/* Head */}
-        <circle cx="12" cy="8" r="3.2" fill="black" />
-        {/* Body arc */}
-        <path
-          d="M4.5 20.5c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5"
-          fill="black"
-        />
+        {/* Person shapes scaled 50% from center (12,12) */}
+        <g transform="translate(12,12) scale(0.5) translate(-12,-12)">
+          {/* Head */}
+          <circle cx="12" cy="8" r="3.2" fill="black" />
+          {/* Body arc */}
+          <path d="M4.5 20.5c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5" fill="black" />
+        </g>
       </mask>
     </defs>
     <circle cx="12" cy="12" r="12" fill="black" mask="url(#tm-user-cutout)" />
@@ -154,8 +154,8 @@ export default function Footer() {
                 );
               })()}
 
-              {/* Separator */}
-              <span className="h-5 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" aria-hidden="true" />
+              {/* Separator – same style as left nav */}
+              <span className="text-slate-300 dark:text-slate-600 select-none" aria-hidden="true">|</span>
 
               {/* Social Icons */}
               {socials.map((item) => {
