@@ -41,7 +41,7 @@ export default function RegistroPage() {
       `}</style>
 
             {/* Full-page centered layout */}
-            <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-950 flex justify-center py-8 px-4">
                 {/* Card: single panel, centered, ~20% wider than original half (~512px → max-w-2xl = 672px) */}
                 <div className="w-full max-w-2xl overflow-hidden rounded-2xl shadow-2xl ring-1 ring-slate-200">
 
