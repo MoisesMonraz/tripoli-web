@@ -32,6 +32,29 @@ const MailIcon = ({ className = "" }) => (
   </svg>
 );
 
+const UserIcon = ({ className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    className={`tm-social-img h-[32px] w-[32px] object-contain ${className}`}
+    aria-hidden="true"
+  >
+    <defs>
+      <mask id="tm-user-cutout">
+        <rect width="24" height="24" fill="white" />
+        {/* Head */}
+        <circle cx="12" cy="8" r="3.2" fill="black" />
+        {/* Body arc */}
+        <path
+          d="M4.5 20.5c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5"
+          fill="black"
+        />
+      </mask>
+    </defs>
+    <circle cx="12" cy="12" r="12" fill="black" mask="url(#tm-user-cutout)" />
+  </svg>
+);
+
 const socials = [
   { name: "Facebook", href: "https://www.facebook.com/TripoliMediaMX", src: facebookSrc, alt: "Facebook" },
   { name: "LinkedIn", href: "https://www.linkedin.com/company/tripoli-media", src: linkedinSrc, alt: "LinkedIn" },
@@ -113,6 +136,26 @@ export default function Footer() {
 
             {/* Socials Part */}
             <div className="md:col-start-3 md:row-start-1 flex items-center justify-center md:justify-end gap-2 sm:gap-2.5 text-[#04071A] dark:text-[#33ceff]">
+
+              {/* Registro Icon */}
+              {(() => {
+                const filterSet = isDarkTheme ? iconFilters.dark : iconFilters.light;
+                return (
+                  <Link
+                    href="/registro"
+                    aria-label="Registrarse"
+                    className="tm-social-icon flex h-[28px] w-[28px] sm:h-[32px] sm:w-[32px] items-center justify-center transition duration-200 hover:-translate-y-0.5 hover:scale-[1.03]"
+                    style={{ "--tm-social-filter": filterSet.base, "--tm-social-filter-hover": filterSet.hover }}
+                  >
+                    <span className="flex h-[28px] w-[28px] sm:h-[32px] sm:w-[32px] items-center justify-center">
+                      <UserIcon />
+                    </span>
+                  </Link>
+                );
+              })()}
+
+              {/* Separator */}
+              <span className="h-5 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" aria-hidden="true" />
 
               {/* Social Icons */}
               {socials.map((item) => {
