@@ -65,10 +65,12 @@ export default async function AuthorPage({
     // Manuela Piza is Coordinator for Entretenimiento y Cultura (#009640)
     // Izcóatl Sánchez is Coordinator for Industria TI (#0069b4)
     // Pablo Díaz is Coordinator for Infraestructura Social (#5d514c)
+    // Emiliano Méndez is for Política y Leyes (#312783)
     const isCamila = authorSlug === "camila-aceves";
     const isManuela = authorSlug === "manuela-piza-hernandez";
     const isIzco = authorSlug === "izcoatl-sanchez-patino";
     const isPablo = authorSlug === "pablo-diaz-del-castillo";
+    const isEmiliano = authorSlug === "emiliano-mendez-alonso";
 
     let brandColor = "#009fe3";
     let brandGradient = "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)";
@@ -85,6 +87,9 @@ export default async function AuthorPage({
     } else if (isPablo) {
         brandColor = "#5d514c";
         brandGradient = "linear-gradient(90deg, #5d514c, #958b87, #d8d4d3)";
+    } else if (isEmiliano) {
+        brandColor = "#312783";
+        brandGradient = "linear-gradient(90deg, #312783, #9185be, #c8c1e1)";
     }
 
     // Initials fallback for when no photo is available
@@ -260,7 +265,7 @@ export default async function AuthorPage({
                                                 />
                                             </div>
                                             <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
-                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: (isCamila || isManuela || isIzco || isPablo) ? brandColor : undefined }}>
+                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: (isCamila || isManuela || isIzco || isPablo || isEmiliano) ? brandColor : undefined }}>
                                                     {post.title}
                                                 </h3>
                                                 <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
