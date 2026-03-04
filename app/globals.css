@@ -25,6 +25,14 @@
     overflow-x: hidden;
   }
 
+  :root {
+    /* Header varies slightly by viewport, but 110px is an upper bound */
+    --header-height: 110px;
+    /* Chatbot icon is max h-12 (48px) */
+    --chatbot-size: 48px;
+    --chatbot-safe-top: calc(var(--header-height) + var(--chatbot-size));
+  }
+
   body {
     @apply min-h-screen bg-white text-slate-900 antialiased transition-colors duration-300;
     font-family: "Space Grotesk", "Sora", system-ui, sans-serif;
@@ -51,6 +59,7 @@
     inherits: true;
     initial-value: 0%;
   }
+
   .cat-bar {
     --cat-bar-base: #f39200;
     --cat-bar-mid: #fdc652;
@@ -59,6 +68,7 @@
     --text-hover: #d67d00;
     --text-active: #d67d00;
   }
+
   .cat-bar[data-cat-theme="default"] {
     --cat-bar-base: #f39200;
     --cat-bar-mid: #fdc652;
@@ -67,6 +77,7 @@
     --text-hover: #d67d00;
     --text-active: #d67d00;
   }
+
   .cat-bar[data-cat-theme="consumo-y-retail"] {
     --cat-bar-base: #f39200;
     --cat-bar-mid: #fdc652;
@@ -75,6 +86,7 @@
     --text-hover: #d67d00;
     --text-active: #d67d00;
   }
+
   .cat-bar[data-cat-theme="entretenimiento-y-cultura"] {
     --cat-bar-base: #009640;
     --cat-bar-mid: #cce5ce;
@@ -83,6 +95,7 @@
     --text-hover: #007a33;
     --text-active: #007a33;
   }
+
   .cat-bar[data-cat-theme="industria-ti"] {
     --cat-bar-base: #0069b4;
     --cat-bar-mid: #c8d5ef;
@@ -91,6 +104,7 @@
     --text-hover: #004070;
     --text-active: #004070;
   }
+
   .cat-bar[data-cat-theme="infraestructura-social"] {
     --cat-bar-base: #5d514c;
     --cat-bar-mid: #958b87;
@@ -99,6 +113,7 @@
     --text-hover: #3a332f;
     --text-active: #3a332f;
   }
+
   .cat-bar[data-cat-theme="politica-y-leyes"] {
     --cat-bar-base: #312783;
     --cat-bar-mid: #9185be;
@@ -107,6 +122,7 @@
     --text-hover: #211452;
     --text-active: #211452;
   }
+
   .cat-bar[data-cat-theme="sector-salud"] {
     --cat-bar-base: #e6007e;
     --cat-bar-mid: #f29fc5;
@@ -115,41 +131,47 @@
     --text-hover: #8d004c;
     --text-active: #8d004c;
   }
+
   .cat-bar-left {
     background: var(--cat-bar-base, #f39200);
     background-image: none;
     animation: cat-bar-pulse 12s linear infinite;
   }
+
   .cat-bar-right {
     --cat-bar-grad-pos: 0%;
-    background: linear-gradient(
-      90deg,
-      var(--cat-bar-base, #f39200),
-      var(--cat-bar-mid, #fdc652),
-      var(--cat-bar-light, #fee5c8)
-    );
+    background: linear-gradient(90deg,
+        var(--cat-bar-base, #f39200),
+        var(--cat-bar-mid, #fdc652),
+        var(--cat-bar-light, #fee5c8));
     background-size: 300% 100%;
     background-position: var(--cat-bar-grad-pos, 0%) 0;
     animation: cat-bar-move 12s ease-in-out infinite;
   }
+
   @keyframes cat-bar-move {
     0% {
       --cat-bar-grad-pos: 0%;
     }
+
     50% {
       --cat-bar-grad-pos: 100%;
     }
+
     100% {
       --cat-bar-grad-pos: 0%;
     }
   }
+
   @keyframes cat-bar-pulse {
     0% {
       background-color: var(--cat-bar-base, #f39200);
     }
+
     50% {
       background-color: var(--cat-bar-light, #fee5c8);
     }
+
     100% {
       background-color: var(--cat-bar-base, #f39200);
     }
@@ -160,6 +182,7 @@
 .scrollbar-hide {
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -168,9 +191,11 @@
   0% {
     background-position: 0% 0;
   }
+
   50% {
     background-position: 100% 0;
   }
+
   100% {
     background-position: 0% 0;
   }
@@ -184,16 +209,19 @@
 .article-ul {
   list-style: none;
 }
-.article-ul > li::before {
+
+.article-ul>li::before {
   content: "\2014";
   position: absolute;
   left: 0;
   color: #94a3b8;
 }
-.article-ul > li {
+
+.article-ul>li {
   position: relative;
 }
-.dark .article-ul > li::before {
+
+.dark .article-ul>li::before {
   color: #64748b;
 }
 
@@ -203,7 +231,7 @@
 }
 
 /* Drop cap on the very first paragraph of the article body */
-.article-body > p:first-child::first-letter {
+.article-body>p:first-child::first-letter {
   float: left;
   font-family: "Merriweather", Georgia, serif;
   font-size: 3.5em;
@@ -213,7 +241,8 @@
   font-weight: 700;
   color: #0f172a;
 }
-.article-body--no-dropcap > p:first-child::first-letter {
+
+.article-body--no-dropcap>p:first-child::first-letter {
   float: none;
   font-family: inherit;
   font-size: inherit;
@@ -223,7 +252,8 @@
   font-weight: inherit;
   color: inherit;
 }
-.dark .article-body > p:first-child::first-letter {
+
+.dark .article-body>p:first-child::first-letter {
   color: #f1f5f9;
 }
 
@@ -235,9 +265,25 @@ nav[role="navigation"],
   z-index: 50 !important;
 }
 
-/* Prevent fixed elements from overlapping header */
+/* Base generic rule for other fixed elements */
 *[style*="position: fixed"],
 *[style*="position:fixed"] {
   max-height: calc(100vh - 120px);
 }
 
+/* Chatbot safe distance from header */
+#tidio-chat,
+#tidio-chat-iframe,
+[id*="tidio"],
+[id*="crisp"],
+[id*="intercom"],
+[id*="hubspot"],
+[class*="chat-widget"],
+[class*="chatbot"],
+[class*="floating-chat"],
+iframe[title*="chat"] {
+  top: auto !important;
+  bottom: 24px !important;
+  max-height: calc(100vh - var(--chatbot-safe-top) - 24px) !important;
+  z-index: 40 !important;
+}
