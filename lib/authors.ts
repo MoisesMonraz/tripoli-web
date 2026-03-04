@@ -33,6 +33,13 @@ export const specialAuthors: Author[] = [
         bio: "Presentación de Emiliano Méndez Alonso. Este texto debe ser reemplazado con la biografía real del autor.",
         photoUrl: "/authors/emiliano-mendez-alonso.jpg",
     },
+    {
+        slug: "moises-monraz-escoto",
+        name: "Moisés Monraz Escoto",
+        role: "Director General",
+        bio: "Director General de Tripoli Media.",
+        photoUrl: "/authors/moises-monraz.jpg",
+    },
 ];
 
 /** Look up an author by their URL slug. */

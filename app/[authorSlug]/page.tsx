@@ -10,6 +10,10 @@ import {
 // ─── Static paths ─────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
     const slugs = await getAllAuthorSlugs();
+    // Add manual override for the new slug if it's not yet in Contentful
+    if (!slugs.includes("moises-monraz-escoto")) {
+        slugs.push("moises-monraz-escoto");
+    }
     return slugs.map((slug: string) => ({ authorSlug: slug }));
 }
 
@@ -20,10 +24,21 @@ export async function generateMetadata({
     params: Promise<{ authorSlug: string }>;
 }) {
     const { authorSlug } = await params;
-    const author = await getAuthorBySlugFromContentful(authorSlug);
+
+    // Slug aliasing: moises-monraz-escoto -> moises-monraz
+    const effectiveSlug = authorSlug === "moises-monraz-escoto" ? "moises-monraz" : authorSlug;
+
+    const author = await getAuthorBySlugFromContentful(effectiveSlug);
     if (!author) return {};
+
+    // Name override
+    let name = author.name;
+    if (author.name === "Moisés Monraz" || authorSlug === "moises-monraz-escoto") {
+        name = "Moisés Monraz Escoto";
+    }
+
     return {
-        title: `${author.name} | Tripoli Media`,
+        title: `${name} | Tripoli Media`,
         description: author.bio,
     };
 }
@@ -53,15 +68,23 @@ export default async function AuthorPage({
     params: Promise<{ authorSlug: string }>;
 }) {
     const { authorSlug } = await params;
-    const author = await getAuthorBySlugFromContentful(authorSlug);
+
+    // Slug aliasing: moises-monraz-escoto -> moises-monraz
+    // (In case Contentful still uses the old slug)
+    const effectiveSlug = authorSlug === "moises-monraz-escoto" ? "moises-monraz" : authorSlug;
+
+    const author = await getAuthorBySlugFromContentful(effectiveSlug);
     if (!author) notFound();
 
-    const articles = await getArticlesByAuthorSlug(authorSlug);
+    const articles = await getArticlesByAuthorSlug(effectiveSlug);
 
-    // Manual override for spelling: Camila -> Cámila, Sofia -> Sofía
+    // Manual override for spelling: Camila -> Cámila, Sofia -> Sofía, Moisés -> Moisés Monraz Escoto
     let displayName = author.name;
     if (author.name === "Camila Aceves") displayName = "Cámila Aceves";
     if (author.name === "Sofia Pelayo") displayName = "Sofía Pelayo";
+    if (author.name === "Moisés Monraz" || authorSlug === "moises-monraz-escoto") {
+        displayName = "Moisés Monraz Escoto";
+    }
 
     // Theme colors based on author/department
     // Sofía Pelayo is Coordinator for Sector Salud (#e6007e)
@@ -74,7 +97,7 @@ export default async function AuthorPage({
     const isPablo = authorSlug === "pablo-diaz-del-castillo";
     const isEmiliano = authorSlug === "emiliano-mendez-alonso";
     const isSofia = authorSlug === "sofia-pelayo" || authorSlug === "sofia-pelayo-romo";
-    const isMoises = authorSlug === "moises-monraz";
+    const isMoises = authorSlug === "moises-monraz" || authorSlug === "moises-monraz-escoto";
     const isIgnacio = authorSlug === "juan-ignacio-armenta";
     const isRicardo = authorSlug === "ricardo-nunez-esparza";
 
@@ -128,7 +151,7 @@ export default async function AuthorPage({
                     <div className="relative w-[150px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
                             src={author.photoUrl}
-                            alt={`Foto de ${author.name}`}
+                            alt={`Foto de ${displayName}`}
                             fill
                             className="object-cover object-top"
                             sizes="150px"
@@ -291,7 +314,7 @@ export default async function AuthorPage({
                                                 </p>
                                                 <div className="mt-1 flex items-center gap-2 text-[11px] font-sans">
                                                     <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
-                                                        por: {author.name}
+                                                        por: {displayName}
                                                     </span>
                                                     <span className="text-slate-300 dark:text-slate-600">|</span>
                                                     <time className="text-slate-500 dark:text-slate-400">

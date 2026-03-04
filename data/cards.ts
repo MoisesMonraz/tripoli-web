@@ -27,7 +27,7 @@ export const sampleCards: BusinessCard[] = [
     },
     {
         id: "card-002",
-        name: "Moisés Monraz",
+        name: "Moisés Monraz Escoto",
         position: "Director General",
         department: "Dirección General",
         email: "m.monraz@tripoli.media",
