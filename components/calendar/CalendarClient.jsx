@@ -2,24 +2,21 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getAuthorSlugByName } from "@/lib/authors";
-
-// Renders author name as a link for special authors, plain text otherwise
-function AuthorDisplay({ authorName }) {
-  if (!authorName) return null;
-  const slug = getAuthorSlugByName(authorName);
-  if (slug) {
+// Renders author name as a link if the author has a slug, plain text otherwise
+function AuthorDisplay({ author }) {
+  if (!author?.name) return null;
+  if (author.slug) {
     return (
       <Link
-        href={`/${slug}`}
+        href={`/${author.slug}`}
         onClick={(e) => e.stopPropagation()}
         className="hover:text-[#009fe3] hover:underline transition-colors"
       >
-        {authorName}
+        {author.name}
       </Link>
     );
   }
-  return <>{authorName}</>;
+  return <>{author.name}</>;
 }
 function getMonthMatrix(year, month) {
   const firstDay = new Date(year, month, 1);

@@ -4,24 +4,21 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useFavorites } from "../favorites/FavoritesContext";
-import { getAuthorSlugByName } from "@/lib/authors";
-
-// Renders author name as a link for special authors, plain text otherwise
-function AuthorDisplay({ authorName }) {
-  if (!authorName) return null;
-  const slug = getAuthorSlugByName(authorName);
-  if (slug) {
+// Renders author name as a link if the author has a slug, plain text otherwise
+function AuthorDisplay({ author }) {
+  if (!author?.name) return null;
+  if (author.slug) {
     return (
       <Link
-        href={`/${slug}`}
+        href={`/${author.slug}`}
         onClick={(e) => e.stopPropagation()}
         className="hover:text-[#009fe3] hover:underline transition-colors"
       >
-        {authorName}
+        {author.name}
       </Link>
     );
   }
-  return <>{authorName}</>;
+  return <>{author.name}</>;
 }
 
 const formatFullSpanishDate = (dateInput) => {
@@ -187,7 +184,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
               <span className="text-[7.2px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
-                por: <AuthorDisplay authorName={author} />
+                por: <AuthorDisplay author={author} />
               </span>
               <time className="text-[7.2px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
                 {formattedDate}
@@ -229,7 +226,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           )}
           <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-300 line-clamp-2">{excerpt}</p>
           <span className="text-[0.68rem] font-sans font-semibold text-slate-800 dark:text-slate-200">
-            por: <AuthorDisplay authorName={author} />
+            por: <AuthorDisplay author={author} />
           </span>
           <time className="text-[0.68rem] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
             {formattedDate}

@@ -26,7 +26,8 @@ export async function generateMetadata({ params }) {
   const sub = article.subcategory || subcategory;
   const url = `https://www.tripoli.media/${cat}/${sub}/articulo/${slug}`;
   const fallbackImage = "https://www.tripoli.media/Imagenes/Logos/01.png";
-  const ogImage = article.image && !article.image.startsWith("data:") ? article.image : fallbackImage;
+  const ogImage = article.ogImage?.url ||
+    (article.image && !article.image.startsWith("data:") ? article.image : fallbackImage);
 
   return {
     title: `${title} | Tripoli Media`,
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }) {
       siteName: "Tripoli Media",
       locale: "es_MX",
       publishedTime: article.dateISO,
-      authors: [article.author],
+      authors: [article.author?.name || ''],
       section: article.categoryName,
       images: [
         {

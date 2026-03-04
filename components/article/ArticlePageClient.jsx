@@ -5,23 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import ArticleContent from "./ArticleContent";
 import SocialShareBar from "./SocialShareBar";
-import { getAuthorSlugByName } from "@/lib/authors";
-
-// Renders author name as a link for special authors, plain text otherwise
-function AuthorDisplay({ authorName }) {
-  if (!authorName) return null;
-  const slug = getAuthorSlugByName(authorName);
-  if (slug) {
+// Renders author name as a link if the author has a slug, plain text otherwise
+function AuthorDisplay({ author }) {
+  if (!author?.name) return null;
+  if (author.slug) {
     return (
       <Link
-        href={`/${slug}`}
+        href={`/${author.slug}`}
         className="font-semibold text-slate-800 dark:text-slate-200 hover:text-[#009fe3] hover:underline transition-colors"
       >
-        {authorName}
+        {author.name}
       </Link>
     );
   }
-  return <span className="font-semibold text-slate-800 dark:text-slate-200">{authorName}</span>;
+  return <span className="font-semibold text-slate-800 dark:text-slate-200">{author.name}</span>;
 }
 
 /**
@@ -213,7 +210,7 @@ export default function ArticlePageClient({
           {/* Author + Date + Share Bar */}
           <div className="mt-4 flex flex-col gap-3 border-b border-slate-200 pb-4 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-4 md:pb-6 dark:border-slate-800">
             <div className="flex items-center gap-2 font-sans text-xs text-slate-500 md:gap-3 md:text-sm dark:text-slate-400">
-              <AuthorDisplay authorName={article.author} />
+              <AuthorDisplay author={article.author} />
               <span className="text-slate-300 dark:text-slate-600">|</span>
               <time dateTime={article.dateISO || article.date}>{formattedDate}</time>
             </div>

@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getAuthorBySlug, specialAuthors } from "@/lib/authors";
-import { getArticlesByAuthor } from "@/lib/contentful";
+import {
+    getAuthorBySlugFromContentful,
+    getArticlesByAuthorSlug,
+    getAllAuthorSlugs,
+} from "@/lib/contentful";
 
 // ─── Static paths ─────────────────────────────────────────────────────────────
-export function generateStaticParams() {
-    return specialAuthors.map((author) => ({ authorSlug: author.slug }));
+export async function generateStaticParams() {
+    const slugs = await getAllAuthorSlugs();
+    return slugs.map((slug: string) => ({ authorSlug: slug }));
 }
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -16,7 +20,7 @@ export async function generateMetadata({
     params: Promise<{ authorSlug: string }>;
 }) {
     const { authorSlug } = await params;
-    const author = getAuthorBySlug(authorSlug);
+    const author = await getAuthorBySlugFromContentful(authorSlug);
     if (!author) return {};
     return {
         title: `${author.name} | Tripoli Media`,
@@ -49,11 +53,10 @@ export default async function AuthorPage({
     params: Promise<{ authorSlug: string }>;
 }) {
     const { authorSlug } = await params;
-    const author = getAuthorBySlug(authorSlug);
-    // Only render for known special authors; all other slugs fall through to 404
+    const author = await getAuthorBySlugFromContentful(authorSlug);
     if (!author) notFound();
 
-    const articles = await getArticlesByAuthor(author.name);
+    const articles = await getArticlesByAuthorSlug(authorSlug);
 
     // Initials fallback for when no photo is available
     const initials = author.name
