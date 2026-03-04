@@ -64,18 +64,16 @@ export default async function AuthorPage({
     if (author.name === "Sofia Pelayo") displayName = "Sofía Pelayo";
 
     // Theme colors based on author/department
-    // Camila Aceves is Coordinator for Consumo y Retail (#f39200)
-    // Manuela Piza is Coordinator for Entretenimiento y Cultura (#009640)
-    // Izcóatl Sánchez is Coordinator for Industria TI (#0069b4)
-    // Pablo Díaz is Coordinator for Infraestructura Social (#5d514c)
     // Emiliano Méndez is for Política y Leyes (#312783)
     // Sofía Pelayo is Coordinator for Sector Salud (#e6007e)
+    // Moisés Monraz is Director General (Custom theme: #8fabb6, #cad4da, #e5e9ed)
     const isCamila = authorSlug === "camila-aceves";
     const isManuela = authorSlug === "manuela-piza-hernandez";
     const isIzco = authorSlug === "izcoatl-sanchez-patino";
     const isPablo = authorSlug === "pablo-diaz-del-castillo";
     const isEmiliano = authorSlug === "emiliano-mendez-alonso";
     const isSofia = authorSlug === "sofia-pelayo" || authorSlug === "sofia-pelayo-romo";
+    const isMoises = authorSlug === "moises-monraz";
 
     let brandColor = "#009fe3";
     let brandGradient = "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)";
@@ -98,6 +96,9 @@ export default async function AuthorPage({
     } else if (isSofia) {
         brandColor = "#e6007e";
         brandGradient = "linear-gradient(90deg, #e6007e, #f29fc5, #f9d3e6)";
+    } else if (isMoises) {
+        brandColor = "#8fabb6";
+        brandGradient = "linear-gradient(90deg, #8fabb6, #cad4da, #e5e9ed)";
     }
 
     // Initials fallback for when no photo is available
@@ -273,7 +274,7 @@ export default async function AuthorPage({
                                                 />
                                             </div>
                                             <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
-                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: (isCamila || isManuela || isIzco || isPablo || isEmiliano || isSofia) ? brandColor : undefined }}>
+                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: (isCamila || isManuela || isIzco || isPablo || isEmiliano || isSofia || isMoises) ? brandColor : undefined }}>
                                                     {post.title}
                                                 </h3>
                                                 <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
