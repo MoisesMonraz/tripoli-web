@@ -419,11 +419,12 @@ export default function AIChatWidget() {
       {/* Panel del Chat */}
       <div
         style={{
-          top: fabTop,
+          bottom: "24px",
+          top: "auto",
           height: isOpen ? "500px" : "0",
-          maxHeight: `calc(100vh - ${fabTop + 24}px)`
+          maxHeight: "calc(100vh - 120px)"
         }}
-        className={`fixed right-2 sm:right-4 z-[45] w-[min(340px,calc(100vw-16px))] sm:w-[380px] rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden flex flex-col ${isOpen ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-2"
+        className={`fixed right-2 sm:right-4 z-40 w-[min(340px,calc(100vw-16px))] sm:w-[380px] rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden flex flex-col ${isOpen ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-2"
           }`}
         role="dialog"
         aria-label={strings.ariaDialog}
@@ -574,7 +575,7 @@ export default function AIChatWidget() {
           closeWelcome();
           setIsOpen((prev) => !prev);
         }}
-        style={{ top: fabTop }}
+        style={{ bottom: "24px", top: "auto" }}
         className={`fixed right-2 sm:right-4 z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg transition-all duration-300 hover:bg-sky-600 ${isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
           }`}
         aria-label={strings.ariaOpen}

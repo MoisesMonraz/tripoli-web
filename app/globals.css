@@ -226,3 +226,18 @@
 .dark .article-body > p:first-child::first-letter {
   color: #f1f5f9;
 }
+
+/* Ensure header always stays on top */
+header,
+nav[role="navigation"],
+.header,
+#header {
+  z-index: 50 !important;
+}
+
+/* Prevent fixed elements from overlapping header */
+*[style*="position: fixed"],
+*[style*="position:fixed"] {
+  max-height: calc(100vh - 120px);
+}
+
