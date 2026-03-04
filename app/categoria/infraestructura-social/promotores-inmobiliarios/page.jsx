@@ -19,4 +19,4 @@ export default async function PromotoresInmobiliariosPage() {
   );
 }
 
-export const revalidate = 1800;
+export const revalidate = 3600;

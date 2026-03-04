@@ -22,4 +22,4 @@ export default async function EntretenimientoCulturaPage() {
   );
 }
 
-export const revalidate = 1800;
+export const revalidate = 3600;

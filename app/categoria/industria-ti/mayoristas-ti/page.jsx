@@ -18,4 +18,4 @@ export default async function MayoristasTiPage() {
   );
 }
 
-export const revalidate = 1800;
+export const revalidate = 3600;

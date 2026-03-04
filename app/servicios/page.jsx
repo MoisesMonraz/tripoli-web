@@ -13,3 +13,5 @@ export default function ServiciosPage() {
     </main>
   );
 }
+
+export const revalidate = false;

@@ -268,3 +268,5 @@ export default async function AuthorPage({
         </main>
     );
 }
+
+export const revalidate = false;

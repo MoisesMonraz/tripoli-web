@@ -113,4 +113,4 @@ export default async function ArticlePage({ params }) {
 }
 
 // ISR: Revalidate every 1 hour
-export const revalidate = 3600;
+export const revalidate = 86400;

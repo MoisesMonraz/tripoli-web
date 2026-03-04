@@ -123,4 +123,4 @@ export default async function HomePage() {
 }
 
 // ISR: Revalidate every 30 minutes
-export const revalidate = 1800;
+export const revalidate = 3600;

@@ -7,3 +7,5 @@ export const metadata = {
 export default function ConocenosPage() {
   return <ConocenosBody />;
 }
+
+export const revalidate = false;
