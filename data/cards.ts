@@ -96,5 +96,16 @@ export const sampleCards: BusinessCard[] = [
         linkedin: "https://www.linkedin.com/company/tripoli-media/",
         accentColor: "#009640",
         isVisible: true,
+    {
+        id: "card-008",
+        name: "G. Izcóatl Sánchez",
+        position: "Coordinador Industria TI",
+        department: "Industria TI",
+        email: "i.sanchez@tripoli.media",
+        phone: "+52 33 1003 6420",
+        whatsapp: "+52 33 1003 6420",
+        linkedin: "https://www.linkedin.com/in/gonzalo-izc%C3%B3atl-pati%C3%B1o-s%C3%A1nchez-b1815b174/",
+        accentColor: "#0069b4",
+        isVisible: true,
     },
 ];
