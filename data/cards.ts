@@ -94,6 +94,9 @@ export const sampleCards: BusinessCard[] = [
         phone: "+52 33 2145 8803",
         whatsapp: "+52 33 2145 8803",
         linkedin: "https://www.linkedin.com/company/tripoli-media/",
+        accentColor: "#009640",
+        isVisible: true,
+    },
     {
         id: "card-008",
         name: "G. Izcóatl Sánchez",
@@ -104,6 +107,18 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1003 6420",
         linkedin: "https://www.linkedin.com/in/gonzalo-izc%C3%B3atl-pati%C3%B1o-s%C3%A1nchez-b1815b174/",
         accentColor: "#0069b4",
+        isVisible: true,
+    },
+    {
+        id: "card-009",
+        name: "Pablo Díaz del Castillo",
+        position: "Coordinador Infraestructura Social",
+        department: "Infraestructura Social",
+        email: "p.diaz@tripoli.media",
+        phone: "+52 33 1974 3450",
+        whatsapp: "+52 33 1974 3450",
+        linkedin: "https://www.linkedin.com/in/pablo-d%C3%ADaz-del-castillo-%C3%A1lvarez-740726255/",
+        accentColor: "#5d514c",
         isVisible: true,
     },
 ];
