@@ -120,5 +120,16 @@ export const sampleCards: BusinessCard[] = [
         linkedin: "https://www.linkedin.com/in/pablo-d%C3%ADaz-del-castillo-%C3%A1lvarez-740726255/",
         accentColor: "#5d514c",
         isVisible: true,
+    {
+        id: "card-010",
+        name: "Sofía Pelayo",
+        position: "Coordinador Sector Salud",
+        department: "Sector Salud",
+        email: "s.pelayo@tripoli.media",
+        phone: "+52 33 1720 4250",
+        whatsapp: "+52 33 1720 4250",
+        linkedin: "https://www.linkedin.com/in/sof%C3%ADa-pelayo-romo-25b290202/",
+        accentColor: "#e6007e",
+        isVisible: true,
     },
 ];
