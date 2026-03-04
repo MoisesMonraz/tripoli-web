@@ -124,7 +124,7 @@ export const sampleCards: BusinessCard[] = [
     {
         id: "card-010",
         name: "Sofía Pelayo",
-        position: "Coordinador Sector Salud",
+        position: "Coordinadora Sector Salud",
         department: "Sector Salud",
         email: "s.pelayo@tripoli.media",
         phone: "+52 33 1720 4250",

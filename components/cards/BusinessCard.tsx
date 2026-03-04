@@ -7,6 +7,17 @@ import CardSaveOptions from "./CardSaveOptions";
 
 /* ── helpers ── */
 function getInitials(name: string) {
+    // Manual overrides for specific initial preferences
+    const manualOverrides: Record<string, string> = {
+        "J. Ignacio Armenta": "IA",
+        "J. Ricardo Núñez": "RN",
+        "G. Izcóatl Sánchez": "IS",
+    };
+
+    if (manualOverrides[name]) {
+        return manualOverrides[name];
+    }
+
     return name
         .split(" ")
         .filter(Boolean)
