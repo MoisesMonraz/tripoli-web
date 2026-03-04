@@ -120,6 +120,7 @@ export const sampleCards: BusinessCard[] = [
         linkedin: "https://www.linkedin.com/in/pablo-d%C3%ADaz-del-castillo-%C3%A1lvarez-740726255/",
         accentColor: "#5d514c",
         isVisible: true,
+    },
     {
         id: "card-010",
         name: "Sofía Pelayo",
