@@ -146,19 +146,19 @@ export default async function AuthorPage({
         .toUpperCase();
 
     return (
-        <main className="flex flex-col pb-20 pt-4">
+        <main className="flex flex-col pb-20 pt-8">
 
             {/* ── SECTION A: Author profile ───────────────────────────────────────── */}
             <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
                 <div className="flex flex-row items-stretch gap-4">
                     {/* Photo — separate card */}
-                    <div className="relative w-[150px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
+                    <div className="relative w-[172.5px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
                             src={author.photoUrl}
                             alt={`Foto de ${displayName}`}
                             fill
                             className="object-cover object-top"
-                            sizes="150px"
+                            sizes="172.5px"
                         />
                         {/* Initials fallback — behind photo */}
                         <div
@@ -223,7 +223,7 @@ export default async function AuthorPage({
             </div>
 
             {/* ── SECTION B: Articles list ────────────────────────────────────────── */}
-            <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4 pt-16">
+            <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4 pt-8">
                 <section className="flex flex-col gap-6">
                     {/* Section heading — same style as subcategory pages */}
                     <div className="flex items-center gap-3">
