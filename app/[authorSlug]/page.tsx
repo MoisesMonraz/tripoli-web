@@ -13,9 +13,10 @@ export function generateStaticParams() {
 export async function generateMetadata({
     params,
 }: {
-    params: { authorSlug: string };
+    params: Promise<{ authorSlug: string }>;
 }) {
-    const author = getAuthorBySlug(params.authorSlug);
+    const { authorSlug } = await params;
+    const author = getAuthorBySlug(authorSlug);
     if (!author) return {};
     return {
         title: `${author.name} | Tripoli Media`,
@@ -45,9 +46,10 @@ const placeholderImage =
 export default async function AuthorPage({
     params,
 }: {
-    params: { authorSlug: string };
+    params: Promise<{ authorSlug: string }>;
 }) {
-    const author = getAuthorBySlug(params.authorSlug);
+    const { authorSlug } = await params;
+    const author = getAuthorBySlug(authorSlug);
     // Only render for known special authors; all other slugs fall through to 404
     if (!author) notFound();
 
@@ -74,7 +76,6 @@ export default async function AuthorPage({
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"
-                        onError={() => {/* handled by next/image */ }}
                     />
                     {/* Initials fallback — shown as overlay when image fails */}
                     <div
@@ -178,7 +179,7 @@ export default async function AuthorPage({
                         </p>
                     ) : (
                         <div className="flex flex-col gap-4">
-                            {articles.map((post) => {
+                            {articles.map((post: any) => {
                                 const articleHref =
                                     post.category && post.subcategory
                                         ? `/${post.category}/${post.subcategory}/articulo/${post.slug}`

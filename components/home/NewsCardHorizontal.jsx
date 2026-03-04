@@ -7,7 +7,7 @@ import { useFavorites } from "../favorites/FavoritesContext";
 import { getAuthorSlugByName } from "@/lib/authors";
 
 // Renders author name as a link for special authors, plain text otherwise
-function AuthorDisplay({ authorName }: { authorName?: string }) {
+function AuthorDisplay({ authorName }) {
   if (!authorName) return null;
   const slug = getAuthorSlugByName(authorName);
   if (slug) {
