@@ -63,11 +63,20 @@ export default async function AuthorPage({
 
     // Theme colors based on author/department
     // Camila Aceves is Coordinator for Consumo y Retail (#f39200)
+    // Manuela Piza is Coordinator for Entretenimiento y Cultura (#009640)
     const isCamila = authorSlug === "camila-aceves";
-    const brandColor = isCamila ? "#f39200" : "#009fe3";
-    const brandGradient = isCamila
-        ? "linear-gradient(90deg, #f39200, #fdc652, #fee5c8)"
-        : "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)";
+    const isManuela = authorSlug === "manuela-piza-hernandez";
+
+    let brandColor = "#009fe3";
+    let brandGradient = "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)";
+
+    if (isCamila) {
+        brandColor = "#f39200";
+        brandGradient = "linear-gradient(90deg, #f39200, #fdc652, #fee5c8)";
+    } else if (isManuela) {
+        brandColor = "#009640";
+        brandGradient = "linear-gradient(90deg, #009640, #cce5ce, #009640)";
+    }
 
     // Initials fallback for when no photo is available
     const initials = displayName
@@ -242,7 +251,7 @@ export default async function AuthorPage({
                                                 />
                                             </div>
                                             <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
-                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: isCamila ? brandColor : undefined }}>
+                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: (isCamila || isManuela) ? brandColor : undefined }}>
                                                     {post.title}
                                                 </h3>
                                                 <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
