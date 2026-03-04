@@ -10,11 +10,12 @@ import {
 // ─── Static paths ─────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
     const slugs = await getAllAuthorSlugs();
-    // Add manual override for the new slug if it's not yet in Contentful
-    if (!slugs.includes("moises-monraz-escoto")) {
-        slugs.push("moises-monraz-escoto");
+    // Filter out the old slug and add the new one
+    const filteredSlugs = slugs.filter(s => s !== "moises-monraz");
+    if (!filteredSlugs.includes("moises-monraz-escoto")) {
+        filteredSlugs.push("moises-monraz-escoto");
     }
-    return slugs.map((slug: string) => ({ authorSlug: slug }));
+    return filteredSlugs.map((slug: string) => ({ authorSlug: slug }));
 }
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -69,6 +70,9 @@ export default async function AuthorPage({
 }) {
     const { authorSlug } = await params;
 
+    // Explicitly 404 the old slug
+    if (authorSlug === "moises-monraz") notFound();
+
     // Slug aliasing: moises-monraz-escoto -> moises-monraz
     // (In case Contentful still uses the old slug)
     const effectiveSlug = authorSlug === "moises-monraz-escoto" ? "moises-monraz" : authorSlug;
@@ -97,7 +101,7 @@ export default async function AuthorPage({
     const isPablo = authorSlug === "pablo-diaz-del-castillo";
     const isEmiliano = authorSlug === "emiliano-mendez-alonso";
     const isSofia = authorSlug === "sofia-pelayo" || authorSlug === "sofia-pelayo-romo";
-    const isMoises = authorSlug === "moises-monraz" || authorSlug === "moises-monraz-escoto";
+    const isMoises = authorSlug === "moises-monraz-escoto";
     const isIgnacio = authorSlug === "juan-ignacio-armenta";
     const isRicardo = authorSlug === "ricardo-nunez-esparza";
 
