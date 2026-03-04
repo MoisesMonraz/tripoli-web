@@ -71,7 +71,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1893 3673",
         linkedin: "https://www.linkedin.com/in/camila-aceves-4a9501276/",
         accentColor: "#f39200",
-        isVisible: true,
+        isVisible: false,
     },
     {
         id: "card-007",
@@ -83,7 +83,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 2145 8803",
         linkedin: "https://www.linkedin.com/company/tripoli-media/",
         accentColor: "#009640",
-        isVisible: true,
+        isVisible: false,
     },
     {
         id: "card-008",
@@ -131,6 +131,6 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1720 4250",
         linkedin: "https://www.linkedin.com/in/sof%C3%ADa-pelayo-romo-25b290202/",
         accentColor: "#e6007e",
-        isVisible: true,
+        isVisible: false,
     },
 ];
