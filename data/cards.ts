@@ -94,8 +94,6 @@ export const sampleCards: BusinessCard[] = [
         phone: "+52 33 2145 8803",
         whatsapp: "+52 33 2145 8803",
         linkedin: "https://www.linkedin.com/company/tripoli-media/",
-        accentColor: "#009640",
-        isVisible: true,
     {
         id: "card-008",
         name: "G. Izcóatl Sánchez",
