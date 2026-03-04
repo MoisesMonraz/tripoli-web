@@ -64,85 +64,80 @@ export default async function AuthorPage({
         .toUpperCase();
 
     return (
-        <main className="flex flex-col pb-20">
+        <main className="flex flex-col pb-20 pt-4">
 
             {/* ── SECTION A: Author profile ───────────────────────────────────────── */}
-            <section className="w-full grid grid-cols-1 md:grid-cols-2 min-h-[400px]">
-                {/* Left: Photo */}
-                <div className="relative min-h-[300px] md:min-h-[400px] bg-slate-100 dark:bg-slate-800">
-                    <Image
-                        src={author.photoUrl}
-                        alt={`Foto de ${author.name}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                    {/* Initials fallback — shown as overlay when image fails */}
-                    <div
-                        aria-hidden="true"
-                        className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-slate-400 dark:text-slate-500 select-none"
-                        style={{ zIndex: -1 }}
-                    >
-                        {initials}
+            <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
+                <div className="flex flex-row min-h-[180px] overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
+                    {/* Photo */}
+                    <div className="relative w-[160px] flex-shrink-0 self-stretch bg-slate-200 dark:bg-slate-800">
+                        <Image
+                            src={author.photoUrl}
+                            alt={`Foto de ${author.name}`}
+                            fill
+                            className="object-cover"
+                            sizes="160px"
+                        />
+                        {/* Initials fallback — behind photo */}
+                        <div
+                            aria-hidden="true"
+                            className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-slate-400 dark:text-slate-500 select-none"
+                            style={{ zIndex: -1 }}
+                        >
+                            {initials}
+                        </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
+                        <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                            {author.name}
+                        </h1>
+                        <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 tracking-wide uppercase">
+                            {author.role}
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            {author.bio}
+                        </p>
+
+                        {/* Social links (only shown if defined) */}
+                        {author.social && (
+                            <div className="flex gap-4 mt-1">
+                                {author.social.twitter && (
+                                    <a
+                                        href={`https://twitter.com/${author.social.twitter}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] font-semibold text-[#009fe3] hover:underline"
+                                    >
+                                        Twitter
+                                    </a>
+                                )}
+                                {author.social.linkedin && (
+                                    <a
+                                        href={`https://linkedin.com/in/${author.social.linkedin}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] font-semibold text-[#009fe3] hover:underline"
+                                    >
+                                        LinkedIn
+                                    </a>
+                                )}
+                                {author.social.instagram && (
+                                    <a
+                                        href={`https://instagram.com/${author.social.instagram}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] font-semibold text-[#009fe3] hover:underline"
+                                    >
+                                        Instagram
+                                    </a>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {/* Right: Info */}
-                <div className="flex flex-col justify-center px-10 py-12 bg-white dark:bg-slate-950">
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                        Tripoli Media
-                    </p>
-                    <h1
-                        className="mt-3 font-bold text-slate-900 dark:text-slate-50 leading-tight"
-                        style={{ fontSize: "clamp(28px, 4vw, 48px)" }}
-                    >
-                        {author.name}
-                    </h1>
-                    <p className="mt-2 text-[13px] uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
-                        {author.role}
-                    </p>
-                    <hr className="my-6 border-t border-slate-200 dark:border-slate-700" />
-                    <p className="text-base leading-[1.7] text-slate-700 dark:text-slate-300">
-                        {author.bio}
-                    </p>
-
-                    {/* Social links (only shown if defined) */}
-                    {author.social && (
-                        <div className="mt-6 flex gap-4">
-                            {author.social.twitter && (
-                                <a
-                                    href={`https://twitter.com/${author.social.twitter}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm font-semibold text-[#009fe3] hover:underline"
-                                >
-                                    Twitter
-                                </a>
-                            )}
-                            {author.social.linkedin && (
-                                <a
-                                    href={`https://linkedin.com/in/${author.social.linkedin}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm font-semibold text-[#009fe3] hover:underline"
-                                >
-                                    LinkedIn
-                                </a>
-                            )}
-                            {author.social.instagram && (
-                                <a
-                                    href={`https://instagram.com/${author.social.instagram}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm font-semibold text-[#009fe3] hover:underline"
-                                >
-                                    Instagram
-                                </a>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </section>
+            </div>
 
             {/* ── SECTION B: Articles list ────────────────────────────────────────── */}
             <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4 pt-16">
