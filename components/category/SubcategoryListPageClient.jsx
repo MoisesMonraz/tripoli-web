@@ -6,6 +6,25 @@ import Image from "next/image";
 import BannerHeader from "../BannerHeader";
 import SubcategoryBanner from "../banners/SubcategoryBanner";
 import { useFavorites } from "../favorites/FavoritesContext";
+import { getAuthorSlugByName } from "@/lib/authors";
+
+// Renders author name as a link for special authors, plain text otherwise
+function AuthorDisplay({ authorName }) {
+  if (!authorName) return null;
+  const slug = getAuthorSlugByName(authorName);
+  if (slug) {
+    return (
+      <Link
+        href={`/${slug}`}
+        onClick={(e) => e.stopPropagation()}
+        className="hover:text-[#009fe3] hover:underline transition-colors"
+      >
+        {authorName}
+      </Link>
+    );
+  }
+  return <>{authorName}</>;
+}
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23718096' font-family='Arial, sans-serif' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
 
@@ -223,7 +242,7 @@ export default function SubcategoryListPageClient({
                       )}
                       <div className="mt-3 flex items-center gap-1.5 text-[7.5px] font-sans pr-16">
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          por: {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : post.slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
+                          por: <AuthorDisplay authorName={post.author} />
                         </span>
                         <span className="text-slate-300 dark:text-slate-600">|</span>
                         <time className="text-slate-500 dark:text-slate-400 truncate">
@@ -259,7 +278,7 @@ export default function SubcategoryListPageClient({
                       </p>
                       <div className="mt-1 flex items-center gap-2 text-[11px] font-sans">
                         <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-wide">
-                          por: {post.slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : post.slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
+                          por: <AuthorDisplay authorName={post.author} />
                         </span>
                         <span className="text-slate-300 dark:text-slate-600">|</span>
                         <time className="text-slate-500 dark:text-slate-400">

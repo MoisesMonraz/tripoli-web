@@ -2,6 +2,25 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { getAuthorSlugByName } from "@/lib/authors";
+
+// Renders author name as a link for special authors, plain text otherwise
+function AuthorDisplay({ authorName }) {
+  if (!authorName) return null;
+  const slug = getAuthorSlugByName(authorName);
+  if (slug) {
+    return (
+      <Link
+        href={`/${slug}`}
+        onClick={(e) => e.stopPropagation()}
+        className="hover:text-[#009fe3] hover:underline transition-colors"
+      >
+        {authorName}
+      </Link>
+    );
+  }
+  return <>{authorName}</>;
+}
 function getMonthMatrix(year, month) {
   const firstDay = new Date(year, month, 1);
   const startWeekday = (firstDay.getDay() + 6) % 7; // Monday = 0

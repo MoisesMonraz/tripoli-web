@@ -4,6 +4,25 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useFavorites } from "../favorites/FavoritesContext";
+import { getAuthorSlugByName } from "@/lib/authors";
+
+// Renders author name as a link for special authors, plain text otherwise
+function AuthorDisplay({ authorName }: { authorName?: string }) {
+  if (!authorName) return null;
+  const slug = getAuthorSlugByName(authorName);
+  if (slug) {
+    return (
+      <Link
+        href={`/${slug}`}
+        onClick={(e) => e.stopPropagation()}
+        className="hover:text-[#009fe3] hover:underline transition-colors"
+      >
+        {authorName}
+      </Link>
+    );
+  }
+  return <>{authorName}</>;
+}
 
 const formatFullSpanishDate = (dateInput) => {
   if (!dateInput) return "";
@@ -113,7 +132,7 @@ function CardFavoriteButton({ articleSlug, articleData }) {
   );
 }
 
-export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, category, subcategory }) {
+export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, author, category, subcategory }) {
   const isPlaceholder = slug?.startsWith("placeholder-");
   const articleHref = category && subcategory
     ? `/${category}/${subcategory}/articulo/${slug}`
@@ -168,7 +187,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           <div className="flex flex-col justify-end w-full mt-auto gap-1">
             <div className="flex flex-col gap-0.5">
               <span className="text-[7.2px] font-sans font-semibold text-slate-800 dark:text-slate-200 leading-none">
-                por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
+                por: <AuthorDisplay authorName={author} />
               </span>
               <time className="text-[7.2px] font-sans text-slate-500 dark:text-slate-400 leading-none" dateTime={dateISO || date}>
                 {formattedDate}
@@ -210,7 +229,7 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
           )}
           <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-300 line-clamp-2">{excerpt}</p>
           <span className="text-[0.68rem] font-sans font-semibold text-slate-800 dark:text-slate-200">
-            por: {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
+            por: <AuthorDisplay authorName={author} />
           </span>
           <time className="text-[0.68rem] font-sans text-slate-500 dark:text-slate-400" dateTime={dateISO || date}>
             {formattedDate}

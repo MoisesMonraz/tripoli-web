@@ -5,6 +5,24 @@ import Image from "next/image";
 import Link from "next/link";
 import ArticleContent from "./ArticleContent";
 import SocialShareBar from "./SocialShareBar";
+import { getAuthorSlugByName } from "@/lib/authors";
+
+// Renders author name as a link for special authors, plain text otherwise
+function AuthorDisplay({ authorName }) {
+  if (!authorName) return null;
+  const slug = getAuthorSlugByName(authorName);
+  if (slug) {
+    return (
+      <Link
+        href={`/${slug}`}
+        className="font-semibold text-slate-800 dark:text-slate-200 hover:text-[#009fe3] hover:underline transition-colors"
+      >
+        {authorName}
+      </Link>
+    );
+  }
+  return <span className="font-semibold text-slate-800 dark:text-slate-200">{authorName}</span>;
+}
 
 /**
  * Format date in Spanish
@@ -195,72 +213,72 @@ export default function ArticlePageClient({
           {/* Author + Date + Share Bar */}
           <div className="mt-4 flex flex-col gap-3 border-b border-slate-200 pb-4 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-4 md:pb-6 dark:border-slate-800">
             <div className="flex items-center gap-2 font-sans text-xs text-slate-500 md:gap-3 md:text-sm dark:text-slate-400">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {slug === "la-reforma-de-las-40-horas-justicia-social-y-el-reto-de-la-supervivencia-pyme" ? "Emiliano Méndez Alonso" : slug === "el-iva-en-tus-seguros-la-decision-fiscal-que-encarece-tu-proteccion" ? "Juan Ignacio Armenta" : "Tripoli Publishing House"}
-              </span>
+              <AuthorDisplay authorName={article.author} />
               <span className="text-slate-300 dark:text-slate-600">|</span>
               <time dateTime={article.dateISO || article.date}>{formattedDate}</time>
             </div>
-            <SocialShareBar
-              title={article.title}
-              articleSlug={slug}
-              articleData={{
-                title: article.title,
-                excerpt: article.excerpt,
-                image: article.image,
-                category: categorySlug,
-                subcategory: subcategorySlug,
-                date: article.dateISO || article.date,
-              }}
-            />
           </div>
+          <SocialShareBar
+            title={article.title}
+            articleSlug={slug}
+            articleData={{
+              title: article.title,
+              excerpt: article.excerpt,
+              image: article.image,
+              category: categorySlug,
+              subcategory: subcategorySlug,
+              date: article.dateISO || article.date,
+            }}
+          />
         </header>
 
         {/* Article Body */}
-        {hasModularContent ? (
-          <>
-            <ContentBlock content={article.introduccion} />
-            <ArticleImage
-              src={article.image1 || article.image}
-              alt={article.image1Caption || article.imageCaption || article.title}
-              caption={article.image1Caption || article.imageCaption}
-              priority
-            />
-            <ContentBlock content={article.body1} className="article-body--no-dropcap" />
-            <ArticleImage
-              src={article.image2}
-              alt={article.image2Caption || `${article.title} - imagen 2`}
-              caption={article.image2Caption}
-            />
-            <ContentBlock content={article.body2} className="article-body--no-dropcap" />
-            <ArticleImage
-              src={article.image3}
-              alt={article.image3Caption || `${article.title} - imagen 3`}
-              caption={article.image3Caption}
-            />
-            <ContentBlock content={article.cierre} className="article-body--no-dropcap" />
-            {article.fuentes && (
-              <div className="mx-auto mt-8 max-w-3xl px-5 sm:px-6 md:mt-12 lg:px-0">
-                <div className="border-t border-slate-200 pt-6 dark:border-slate-800">
-                  <ArticleContent
-                    content={article.fuentes}
-                    className="article-body article-body--sources text-sm"
-                  />
+        {
+          hasModularContent ? (
+            <>
+              <ContentBlock content={article.introduccion} />
+              <ArticleImage
+                src={article.image1 || article.image}
+                alt={article.image1Caption || article.imageCaption || article.title}
+                caption={article.image1Caption || article.imageCaption}
+                priority
+              />
+              <ContentBlock content={article.body1} className="article-body--no-dropcap" />
+              <ArticleImage
+                src={article.image2}
+                alt={article.image2Caption || `${article.title} - imagen 2`}
+                caption={article.image2Caption}
+              />
+              <ContentBlock content={article.body2} className="article-body--no-dropcap" />
+              <ArticleImage
+                src={article.image3}
+                alt={article.image3Caption || `${article.title} - imagen 3`}
+                caption={article.image3Caption}
+              />
+              <ContentBlock content={article.cierre} className="article-body--no-dropcap" />
+              {article.fuentes && (
+                <div className="mx-auto mt-8 max-w-3xl px-5 sm:px-6 md:mt-12 lg:px-0">
+                  <div className="border-t border-slate-200 pt-6 dark:border-slate-800">
+                    <ArticleContent
+                      content={article.fuentes}
+                      className="article-body article-body--sources text-sm"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <ArticleImage
-              src={article.image}
-              alt={article.imageCaption || article.title}
-              caption={article.imageCaption}
-              priority
-            />
-            <ContentBlock content={article.content} />
-          </>
-        )}
+              )}
+            </>
+          ) : (
+            <>
+              <ArticleImage
+                src={article.image}
+                alt={article.imageCaption || article.title}
+                caption={article.imageCaption}
+                priority
+              />
+              <ContentBlock content={article.content} />
+            </>
+          )
+        }
 
         {/* Breadcrumb footer */}
         <footer className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
@@ -302,7 +320,7 @@ export default function ArticlePageClient({
             </ol>
           </nav>
         </footer>
-      </div>
-    </article>
+      </div >
+    </article >
   );
 }
