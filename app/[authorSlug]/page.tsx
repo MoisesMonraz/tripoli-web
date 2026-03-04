@@ -58,8 +58,19 @@ export default async function AuthorPage({
 
     const articles = await getArticlesByAuthorSlug(authorSlug);
 
+    // Manual override for spelling: Camila -> Cámila
+    const displayName = author.name === "Camila Aceves" ? "Cámila Aceves" : author.name;
+
+    // Theme colors based on author/department
+    // Camila Aceves is Coordinator for Consumo y Retail (#f39200)
+    const isCamila = authorSlug === "camila-aceves";
+    const brandColor = isCamila ? "#f39200" : "#009fe3";
+    const brandGradient = isCamila
+        ? "linear-gradient(90deg, #f39200, #fdc652, #fee5c8)"
+        : "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)";
+
     // Initials fallback for when no photo is available
-    const initials = author.name
+    const initials = displayName
         .split(" ")
         .slice(0, 2)
         .map((w) => w[0])
@@ -94,7 +105,7 @@ export default async function AuthorPage({
                     {/* Info — separate card */}
                     <div className="flex flex-1 flex-col justify-center gap-2 p-3 pr-6 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
                         <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug">
-                            {author.name}
+                            {displayName}
                         </h1>
                         <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 tracking-wide uppercase">
                             {author.role}
@@ -131,7 +142,8 @@ export default async function AuthorPage({
                                         href={`https://instagram.com/${author.social.instagram}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[11px] font-semibold text-[#009fe3] hover:underline"
+                                        className="text-[11px] font-semibold hover:underline"
+                                        style={{ color: brandColor }}
                                     >
                                         Instagram
                                     </a>
@@ -149,20 +161,19 @@ export default async function AuthorPage({
                     <div className="flex items-center gap-3">
                         <span
                             className="h-[44px] w-[8px] rounded-sm flex-shrink-0"
-                            style={{ background: "#009fe3" }}
+                            style={{ background: brandColor }}
                             aria-hidden="true"
                         />
                         <h2
                             className="text-lg lg:text-xl font-semibold uppercase font-raleway tracking-[0.05em]"
-                            style={{ color: "#009fe3" }}
+                            style={{ color: brandColor }}
                         >
-                            Artículos de {author.name}
+                            Artículos de {displayName}
                         </h2>
                         <div
                             className="h-[44px] flex-1 rounded-sm"
                             style={{
-                                background:
-                                    "linear-gradient(90deg, #009fe3, #83d0f5, #009fe3)",
+                                background: brandGradient,
                                 backgroundSize: "300% 100%",
                                 animation: "subcatGradMove 12s ease-in-out infinite",
                             }}
@@ -209,7 +220,7 @@ export default async function AuthorPage({
                                                 )}
                                                 <div className="mt-3 flex items-center gap-1.5 text-[7.5px] font-sans">
                                                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                                        por: {author.name}
+                                                        por: {displayName}
                                                     </span>
                                                     <span className="text-slate-300 dark:text-slate-600">|</span>
                                                     <time className="text-slate-500 dark:text-slate-400 truncate">
@@ -231,7 +242,7 @@ export default async function AuthorPage({
                                                 />
                                             </div>
                                             <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
-                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2">
+                                                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2" style={{ color: isCamila ? brandColor : undefined }}>
                                                     {post.title}
                                                 </h3>
                                                 <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
