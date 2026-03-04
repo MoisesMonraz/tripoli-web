@@ -68,15 +68,15 @@ export default async function AuthorPage({
 
             {/* ── SECTION A: Author profile ───────────────────────────────────────── */}
             <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
-                <div className="flex flex-row items-start gap-4 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
-                    {/* Photo */}
-                    <div className="relative w-[200px] aspect-[3/4] flex-shrink-0 bg-slate-200 dark:bg-slate-800">
+                <div className="flex flex-row items-stretch gap-4">
+                    {/* Photo — separate card */}
+                    <div className="relative w-[150px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
                             src={author.photoUrl}
                             alt={`Foto de ${author.name}`}
                             fill
                             className="object-cover object-top"
-                            sizes="200px"
+                            sizes="150px"
                         />
                         {/* Initials fallback — behind photo */}
                         <div
@@ -88,8 +88,8 @@ export default async function AuthorPage({
                         </div>
                     </div>
 
-                    {/* Info */}
-                    <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-8">
+                    {/* Info — separate card */}
+                    <div className="flex flex-1 flex-col justify-center gap-2 p-3 pr-6 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
                         <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug">
                             {author.name}
                         </h1>
