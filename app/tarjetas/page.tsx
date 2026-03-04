@@ -28,7 +28,7 @@ export default function TarjetasPage() {
             </div>
 
             {/* wallet */}
-            <CardWallet cards={sampleCards} />
+            <CardWallet cards={sampleCards.filter(card => card.isVisible !== false)} />
         </main>
     );
 }

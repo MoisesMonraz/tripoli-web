@@ -9,6 +9,7 @@ export interface BusinessCard {
     linkedin?: string;
     photo?: string;
     accentColor: string;
+    isVisible?: boolean;
 }
 
 export const sampleCards: BusinessCard[] = [
@@ -22,6 +23,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 2817 5756",
         linkedin: "https://www.linkedin.com/company/tripoli-media/",
         accentColor: "#009fe3",
+        isVisible: true,
     },
     {
         id: "card-002",
@@ -33,6 +35,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1804 5788",
         linkedin: "https://www.linkedin.com/in/mois%C3%A9s-monraz-escoto-b0a5812b2/",
         accentColor: "#8fabb6",
+        isVisible: true,
     },
     {
         id: "card-003",
@@ -44,6 +47,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1413 3453",
         linkedin: "https://www.linkedin.com/in/juan-ignacio-armenta-reynoso/",
         accentColor: "#009a93",
+        isVisible: true,
     },
     {
         id: "card-004",
@@ -55,6 +59,7 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1704 2340",
         linkedin: "https://www.linkedin.com/in/ricardo-nunez-magenta/",
         accentColor: "#951b81",
+        isVisible: true,
     },
     {
         id: "card-005",
@@ -66,5 +71,18 @@ export const sampleCards: BusinessCard[] = [
         whatsapp: "+52 33 1843 5513",
         linkedin: "https://www.linkedin.com/in/emiliano-mendez-alonso-519531227/",
         accentColor: "#312783",
+        isVisible: true,
+    },
+    {
+        id: "card-006",
+        name: "Camila Aceves",
+        position: "Coordinadora Consumo y Retail",
+        department: "Consumo y Retail",
+        email: "c.aceves@tripoli.media",
+        phone: "+52 33 1893 3673",
+        whatsapp: "+52 33 1893 3673",
+        linkedin: "https://www.linkedin.com/in/camila-aceves-4a9501276/",
+        accentColor: "#f39200",
+        isVisible: false,
     },
 ];
