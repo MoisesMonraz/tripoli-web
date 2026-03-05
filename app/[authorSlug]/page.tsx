@@ -173,15 +173,15 @@ export default async function AuthorPage({
                     </div>
 
                     {/* Info — separate card */}
-                    <div className="flex flex-1 flex-col justify-center p-3 py-2.5 md:py-3 md:pl-6 md:pr-3 text-center md:text-left overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
-                        <h1 className="text-xl md:text-2xl font-bold md:font-semibold text-slate-900 dark:text-slate-100 leading-tight md:leading-snug">
+                    <div className="flex flex-1 flex-col justify-center p-3 py-2.5 md:py-3 md:pl-6 md:pr-3 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
+                        <h1 className="text-lg md:text-2xl font-bold md:font-semibold text-center md:text-left text-slate-900 dark:text-slate-100 leading-tight md:leading-snug">
                             {displayName}
                         </h1>
-                        <p className="mt-1 md:mt-0 text-[12px] md:text-[11px] font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-[0.08em] md:tracking-wide">
+                        <p className="mt-1 md:mt-0 text-[10.2px] md:text-[11px] font-semibold text-center md:text-left text-slate-800 dark:text-slate-200 uppercase tracking-[0.08em] md:tracking-wide">
                             {role}
                         </p>
                         {bio && (
-                            <p className="mt-2.5 md:mt-1 text-sm md:text-[15.6px] text-slate-600 dark:text-slate-400 leading-[1.65] md:leading-relaxed max-w-[95%] md:max-w-[90%] mx-auto md:mx-0">
+                            <p className="mt-2.5 md:mt-1 text-[11.9px] md:text-[15.6px] text-left md:text-left text-slate-600 dark:text-slate-400 leading-[1.65] md:leading-relaxed w-full md:max-w-[90%] mx-auto md:mx-0">
                                 {bio}
                             </p>
                         )}
