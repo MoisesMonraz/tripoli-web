@@ -154,13 +154,13 @@ export default async function AuthorPage({
             <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
                 <div className="flex flex-col md:flex-row items-stretch gap-4">
                     {/* Photo — separate card */}
-                    <div className="relative w-full md:w-[172.5px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
+                    <div className="relative mx-auto md:mx-0 w-[110px] md:w-[172.5px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
                             src={author.photoUrl}
                             alt={`Foto de ${displayName}`}
                             fill
                             className="object-cover object-top"
-                            sizes="(max-width: 768px) 100vw, 172.5px"
+                            sizes="(max-width: 768px) 110px, 172.5px"
                         />
                         {/* Initials fallback — behind photo */}
                         <div
@@ -173,22 +173,22 @@ export default async function AuthorPage({
                     </div>
 
                     {/* Info — separate card */}
-                    <div className="flex flex-1 flex-col justify-center p-4 pr-16 md:py-3 md:pl-6 md:pr-3 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
+                    <div className="flex flex-1 flex-col justify-center p-3 py-2.5 md:py-3 md:pl-6 md:pr-3 text-center md:text-left overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
                         <h1 className="text-xl md:text-2xl font-bold md:font-semibold text-slate-900 dark:text-slate-100 leading-tight md:leading-snug">
                             {displayName}
                         </h1>
-                        <p className="mt-1 md:mt-0 text-[12px] md:text-[11px] font-semibold text-slate-800 dark:text-slate-200 tracking-[0.08em] md:tracking-wide uppercase">
+                        <p className="mt-1 md:mt-0 text-[12px] md:text-[11px] font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-[0.08em] md:tracking-wide">
                             {role}
                         </p>
                         {bio && (
-                            <p className="mt-3 md:mt-1 text-sm md:text-[15.6px] text-slate-600 dark:text-slate-400 leading-[1.65] md:leading-relaxed max-w-[90%]">
+                            <p className="mt-2.5 md:mt-1 text-sm md:text-[15.6px] text-slate-600 dark:text-slate-400 leading-[1.65] md:leading-relaxed max-w-[95%] md:max-w-[90%] mx-auto md:mx-0">
                                 {bio}
                             </p>
                         )}
 
                         {/* Social links (only shown if defined) */}
                         {author.social && (
-                            <div className="flex gap-4 mt-3 md:mt-1">
+                            <div className="flex justify-center md:justify-start gap-4 mt-3 md:mt-1">
                                 {author.social.twitter && (
                                     <a
                                         href={`https://twitter.com/${author.social.twitter}`}
