@@ -22,7 +22,7 @@ async function redisGet<T>(key: string): Promise<T | null> {
   const redis = await getClient();
   const raw = await redis.get(key);
   if (!raw) return null;
-  try { return JSON.parse(raw) as T; } catch { return null; }
+  try { return JSON.parse(raw.toString()) as T; } catch { return null; }
 }
 
 async function redisSet(key: string, value: unknown): Promise<void> {
