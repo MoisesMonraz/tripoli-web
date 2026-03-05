@@ -188,6 +188,12 @@ export default function AdminPage() {
                 <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Usuarios</p>
                 <p className="text-2xl font-bold text-slate-900">{leads.length}</p>
               </div>
+              <a
+                href="/admin/shortener"
+                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
+              >
+                Shortener
+              </a>
               <button
                 type="button"
                 onClick={handleLogout}
