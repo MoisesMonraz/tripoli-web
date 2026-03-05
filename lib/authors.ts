@@ -20,25 +20,67 @@ export interface Author {
 
 export const specialAuthors: Author[] = [
     {
-        slug: "juan-ignacio-armenta",
-        name: "Juan Ignacio Armenta",
-        role: "Autor",
-        bio: "Presentación de Juan Ignacio Armenta. Este texto debe ser reemplazado con la biografía real del autor.",
-        photoUrl: "/authors/juan-ignacio-armenta.jpg",
-    },
-    {
-        slug: "emiliano-mendez-alonso",
-        name: "Emiliano Méndez Alonso",
-        role: "Autor",
-        bio: "Presentación de Emiliano Méndez Alonso. Este texto debe ser reemplazado con la biografía real del autor.",
-        photoUrl: "/authors/emiliano-mendez-alonso.jpg",
-    },
-    {
         slug: "moises-monraz-escoto",
         name: "Moisés Monraz Escoto",
         role: "Director General",
         bio: "Director General de Tripoli Media.",
         photoUrl: "/authors/moises-monraz.jpg",
+    },
+    {
+        slug: "juan-ignacio-armenta",
+        name: "Juan Ignacio Armenta",
+        role: "Coordinador Servicios Contables",
+        bio: "Especialista en contabilidad y gestión financiera.",
+        photoUrl: "/authors/juan-ignacio-armenta.jpg",
+    },
+    {
+        slug: "ricardo-nunez-esparza",
+        name: "Ricardo Núñez Esparza",
+        role: "Coordinador Servicios Audiovisuales",
+        bio: "Especialista en producción audiovisual y contenido multimedia.",
+        photoUrl: "/authors/ricardo-nunez.jpg",
+    },
+    {
+        slug: "camila-aceves",
+        name: "Cámila Aceves",
+        role: "Coordinadora Consumo y Retail",
+        bio: "Especialista en tendencias de consumo y mercado retail.",
+        photoUrl: "/authors/camila-aceves.jpg",
+    },
+    {
+        slug: "manuela-piza",
+        name: "Manuela Piza",
+        role: "Coordinadora Entretenimiento y Cultura",
+        bio: "Especialista en gestión cultural y entretenimiento.",
+        photoUrl: "/authors/manuela-piza.jpg",
+    },
+    {
+        slug: "izcoatl-sanchez",
+        name: "Izcóatl Sánchez",
+        role: "Coordinador Industria TI",
+        bio: "Especialista en tecnología de la información y transformación digital.",
+        photoUrl: "/authors/izcoatl-sanchez.jpg",
+    },
+    {
+        slug: "pablo-diaz-del-castillo",
+        name: "Pablo Díaz del Castillo",
+        role: "Coordinador Infraestructura Social",
+        bio: "Especialista en desarrollo de infraestructura y proyectos sociales.",
+        photoUrl: "/authors/pablo-diaz-del-castillo.jpg",
+    },
+    {
+        slug: "emiliano-mendez-alonso",
+        name: "Emiliano Méndez Alonso",
+        role: "Coordinador Política y Leyes",
+        bio: "Abogado patronal especializado en materia laboral. Actualmente se desempeña como conductor del programa Legalmente Hablado y es asociado en el despacho Barbosa & Huerga. Cuenta con experiencia en derecho corporativo y en la gestión estratégica de relaciones laborales, tanto individuales como colectivas.",
+        photoUrl: "/authors/emiliano-mendez-alonso.jpg",
+    },
+    {
+        slug: "sofia-pelayo",
+        name: "Sofía Pelayo",
+        role: "Coordinadora Sector Salud",
+        bio: "Especialista en gestión de servicios de salud.",
+        photoUrl: "/authors/sofia-pelayo.jpg",
     },
 ];
 

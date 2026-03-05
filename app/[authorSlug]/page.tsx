@@ -6,6 +6,7 @@ import {
     getArticlesByAuthorSlug,
     getAllAuthorSlugs,
 } from "@/lib/contentful";
+import { getAuthorBySlug } from "@/lib/authors";
 
 // ─── Static paths ─────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
@@ -80,6 +81,11 @@ export default async function AuthorPage({
     const author = await getAuthorBySlugFromContentful(effectiveSlug);
     if (!author) notFound();
 
+    // Merge with specialAuthor data if available
+    const specialAuthor = getAuthorBySlug(effectiveSlug);
+    const role = specialAuthor?.role || author.role;
+    const bio = specialAuthor?.bio || author.bio;
+
     const articles = await getArticlesByAuthorSlug(effectiveSlug);
 
     // Manual override for spelling: Camila -> Cámila, Sofia -> Sofía, Moisés -> Moisés Monraz Escoto
@@ -91,10 +97,6 @@ export default async function AuthorPage({
     }
 
     // Theme colors based on author/department
-    // Sofía Pelayo is Coordinator for Sector Salud (#e6007e)
-    // Moisés Monraz is Director General (Custom theme: #8fabb6, #cad4da, #e5e9ed)
-    // Ignacio Armenta is Coordinator for Contabilidad (Custom theme: #009a93, #009a93, #cbe7e5)
-    // Ricardo Núñez is Coordinator for Audiovisual (#951b81)
     const isCamila = authorSlug === "camila-aceves";
     const isManuela = authorSlug === "manuela-piza-hernandez";
     const isIzco = authorSlug === "izcoatl-sanchez-patino";
@@ -172,15 +174,17 @@ export default async function AuthorPage({
 
                     {/* Info — separate card */}
                     <div className="flex flex-1 flex-col justify-center gap-2 p-3 pr-6 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
-                        <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 leading-snug">
                             {displayName}
                         </h1>
                         <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 tracking-wide uppercase">
-                            {author.role}
+                            {role}
                         </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                            {author.bio}
-                        </p>
+                        {bio && (
+                            <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed max-w-[90%]">
+                                {bio}
+                            </p>
+                        )}
 
                         {/* Social links (only shown if defined) */}
                         {author.social && (
