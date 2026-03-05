@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating short URL:', error);
-    const missing = !process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN;
+    const missing = !process.env.KV_REDIS_URL;
     return NextResponse.json(
       {
         error: missing
-          ? 'Vercel KV no está configurado. Crea una base de datos KV en el panel de Vercel y vincula las variables KV_REST_API_URL y KV_REST_API_TOKEN al proyecto.'
+          ? 'Redis no está configurado. Agrega la variable de entorno KV_REDIS_URL en el panel de Vercel.'
           : 'Internal server error',
       },
       { status: 500 }
