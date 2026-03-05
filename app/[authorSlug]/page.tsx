@@ -173,7 +173,7 @@ export default async function AuthorPage({
                     </div>
 
                     {/* Info — separate card */}
-                    <div className="flex flex-1 flex-col justify-center gap-2 p-3 pr-6 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
+                    <div className="flex flex-1 flex-col justify-center gap-2 py-3 pl-6 pr-3 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
                         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 leading-snug">
                             {displayName}
                         </h1>
@@ -181,7 +181,7 @@ export default async function AuthorPage({
                             {role}
                         </p>
                         {bio && (
-                            <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed max-w-[90%]">
+                            <p className="mt-1 text-[15.6px] text-slate-600 dark:text-slate-400 leading-relaxed max-w-[90%]">
                                 {bio}
                             </p>
                         )}
