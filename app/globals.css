@@ -26,11 +26,22 @@
   }
 
   :root {
-    /* Header varies slightly by viewport, but 110px is an upper bound */
-    --header-height: 110px;
-    /* Chatbot icon is max h-12 (48px) */
+    /* Header Heights */
+    --header-height-desktop: 96px;
+    --header-height-mobile: 64px;
+
+    /* Offsets */
+    --chatbot-offset-desktop: 48px;
+    --chatbot-offset-mobile: 44px;
+
+    /* Computed Tops */
+    --chatbot-top-desktop: calc(var(--header-height-desktop) + var(--chatbot-offset-desktop));
+    --chatbot-top-mobile: calc(var(--header-height-mobile) + var(--chatbot-offset-mobile));
+
+    /* Legacy variables (keep for compatibility if needed elsewhere) */
+    --header-height: 96px;
     --chatbot-size: 48px;
-    --chatbot-safe-top: calc(var(--header-height) + var(--chatbot-size));
+    --chatbot-safe-top: var(--chatbot-top-desktop);
   }
 
   body {
@@ -271,9 +282,10 @@ nav[role="navigation"],
   max-height: calc(100vh - 120px);
 }
 
-/* Chatbot safe distance from header */
+/* Chatbot safe distance from header — REPOSITIONED TO TOP RIGHT */
 #tidio-chat,
 #tidio-chat-iframe,
+#tidio-chat-code,
 [id*="tidio"],
 [id*="crisp"],
 [id*="intercom"],
@@ -281,9 +293,28 @@ nav[role="navigation"],
 [class*="chat-widget"],
 [class*="chatbot"],
 [class*="floating-chat"],
-iframe[title*="chat"] {
-  top: auto !important;
-  bottom: 24px !important;
-  max-height: calc(100vh - var(--chatbot-safe-top) - 24px) !important;
+iframe[title*="chat"],
+iframe[src*="tidio"],
+iframe[src*="crisp"],
+.tidio-mobile-chat,
+div[data-tidio] {
+  position: fixed !important;
+  top: var(--chatbot-top-desktop) !important;
+  right: 24px !important;
+  bottom: auto !important;
+  left: auto !important;
   z-index: 40 !important;
+  max-height: calc(100vh - var(--chatbot-top-desktop) - 24px) !important;
+}
+
+@media (max-width: 768px) {
+
+  #tidio-chat,
+  #tidio-chat-iframe,
+  [id*="tidio"],
+  [id*="crisp"],
+  [id*="intercom"] {
+    top: var(--chatbot-top-mobile) !important;
+    right: 16px !important;
+  }
 }
