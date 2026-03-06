@@ -61,7 +61,7 @@ const formatCategoryLabel = (label) => {
 const ArticleImage = ({ src, alt, caption, priority = false }) => {
   if (!src) return null;
   return (
-    <figure className="mx-auto mt-5 max-w-3xl px-5 sm:px-6 md:mt-8 lg:px-0">
+    <figure className="mx-auto mt-4 max-w-3xl px-5 sm:px-6 md:mt-5 lg:px-0">
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
         <Image
           src={src}
@@ -88,7 +88,7 @@ const ArticleImage = ({ src, alt, caption, priority = false }) => {
 const ContentBlock = ({ content, className = "" }) => {
   if (!content) return null;
   return (
-    <div className="mx-auto mt-6 max-w-3xl px-5 sm:px-6 md:mt-10 lg:px-0">
+    <div className="mx-auto mt-4 max-w-3xl px-5 sm:px-6 md:mt-6 lg:px-0">
       <ArticleContent content={content} className={`article-body ${className}`} />
     </div>
   );
@@ -208,25 +208,25 @@ export default function ArticlePageClient({
           )}
 
           {/* Author + Date + Share Bar */}
-          <div className="mt-4 flex flex-col gap-3 border-b border-slate-200 pb-4 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-4 md:pb-6 dark:border-slate-800">
+          <div className="mt-4 flex flex-col gap-2 border-b border-slate-200 pb-3 md:mt-5 md:flex-row md:items-center md:justify-between md:gap-4 md:pb-4 dark:border-slate-800">
             <div className="flex items-center gap-2 font-sans text-xs text-slate-500 md:gap-3 md:text-sm dark:text-slate-400">
               <AuthorDisplay author={article.author} />
               <span className="text-slate-300 dark:text-slate-600">|</span>
               <time dateTime={article.dateISO || article.date}>{formattedDate}</time>
             </div>
+            <SocialShareBar
+              title={article.title}
+              articleSlug={slug}
+              articleData={{
+                title: article.title,
+                excerpt: article.excerpt,
+                image: article.image,
+                category: categorySlug,
+                subcategory: subcategorySlug,
+                date: article.dateISO || article.date,
+              }}
+            />
           </div>
-          <SocialShareBar
-            title={article.title}
-            articleSlug={slug}
-            articleData={{
-              title: article.title,
-              excerpt: article.excerpt,
-              image: article.image,
-              category: categorySlug,
-              subcategory: subcategorySlug,
-              date: article.dateISO || article.date,
-            }}
-          />
         </header>
 
         {/* Article Body */}
