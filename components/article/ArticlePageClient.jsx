@@ -195,10 +195,16 @@ export default function ArticlePageClient({
             )}
           </div>
 
-          {/* Title */}
           <h1 className="font-sans text-[1.3125rem] font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-[1.64rem] md:text-[2.625rem] dark:text-slate-50">
             {article.title}
           </h1>
+
+          {/* Subtitle */}
+          {article.subtitle && (
+            <p className="mt-2 text-sm font-medium text-slate-500 md:text-base dark:text-slate-400">
+              {article.subtitle}
+            </p>
+          )}
 
           {/* Excerpt / Lead */}
           {article.excerpt && (
