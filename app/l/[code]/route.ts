@@ -8,7 +8,10 @@ export async function GET(
   const { code } = await params;
 
   try {
-    const data = await getShortURL(code);
+    const timeout = new Promise<null>((_, reject) =>
+      setTimeout(() => reject(new Error('Redis timeout')), 5000)
+    );
+    const data = await Promise.race([getShortURL(code), timeout]);
 
     if (!data) {
       return new Response(

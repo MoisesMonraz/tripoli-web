@@ -12,7 +12,13 @@ let _client: ReturnType<typeof createClient> | null = null;
 
 async function getClient() {
   if (_client && _client.isReady) return _client;
-  _client = createClient({ url: process.env.KV_REDIS_URL });
+  _client = createClient({
+    url: process.env.KV_REDIS_URL,
+    socket: {
+      connectTimeout: 4000,
+      reconnectStrategy: false,
+    },
+  });
   _client.on('error', (err) => console.error('Redis error:', err));
   await _client.connect();
   return _client;
