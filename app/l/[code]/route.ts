@@ -11,13 +11,16 @@ export async function GET(
     const data = await getShortURL(code);
 
     if (!data) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return new Response(
+        `<html><body><p>Enlace no encontrado.</p><a href="https://tripoli.media">Ir a Tripoli Media</a></body></html>`,
+        { status: 404, headers: { 'Content-Type': 'text/html' } }
+      );
     }
 
     // Fire-and-forget: don't block the redirect
     incrementClicks(code);
 
-    return NextResponse.redirect(data.originalUrl, { status: 307 });
+    return NextResponse.redirect(data.originalUrl, { status: 302 });
 
   } catch (error) {
     console.error('Error redirecting:', error);
