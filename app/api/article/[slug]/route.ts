@@ -133,11 +133,18 @@ export async function GET(
     );
 
     if (!entry) {
-      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Article not found' }, {
+        status: 404,
+        headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
+      });
     }
 
     const article = transformArticle(entry as unknown as ContentfulEntry);
-    return NextResponse.json(article);
+    return NextResponse.json(article, {
+      headers: {
+        'Cache-Control': 's-maxage=86400, stale-while-revalidate=3600',
+      },
+    });
   } catch (error) {
     console.error(`Error fetching article ${slug}:`, error);
     return NextResponse.json(

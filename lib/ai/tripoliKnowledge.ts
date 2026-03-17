@@ -23,7 +23,7 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
     url: "/contacto",
     section: "Contacto",
     content:
-      "Contacto de Tripoli Media. Teléfono y WhatsApp: +52 33 2817 5756. Correo: contacto@tripoli.media. Dirección: P. de los Virreyes 45, Puerta de Hierro, 45116 Zapopan, Jal.",
+      "Contacto de Tripoli Media. Teléfono y WhatsApp: +52 33 2817 5756. Correo: contacto@tripoli.media. Dirección: Av de Las Rosas 585, Chapalita Sur, 45040 Zapopan, Jal. Int. 2",
     tags: [
       "contacto",
       "telefono",
@@ -36,9 +36,8 @@ export const getTripoliKnowledge = (): TripoliSource[] => [
       "direccion",
       "ubicacion",
       "zapopan",
-      "virreyes",
-      "puerta",
-      "hierro",
+      "rosas",
+      "chapalita",
     ],
   },
   {

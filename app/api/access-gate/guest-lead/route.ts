@@ -4,6 +4,8 @@ import { db } from "../../../../lib/firebase/server";
 import { isRateLimited } from "../../../../lib/security/rateLimit";
 import { verifyTurnstileToken } from "../../../../lib/security/turnstile";
 
+export const maxDuration = 10;
+
 type GuestLeadPayload = {
   email?: string;
   ipLocation?: Record<string, unknown> | null;

@@ -1,10 +1,13 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { generateTripoliAnswer } from "@/lib/ai/gemini";
 import { retrieveTripoliSources } from "@/lib/ai/tripoliRetrieval";
 import { getTripoliKnowledge, type TripoliSource } from "@/lib/ai/tripoliKnowledge";
 import { searchArticles } from "@/lib/contentful";
 import { isRateLimited } from "@/lib/security/rateLimit";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
+
+// Cap execution time to prevent runaway Gemini calls from consuming excessive memory-seconds
+export const maxDuration = 15;
 
 type IncomingMessage = {
   role: "user" | "assistant";

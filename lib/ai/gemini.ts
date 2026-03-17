@@ -1,6 +1,15 @@
 import type { TripoliSource } from "./tripoliKnowledge";
 import { toolDeclarations, executeTool } from "./contentfulTools";
-import { GoogleGenAI } from "@google/genai";
+
+// Lazy-load the Gemini SDK to reduce cold-start memory (~40MB saved when not invoked)
+let _GoogleGenAI: typeof import("@google/genai").GoogleGenAI | null = null;
+async function getGoogleGenAI() {
+  if (!_GoogleGenAI) {
+    const mod = await import("@google/genai");
+    _GoogleGenAI = mod.GoogleGenAI;
+  }
+  return _GoogleGenAI;
+}
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -151,6 +160,7 @@ export const generateTripoliAnswer = async ({
     throw new Error("Missing GEMINI_API_KEY. Set it in the server environment.");
   }
 
+  const GoogleGenAI = await getGoogleGenAI();
   const client = new GoogleGenAI({ apiKey });
 
   const isFirstMessage = chatHistory.length === 0;

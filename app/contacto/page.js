@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import AnimatedServiceBorderBox from "../../components/ui/AnimatedServiceBorderBox";
 import CalBookingEmbed from "../../components/contact/CalBookingEmbed";
@@ -65,7 +65,7 @@ export default function ContactoPage() {
     emailAria: "Enviar correo a contacto@tripoli.media (Gmail)",
     mapTitle: "Ubicacion Tripoli Media",
     mapLinkAria: "Abrir direccion en Google Maps",
-    addressLabel: "P. de los Virreyes 45, Puerta de Hierro, 45116 Zapopan, Jal.",
+    addressLabel: "Av de Las Rosas 585, Chapalita Sur, 45040 Zapopan, Jal. Int. 2",
   };
 
   return (
@@ -109,7 +109,7 @@ export default function ContactoPage() {
                 </a>
               </div>
               <a
-                href="https://www.google.com/maps/search/?api=1&query=P.%C2%BA%20de%20los%20Virreyes%2045%2C%20Puerta%20de%20Hierro%2C%2045116%20Zapopan%2C%20Jal."
+                href="https://www.google.com/maps/search/?api=1&query=Av%20de%20Las%20Rosas%20585%2C%20Chapalita%20Sur%2C%2045040%20Zapopan%2C%20Jal.%20Int.%202"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={copy.mapLinkAria}
@@ -124,7 +124,7 @@ export default function ContactoPage() {
             <div className="w-full rounded-none overflow-hidden shadow-md border border-slate-200 h-[200px] sm:h-[180px] lg:h-[200px]">
               <iframe
                 title={copy.mapTitle}
-                src="https://www.google.com/maps?q=P.%C2%BA%20de%20los%20Virreyes%2045%2C%20Puerta%20de%20Hierro%2C%2045116%20Zapopan%2C%20Jal.&output=embed"
+                src="https://www.google.com/maps?q=Av%20de%20Las%20Rosas%20585%2C%20Chapalita%20Sur%2C%2045040%20Zapopan%2C%20Jal.%20Int.%202&output=embed"
                 className="h-full w-full"
                 allowFullScreen
                 loading="lazy"

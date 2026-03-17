@@ -1,6 +1,12 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getArticles } from "../../../../../lib/contentful";
 import ArticlePageClient from "../../../../../components/article/ArticlePageClient";
+
+// Deduplicate getArticleBySlug calls within a single request.
+// Both generateMetadata() and the page component call this,
+// but React.cache() ensures the Contentful API is hit only once.
+const getCachedArticle = cache((slug) => getArticleBySlug(slug));
 export async function generateStaticParams() {
   const articles = await getArticles();
   return articles
@@ -14,7 +20,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug, category, subcategory } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await getCachedArticle(slug);
 
   if (!article) {
     return { title: "Article Not Found | Tripoli Media" };
@@ -63,7 +69,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ArticlePage({ params }) {
   const { category, subcategory, slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await getCachedArticle(slug);
 
   if (!article) {
     notFound();

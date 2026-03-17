@@ -46,16 +46,16 @@ export default function StructuredData() {
     priceRange: '$$',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'P. de los Virreyes 45, Puerta de Hierro',
+      streetAddress: 'Av de Las Rosas 585, Chapalita Sur, Int. 2',
       addressLocality: 'Zapopan',
       addressRegion: 'Jalisco',
-      postalCode: '45116',
+      postalCode: '45040',
       addressCountry: 'MX',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 20.6597,
-      longitude: -103.4098,
+      latitude: 20.6746,
+      longitude: -103.3953,
     },
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',

@@ -33,10 +33,10 @@ export default function OrganizationJsonLd() {
     },
     address: {
       "@type": "PostalAddress",
-      streetAddress: "P. de los Virreyes 45, Puerta de Hierro",
+      streetAddress: "Av de Las Rosas 585, Chapalita Sur, Int. 2",
       addressLocality: "Zapopan",
       addressRegion: "Jalisco",
-      postalCode: "45116",
+      postalCode: "45040",
       addressCountry: "MX",
     },
     sameAs: [

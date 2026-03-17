@@ -3,6 +3,8 @@ import { db } from "../../../lib/firebase/server";
 import { isRateLimited } from "../../../lib/security/rateLimit";
 import { verifyTurnstileToken } from "../../../lib/security/turnstile";
 
+export const maxDuration = 10;
+
 type LeadPayload = {
   __test?: boolean;
   name?: string;
