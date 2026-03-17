@@ -113,7 +113,7 @@ export default function ContactoPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={copy.mapLinkAria}
-                className="group flex w-full items-start justify-start gap-2 sm:gap-3 text-[14px] sm:text-[15.5px] md:text-[16.5px] lg:text-[17px] font-medium tracking-[0.01em] leading-relaxed text-[#009fe3] dark:text-[#009fe3] transition-colors hover:text-[#00628b] dark:hover:text-[#83d0f5]"
+                className="group flex w-full items-start justify-start gap-2 sm:gap-3 text-[12.6px] sm:text-[14px] md:text-[14.85px] lg:text-[15.3px] font-medium tracking-[0.01em] leading-relaxed text-[#009fe3] dark:text-[#009fe3] transition-colors hover:text-[#00628b] dark:hover:text-[#83d0f5]"
               >
                 <span className="group-hover:text-[#00628b] dark:group-hover:text-[#83d0f5] transition-colors flex-shrink-0">
                   <MapPin className="mt-0.5 h-[22px] w-[22px] sm:h-[24px] sm:w-[24px] lg:h-[26px] lg:w-[26px] text-[#009fe3] dark:text-[#009fe3] transition-colors group-hover:text-[#00628b] dark:group-hover:text-[#83d0f5]" />
