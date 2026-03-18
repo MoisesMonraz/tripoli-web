@@ -6,5 +6,5 @@ import bannerInfra from "../../Imagenes/Banners-Pagina-Web/Banner Infraestructur
 const slides = [{ id: "infra", src: bannerInfra, alt: "Infraestructura Social" }];
 
 export default function BannerInfraestructuraSociaI() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-infraestructura-social" />;
 }

@@ -6,5 +6,5 @@ import bannerConsumo from "../../Imagenes/Banners-Pagina-Web/Banner Consumo y Re
 const slides = [{ id: "consumo", src: bannerConsumo, alt: "Consumo y Retail" }];
 
 export default function BannerConsumoRetail() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-consumo-retail" />;
 }

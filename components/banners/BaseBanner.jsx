@@ -13,10 +13,11 @@ export const defaultSlides = [
 
 const DEFAULT_DURATION = 7500;
 
-export default function BaseBanner({ slides = defaultSlides, slideDuration = DEFAULT_DURATION, aspectRatioOverride }) {
+export default function BaseBanner({ slides = defaultSlides, slideDuration = DEFAULT_DURATION, aspectRatioOverride, position = 'unknown' }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const timerRef = useRef(null);
+  const sectionRef = useRef(null);
 
   const slidesWithExtras = useMemo(() => {
     const hasCustomSlides = Array.isArray(slides) && slides.length > 0;
@@ -53,6 +54,28 @@ export default function BaseBanner({ slides = defaultSlides, slideDuration = DEF
     return clearTimer;
   }, [slideDuration, slidesWithExtras.length]);
 
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    let tracked = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !tracked) {
+          tracked = true;
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'banner_impression', {
+              banner_position: position,
+              event_category: 'advertising',
+            });
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [position]);
+
   const goTo = (nextIndex) => {
     setActiveIndex(nextIndex);
     startTimer();
@@ -67,7 +90,7 @@ export default function BaseBanner({ slides = defaultSlides, slideDuration = DEF
       : 0.40625;
 
   return (
-    <section className="w-full m-0 p-0">
+    <section ref={sectionRef} className="w-full m-0 p-0">
       <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4 m-0 p-0">
         <div
           className={`tm-banner-track ${mounted ? "tm-banner-track--mounted" : "tm-banner-track--initial"} relative w-full aspect-[16/4] overflow-hidden m-0 p-0`}
@@ -91,7 +114,22 @@ export default function BaseBanner({ slides = defaultSlides, slideDuration = DEF
                   transform: "translateX(0)",
                 }}
               >
-                <Link href="/servicios" className="block w-full h-full cursor-pointer">
+                <Link
+                  href="/servicios"
+                  className="block w-full h-full cursor-pointer"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.gtag) {
+                      window.gtag('event', 'banner_click', {
+                        banner_id: slide.id,
+                        banner_name: slide.alt,
+                        banner_position: position,
+                        destination_url: '/servicios',
+                        event_category: 'advertising',
+                        event_label: slide.alt,
+                      });
+                    }
+                  }}
+                >
                   <Image
                     src={slide.src}
                     alt={slide.alt}

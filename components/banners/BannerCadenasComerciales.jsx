@@ -12,9 +12,12 @@ const slides = [
   { id: "web", src: "/banners/banner-web-services.png", alt: "Tripoli Web Services" },
 ];
 
+const BANNER_POSITION = 'category-cadenas-comerciales';
+
 export default function BannerCadenasComerciales() {
   const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -35,6 +38,28 @@ export default function BannerCadenasComerciales() {
     return clearTimer;
   }, []);
 
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    let tracked = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !tracked) {
+          tracked = true;
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'banner_impression', {
+              banner_position: BANNER_POSITION,
+              event_category: 'advertising',
+            });
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const goTo = (nextIndex) => {
     setActiveIndex(nextIndex);
     startTimer();
@@ -47,7 +72,7 @@ export default function BannerCadenasComerciales() {
   const trackInlineStyle = { ...trackStyle, position: "relative", overflow: "hidden" };
 
   return (
-    <div className="tm-banner-wrapper">
+    <div ref={wrapperRef} className="tm-banner-wrapper">
       <div className="tm-banner-inner">
         <div className="tm-banner-track" aria-live="polite" style={trackInlineStyle}>
           {slides.map((slide, idx) => {
@@ -67,7 +92,22 @@ export default function BannerCadenasComerciales() {
                   transition: "opacity 350ms ease",
                 }}
               >
-                <Link href="/servicios" className="block w-full h-full cursor-pointer">
+                <Link
+                  href="/servicios"
+                  className="block w-full h-full cursor-pointer"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.gtag) {
+                      window.gtag('event', 'banner_click', {
+                        banner_id: slide.id,
+                        banner_name: slide.alt,
+                        banner_position: BANNER_POSITION,
+                        destination_url: '/servicios',
+                        event_category: 'advertising',
+                        event_label: slide.alt,
+                      });
+                    }
+                  }}
+                >
                   <Image
                     src={slide.src}
                     alt={slide.alt}

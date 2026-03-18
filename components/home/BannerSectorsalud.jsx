@@ -6,5 +6,5 @@ import bannerSalud from "../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.p
 const slides = [{ id: "salud", src: bannerSalud, alt: "Sector Salud" }];
 
 export default function BannerSectorsalud() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-sector-salud" />;
 }

@@ -6,5 +6,5 @@ import bannerEntretenimiento from "../../Imagenes/Banners-Pagina-Web/Banner Entr
 const slides = [{ id: "entretenimiento", src: bannerEntretenimiento, alt: "Entretenimiento y Cultura" }];
 
 export default function BannerEntretenimientoCultura() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-entretenimiento-cultura" />;
 }

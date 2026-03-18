@@ -3,5 +3,5 @@
 import BaseBanner, { defaultSlides } from "./banners/BaseBanner";
 
 export default function BannerHeader() {
-  return <BaseBanner slides={defaultSlides} />;
+  return <BaseBanner slides={defaultSlides} position="header" />;
 }

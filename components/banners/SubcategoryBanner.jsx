@@ -37,5 +37,5 @@ export default function SubcategoryBanner({ subcategorySlug }) {
     analyticsBanner,
     webBanner,
   ];
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position={`subcategory-${subcategorySlug || 'unknown'}`} />;
 }

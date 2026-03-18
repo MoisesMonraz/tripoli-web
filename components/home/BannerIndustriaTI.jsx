@@ -6,5 +6,5 @@ import bannerIndustria from "../../Imagenes/Banners-Pagina-Web/Banner Industria 
 const slides = [{ id: "industria", src: bannerIndustria, alt: "Industria TI" }];
 
 export default function BannerIndustriaTI() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-industria-ti" />;
 }

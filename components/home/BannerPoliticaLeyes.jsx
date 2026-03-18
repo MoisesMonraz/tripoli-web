@@ -6,5 +6,5 @@ import bannerPolitica from "../../Imagenes/Banners-Pagina-Web/Banner Politica y 
 const slides = [{ id: "politica", src: bannerPolitica, alt: "Politica y Leyes" }];
 
 export default function BannerPoliticaLeyes() {
-  return <BaseBanner slides={slides} />;
+  return <BaseBanner slides={slides} position="home-politica-leyes" />;
 }
