@@ -1,5 +1,7 @@
 import PrivacyBody from "./privacy-body";
 
+export const revalidate = false;
+
 export const metadata = {
   title: "Aviso de Privacidad | Tripoli Media",
 };

@@ -1,3 +1,5 @@
+export const revalidate = false;
+
 import CategorySection from "../../components/home/CategorySection";
 import BannerHeader from "../../components/BannerHeader";
 import BannerEntretenimientoCultura from "../../components/home/BannerEntretenimientoCultura";
