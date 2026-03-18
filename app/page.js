@@ -122,5 +122,7 @@ export default async function HomePage() {
   );
 }
 
-// ISR: Revalidate every 30 minutes
+// ISR: Revalidate every hour
 export const revalidate = 3600;
+// Abort the function after 25s to avoid billing for hung Contentful calls
+export const maxDuration = 25;

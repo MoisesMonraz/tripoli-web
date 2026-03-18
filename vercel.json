@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "app/**/*.js": { "memory": 256 },
+    "app/**/*.jsx": { "memory": 256 },
+    "app/**/*.ts": { "memory": 256 },
+    "app/**/*.tsx": { "memory": 256 }
+  }
+}

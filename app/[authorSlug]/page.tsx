@@ -351,3 +351,4 @@ export default async function AuthorPage({
 }
 
 export const revalidate = false;
+export const maxDuration = 25;
