@@ -12,6 +12,7 @@
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.1.6",
     "@google/genai": "^1.41.0",
+    "@react-pdf/renderer": "^4.3.2",
     "@upstash/ratelimit": "^1.2.1",
     "@upstash/redis": "^1.36.1",
     "contentful": "^11.9.0",
@@ -22,6 +23,7 @@
     "html-to-image": "^1.11.13",
     "next": "16.1.6",
     "otplib": "^12.0.1",
+    "pdf-parse": "^2.4.5",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "19.2.0",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "25.0.6",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "19.2.8",
     "autoprefixer": "^10.4.22",
     "eslint": "^9",

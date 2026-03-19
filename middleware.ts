@@ -54,7 +54,7 @@ async function verifyAdminSession(token: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/admin/shortener')) {
+  if (pathname.startsWith('/admin/shortener') || pathname.startsWith('/admin/facturacion')) {
     const token = request.cookies.get(ADMIN_COOKIE)?.value;
     const valid = await verifyAdminSession(token ?? '');
     if (!valid) {
@@ -66,5 +66,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/shortener/:path*'],
+  matcher: ['/admin/shortener/:path*', '/admin/facturacion/:path*'],
 };
