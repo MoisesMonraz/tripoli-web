@@ -9,513 +9,510 @@ import {
   View,
   StyleSheet,
   renderToBuffer,
-  Font,
 } from '@react-pdf/renderer';
 import type { DocumentProps } from '@react-pdf/renderer';
 import React, { type ReactElement } from 'react';
 
+// ─── Brand constants ──────────────────────────────────────────────────────────
+
+const EMISOR_RFC = 'MOEM000520NK2';
+const EMISOR_NOMBRE_DEFAULT = 'Moisés Monraz Escoto';
+const EMISOR_DIRECCION = 'Av. de las Rosas 585 int. 2, Chapalita Oriente, 45040, Zapopan, Jal.';
+
+// ─── Color palette ────────────────────────────────────────────────────────────
+
+const BLACK       = '#000000';
+const DARK_BLUE   = '#1E3A5F';
+const WHITE       = '#FFFFFF';
+const LIGHT_GRAY  = '#F5F7FA';
+const DIVIDER     = '#D1D5DB';
+const ALT_ROW     = '#F9F9F9';
+const TEXT_DARK   = '#1F2937';
+const TEXT_GRAY   = '#6B7280';
+const TEXT_LIGHT  = '#9CA3AF';
+const FOOTER_ACC  = '#93C5FD';
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const DARK_BLUE = '#1E3A5F';
-const LIGHT_BLUE = '#009fe3';
-const WHITE = '#FFFFFF';
-const LIGHT_GRAY = '#F5F7FA';
-const MID_GRAY = '#D1D5DB';
-const TEXT_DARK = '#1F2937';
-const TEXT_GRAY = '#6B7280';
-
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
+  // Page
   page: {
     fontFamily: 'Helvetica',
-    fontSize: 7,
+    fontSize: 7.5,
     color: TEXT_DARK,
-    paddingBottom: 40,
+    backgroundColor: WHITE,
+    paddingBottom: 100,
   },
-  // Header
+
+  // ── Header ──────────────────────────────────────────────────────────────────
   header: {
-    backgroundColor: DARK_BLUE,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 14,
+    backgroundColor: BLACK,
+    paddingHorizontal: 40,
+    paddingTop: 22,
+    paddingBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  headerLeft: {
-    flex: 1,
-  },
-  companyName: {
+  headerLeft: { flex: 1 },
+  headerCompany: {
     color: WHITE,
-    fontSize: 18,
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+    letterSpacing: 1.5,
+  },
+  headerTagline: { color: TEXT_LIGHT, fontSize: 7.5, marginTop: 3 },
+  headerRight: { alignItems: 'flex-end' },
+  headerFacturaLabel: {
+    color: WHITE,
+    fontSize: 28,
+    fontFamily: 'Helvetica-Bold',
+    letterSpacing: 3,
+  },
+  headerFolio: {
+    color: TEXT_LIGHT,
+    fontSize: 8,
+    marginTop: 2,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 1,
   },
-  companyTagline: {
-    color: LIGHT_BLUE,
-    fontSize: 7.5,
-    marginTop: 2,
+  headerDirector: {
+    color: TEXT_LIGHT,
+    fontSize: 6.5,
+    marginTop: 8,
+    textAlign: 'right',
+    lineHeight: 1.6,
   },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  invoiceLabel: {
-    color: WHITE,
-    fontSize: 22,
-    fontFamily: 'Helvetica-Bold',
-    letterSpacing: 2,
-  },
-  folioText: {
-    color: LIGHT_BLUE,
-    fontSize: 8,
-    marginTop: 2,
-  },
-  // Blue accent bar
-  accentBar: {
-    backgroundColor: LIGHT_BLUE,
-    height: 4,
-  },
-  // Section wrapper
-  body: {
-    paddingHorizontal: 24,
-    paddingTop: 14,
-  },
-  // Two-column row
-  row2: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 10,
-  },
-  col: {
-    flex: 1,
-  },
-  // Section card
-  card: {
-    backgroundColor: LIGHT_GRAY,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 8,
+
+  // ── Sections ────────────────────────────────────────────────────────────────
+  section: { paddingHorizontal: 40, paddingVertical: 14 },
+  sectionGray:  { backgroundColor: LIGHT_GRAY },
+  sectionWhite: { backgroundColor: WHITE },
+
+  sectionTitle: {
+    fontSize: 7,
     fontFamily: 'Helvetica-Bold',
     color: DARK_BLUE,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
-    marginBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: MID_GRAY,
+    marginBottom: 9,
     paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
   },
-  fieldRow: {
-    flexDirection: 'row',
-    marginBottom: 3,
-  },
-  fieldLabel: {
-    color: TEXT_GRAY,
-    width: 95,
-    fontSize: 6.5,
-  },
-  fieldValue: {
-    flex: 1,
-    color: TEXT_DARK,
-    fontSize: 6.5,
+
+  row2: { flexDirection: 'row', gap: 20 },
+  col: { flex: 1 },
+
+  // ── Field rows ──────────────────────────────────────────────────────────────
+  fieldRow: { flexDirection: 'row', marginBottom: 4, flexWrap: 'wrap' },
+  fieldLabel: { color: TEXT_GRAY, fontSize: 7, width: 108, flexShrink: 0 },
+  fieldValue: { flex: 1, color: TEXT_DARK, fontSize: 7, fontFamily: 'Helvetica-Bold' },
+
+  // ── Divider ─────────────────────────────────────────────────────────────────
+  divider: { height: 1, backgroundColor: DIVIDER },
+
+  // ── Conceptos ───────────────────────────────────────────────────────────────
+  conceptosTitle: {
+    fontSize: 15,
     fontFamily: 'Helvetica-Bold',
-  },
-  // Conceptos table
-  table: {
+    color: DARK_BLUE,
     marginBottom: 10,
   },
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: DARK_BLUE,
-    borderRadius: 3,
-    paddingVertical: 5,
-    paddingHorizontal: 6,
-    marginBottom: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
-  tableHeaderCell: {
-    color: WHITE,
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
-  },
+  tableHeaderCell: { color: WHITE, fontSize: 7, fontFamily: 'Helvetica-Bold' },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: MID_GRAY,
+    borderBottomColor: '#EEEEEE',
   },
-  tableRowAlt: {
-    backgroundColor: LIGHT_GRAY,
-  },
-  tableCell: {
-    fontSize: 6.5,
-    color: TEXT_DARK,
-  },
-  colClave: { width: 60 },
-  colDesc: { flex: 1 },
-  colCantidad: { width: 42, textAlign: 'right' },
-  colUnidad: { width: 70 },
-  colValor: { width: 60, textAlign: 'right' },
-  colImporte: { width: 62, textAlign: 'right' },
-  // Totales
-  totalesContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 10,
-  },
-  totalesCard: {
-    backgroundColor: LIGHT_GRAY,
-    borderRadius: 4,
-    padding: 10,
-    width: 200,
-  },
+  tableRowAlt: { backgroundColor: ALT_ROW },
+  tableCell:  { fontSize: 7, color: TEXT_DARK },
+  colClave:   { width: 58 },
+  colDesc:    { flex: 1 },
+  colUnidad:  { width: 52 },
+  colCant:    { width: 32, textAlign: 'right' },
+  colPrecio:  { width: 68, textAlign: 'right' },
+  colTotal:   { width: 70, textAlign: 'right' },
+
+  // ── Totales ─────────────────────────────────────────────────────────────────
+  totalesWrapper: { alignItems: 'flex-end', marginTop: 10, marginBottom: 4 },
+  totalesBox: { width: 235 },
   totalesRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 3,
+    paddingVertical: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
   },
-  totalesLabel: {
-    color: TEXT_GRAY,
-    fontSize: 7,
-  },
-  totalesValue: {
-    color: TEXT_DARK,
-    fontSize: 7,
-    fontFamily: 'Helvetica-Bold',
-  },
-  totalFinalRow: {
+  totalesLabel: { color: TEXT_GRAY, fontSize: 7.5 },
+  totalesValue: { color: TEXT_DARK, fontSize: 7.5, fontFamily: 'Helvetica-Bold' },
+  totalesTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: DARK_BLUE,
-    borderRadius: 3,
     paddingVertical: 5,
-    paddingHorizontal: 6,
-    marginTop: 4,
+    marginTop: 2,
+    borderTopWidth: 2,
+    borderTopColor: DARK_BLUE,
   },
-  totalFinalLabel: {
-    color: WHITE,
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
-  },
-  totalFinalValue: {
-    color: LIGHT_BLUE,
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
-  },
-  letrasText: {
-    color: TEXT_GRAY,
-    fontSize: 6,
-    marginTop: 4,
+  totalLabel: { color: DARK_BLUE, fontSize: 9.5, fontFamily: 'Helvetica-Bold' },
+  totalValue: { color: DARK_BLUE, fontSize: 9.5, fontFamily: 'Helvetica-Bold' },
+  letras: {
+    fontSize: 6.5,
+    color: TEXT_LIGHT,
+    fontFamily: 'Helvetica-Oblique',
     textAlign: 'right',
+    marginTop: 5,
+    maxWidth: 235,
   },
-  // Sellos
-  selloCard: {
-    backgroundColor: LIGHT_GRAY,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
-  },
-  selloTitle: {
+
+  // ── Sellos ──────────────────────────────────────────────────────────────────
+  selloBlock: { marginBottom: 8 },
+  selloLabel: {
     fontSize: 7,
     fontFamily: 'Helvetica-Bold',
     color: DARK_BLUE,
-    marginBottom: 3,
+    marginBottom: 2,
   },
-  selloText: {
-    fontSize: 5,
-    color: TEXT_GRAY,
-    fontFamily: 'Helvetica',
-    lineHeight: 1.4,
-  },
-  // Footer
+  selloValue: { fontSize: 5.5, color: TEXT_GRAY, lineHeight: 1.5 },
+
+  // ── Footer (fixed) ──────────────────────────────────────────────────────────
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: DARK_BLUE,
+    paddingHorizontal: 40,
+    paddingVertical: 14,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  footerCol:       { flex: 1 },
+  footerColCenter: { flex: 1, alignItems: 'center' },
+  footerColRight:  { width: 76, alignItems: 'center' },
+  footerLabel:     { color: FOOTER_ACC, fontSize: 5.5, marginBottom: 1 },
+  footerLabelTop:  { color: FOOTER_ACC, fontSize: 5.5, marginBottom: 1, marginTop: 4 },
+  footerValue:     { color: WHITE, fontSize: 6.5, marginBottom: 3 },
+  footerContact:   { color: WHITE, fontSize: 6.5, marginBottom: 2 },
+  footerNote:      { color: FOOTER_ACC, fontSize: 5.5, marginTop: 4, fontFamily: 'Helvetica-Oblique' },
+  qrBox: {
+    width: 56,
+    height: 56,
+    backgroundColor: '#6B7280',
+    borderRadius: 2,
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
+    justifyContent: 'center',
   },
-  footerText: {
-    color: WHITE,
-    fontSize: 6,
-  },
-  footerBrand: {
-    color: LIGHT_BLUE,
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
-  },
+  qrText:    { color: WHITE, fontSize: 8, fontFamily: 'Helvetica-Bold' },
+  qrCaption: { color: FOOTER_ACC, fontSize: 5.5, marginTop: 3 },
 });
 
-// ─── Currency formatter ────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatMXN(n: number): string {
-  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M.N.`;
+}
+
+/** Parse certification timestamp from cadena original: ||1.1|UUID|2026-03-19T13:56:27|... */
+function extractCertDate(cadena: string): string {
+  const m = cadena.match(/\|\|[\d.]+\|[0-9A-F-]{36}\|(\d{4}-\d{2}-\d{2}T[\d:]+)/i);
+  return m ? m[1].replace('T', ' ') : '';
+}
+
+/** Number → Spanish words (covers 0 – 999,999) */
+function numToWords(n: number): string {
+  const ones = [
+    '', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE',
+    'DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE',
+    'DIECIOCHO', 'DIECINUEVE',
+  ];
+  const tens     = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+  const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+  if (n === 0) return 'CERO';
+  if (n === 100) return 'CIEN';
+  let r = '';
+  if (n >= 1000) { const t = Math.floor(n / 1000); r += t === 1 ? 'MIL ' : numToWords(t) + ' MIL '; n %= 1000; }
+  if (n >= 100)  { r += hundreds[Math.floor(n / 100)] + ' '; n %= 100; }
+  if (n >= 20)   { r += tens[Math.floor(n / 10)]; if (n % 10 !== 0) r += ' Y ' + ones[n % 10]; r += ' '; }
+  else if (n > 0){ r += ones[n] + ' '; }
+  return r.trim();
+}
+
+function totalToLetras(total: number): string {
+  const int = Math.floor(total);
+  const dec = Math.round((total - int) * 100);
+  return `${numToWords(int)} PESOS ${String(dec).padStart(2, '0')}/100 M.N.`;
+}
+
+/** Renders a label + bold value row */
+function field(label: string, value: string): React.ReactElement {
+  return React.createElement(
+    View,
+    { style: s.fieldRow },
+    React.createElement(Text, { style: s.fieldLabel }, label),
+    React.createElement(Text, { style: s.fieldValue }, value || '—')
+  );
 }
 
 // ─── PDF Document ─────────────────────────────────────────────────────────────
 
 function InvoiceDocument({ data }: { data: InvoiceData }): ReactElement<DocumentProps> {
-  const { emisor, receptor, factura, conceptos, totales, sellos } = data;
+  const { emisor, receptor, factura, conceptos, sellos } = data;
+
+  // IVA recalculation: if the SAT PDF had iva=0 but subtotal>0, recalculate
+  const subtotal  = data.totales.subtotal;
+  let iva         = data.totales.iva;
+  let total       = data.totales.total;
+  const ivaWasZero = iva === 0 && subtotal > 0;
+  if (ivaWasZero) {
+    iva   = Math.round(subtotal * 0.16 * 100) / 100;
+    total = Math.round((subtotal + iva) * 100) / 100;
+  }
+  const montoConLetra = ivaWasZero
+    ? totalToLetras(total)
+    : (data.totales.montoConLetra || totalToLetras(total));
+
+  const serieYFolio = factura.serieYFolio?.trim() || 'S/N';
+  const folio8      = factura.folioFiscalUUID?.slice(0, 8) || '';
+  const certDate    = extractCertDate(sellos.cadenaOriginal);
 
   return React.createElement(
     Document,
     { title: `Factura ${factura.folioFiscalUUID}`, author: 'Tripoli Media' },
     React.createElement(
       Page,
-      { size: 'A4', style: styles.page },
+      { size: 'A4', style: s.page },
 
-      // ── Header ──
+      // ── Header ────────────────────────────────────────────────────────────
       React.createElement(
         View,
-        { style: styles.header },
+        { style: s.header },
         React.createElement(
           View,
-          { style: styles.headerLeft },
-          React.createElement(Text, { style: styles.companyName }, 'TRIPOLI MEDIA'),
-          React.createElement(Text, { style: styles.companyTagline }, 'Publicidad · Marketing · Medios')
+          { style: s.headerLeft },
+          React.createElement(Text, { style: s.headerCompany }, 'TRIPOLI MEDIA'),
+          React.createElement(Text, { style: s.headerTagline }, 'Publicidad · Marketing · Medios')
         ),
         React.createElement(
           View,
-          { style: styles.headerRight },
-          React.createElement(Text, { style: styles.invoiceLabel }, 'FACTURA'),
-          React.createElement(Text, { style: styles.folioText }, factura.serieYFolio || factura.folioFiscalUUID?.slice(0, 8))
+          { style: s.headerRight },
+          React.createElement(Text, { style: s.headerFacturaLabel }, 'FACTURA'),
+          React.createElement(Text, { style: s.headerFolio }, folio8),
+          React.createElement(Text, { style: s.headerDirector }, 'Lic. Moisés Monraz Escoto\nDir. Tripoli Media')
         )
       ),
 
-      // ── Accent bar ──
-      React.createElement(View, { style: styles.accentBar }),
-
-      // ── Body ──
+      // ── Section 1: Datos del Emisor (light gray) ──────────────────────────
       React.createElement(
         View,
-        { style: styles.body },
+        { style: [s.section, s.sectionGray] },
+        React.createElement(Text, { style: s.sectionTitle }, 'DATOS DEL EMISOR'),
+        field('RFC:', EMISOR_RFC),
+        field('Nombre/Razón Social:', emisor.nombre || EMISOR_NOMBRE_DEFAULT),
+        field('Régimen Fiscal:', emisor.regimenFiscal),
+        field('Dirección Fiscal:', EMISOR_DIRECCION)
+      ),
 
-        // Emisor & Receptor side by side
+      React.createElement(View, { style: s.divider }),
+
+      // ── Section 2: Datos de la Factura (white, 2-col) ─────────────────────
+      React.createElement(
+        View,
+        { style: [s.section, s.sectionWhite] },
+        React.createElement(Text, { style: s.sectionTitle }, 'DATOS DE LA FACTURA'),
         React.createElement(
           View,
-          { style: styles.row2 },
-
-          // Emisor
+          { style: s.row2 },
           React.createElement(
             View,
-            { style: [styles.card, styles.col] },
-            React.createElement(Text, { style: styles.cardTitle }, 'Datos del Emisor'),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'RFC:'),
-              React.createElement(Text, { style: styles.fieldValue }, emisor.rfc)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Nombre/Razón Social:'),
-              React.createElement(Text, { style: styles.fieldValue }, emisor.nombre)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Régimen Fiscal:'),
-              React.createElement(Text, { style: styles.fieldValue }, emisor.regimenFiscal)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Código Postal:'),
-              React.createElement(Text, { style: styles.fieldValue }, emisor.codigoPostal)
-            )
+            { style: s.col },
+            field('Folio Fiscal (UUID):', factura.folioFiscalUUID),
+            field('Serie y Folio:', serieYFolio),
+            field('Fecha de Emisión:', factura.fechaEmision)
           ),
-
-          // Receptor
           React.createElement(
             View,
-            { style: [styles.card, styles.col] },
-            React.createElement(Text, { style: styles.cardTitle }, 'Datos del Receptor'),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'RFC:'),
-              React.createElement(Text, { style: styles.fieldValue }, receptor.rfc)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Nombre/Razón Social:'),
-              React.createElement(Text, { style: styles.fieldValue }, receptor.nombre)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Régimen Fiscal:'),
-              React.createElement(Text, { style: styles.fieldValue }, receptor.regimenFiscal)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Código Postal:'),
-              React.createElement(Text, { style: styles.fieldValue }, receptor.codigoPostal)
-            ),
-            React.createElement(
-              View,
-              { style: styles.fieldRow },
-              React.createElement(Text, { style: styles.fieldLabel }, 'Uso CFDI:'),
-              React.createElement(Text, { style: styles.fieldValue }, receptor.usoCFDI)
-            )
+            { style: s.col },
+            field('Lugar de Expedición:', factura.lugarExpedicion),
+            field('Forma de Pago:', factura.formaPago),
+            field('Método de Pago:', factura.metodoPago)
           )
-        ),
+        )
+      ),
 
-        // Factura details card (full width)
+      React.createElement(View, { style: s.divider }),
+
+      // ── Section 3: Datos del Receptor (light gray) ────────────────────────
+      React.createElement(
+        View,
+        { style: [s.section, s.sectionGray] },
+        React.createElement(Text, { style: s.sectionTitle }, 'DATOS DEL RECEPTOR'),
+        field('RFC:', receptor.rfc),
+        field('Nombre/Razón Social:', receptor.nombre),
+        field('Régimen Fiscal:', receptor.regimenFiscal),
+        field('Dirección Fiscal:', receptor.codigoPostal),
+        field('Uso de CFDI:', receptor.usoCFDI)
+      ),
+
+      React.createElement(View, { style: s.divider }),
+
+      // ── Section 4+5: Conceptos + Totales (white) ──────────────────────────
+      React.createElement(
+        View,
+        { style: [s.section, s.sectionWhite] },
+
+        React.createElement(Text, { style: s.conceptosTitle }, 'Conceptos'),
+
+        // Table header
         React.createElement(
           View,
-          { style: styles.card },
-          React.createElement(Text, { style: styles.cardTitle }, 'Detalles de la Factura'),
+          { style: s.tableHeader },
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colClave] }, 'Clave SAT'),
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colDesc] }, 'Descripción'),
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colUnidad] }, 'Unidad'),
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colCant] }, 'Cant.'),
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colPrecio] }, 'Precio'),
+          React.createElement(Text, { style: [s.tableHeaderCell, s.colTotal] }, 'Total')
+        ),
+
+        // Concept rows (alternating colors)
+        ...conceptos.map((c, i) =>
           React.createElement(
             View,
-            { style: styles.row2 },
-            React.createElement(
-              View,
-              { style: styles.col },
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Folio Fiscal (UUID):'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.folioFiscalUUID)
-              ),
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Serie y Folio:'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.serieYFolio)
-              ),
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Fecha de Emisión:'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.fechaEmision)
-              )
-            ),
-            React.createElement(
-              View,
-              { style: styles.col },
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Lugar de Expedición:'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.lugarExpedicion)
-              ),
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Forma de Pago:'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.formaPago)
-              ),
-              React.createElement(
-                View,
-                { style: styles.fieldRow },
-                React.createElement(Text, { style: styles.fieldLabel }, 'Método de Pago:'),
-                React.createElement(Text, { style: styles.fieldValue }, factura.metodoPago)
-              )
-            )
+            { key: String(i), style: i % 2 === 1 ? [s.tableRow, s.tableRowAlt] : s.tableRow },
+            React.createElement(Text, { style: [s.tableCell, s.colClave] }, c.claveSAT),
+            React.createElement(Text, { style: [s.tableCell, s.colDesc] }, c.descripcion),
+            React.createElement(Text, { style: [s.tableCell, s.colUnidad] }, c.unidad),
+            React.createElement(Text, { style: [s.tableCell, s.colCant] }, String(c.cantidad)),
+            React.createElement(Text, { style: [s.tableCell, s.colPrecio] }, formatMXN(c.valorUnitario)),
+            React.createElement(Text, { style: [s.tableCell, s.colTotal] }, formatMXN(c.importe))
           )
         ),
 
-        // Conceptos table
+        // Totales (right-aligned block)
         React.createElement(
           View,
-          { style: styles.table },
-          // Header row
+          { style: s.totalesWrapper },
           React.createElement(
             View,
-            { style: styles.tableHeader },
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colClave] }, 'Clave SAT'),
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colDesc] }, 'Descripción'),
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colCantidad] }, 'Cant.'),
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colUnidad] }, 'Unidad'),
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colValor] }, 'Valor Unit.'),
-            React.createElement(Text, { style: [styles.tableHeaderCell, styles.colImporte] }, 'Importe')
-          ),
-          // Data rows
-          ...conceptos.map((c, i) =>
+            { style: s.totalesBox },
             React.createElement(
               View,
-              { key: i, style: [styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}] },
-              React.createElement(Text, { style: [styles.tableCell, styles.colClave] }, c.claveSAT),
-              React.createElement(Text, { style: [styles.tableCell, styles.colDesc] }, c.descripcion),
-              React.createElement(Text, { style: [styles.tableCell, styles.colCantidad] }, String(c.cantidad)),
-              React.createElement(Text, { style: [styles.tableCell, styles.colUnidad] }, c.unidad),
-              React.createElement(Text, { style: [styles.tableCell, styles.colValor] }, formatMXN(c.valorUnitario)),
-              React.createElement(Text, { style: [styles.tableCell, styles.colImporte] }, formatMXN(c.importe))
-            )
+              { style: s.totalesRow },
+              React.createElement(Text, { style: s.totalesLabel }, 'Subtotal:'),
+              React.createElement(Text, { style: s.totalesValue }, formatMXN(subtotal))
+            ),
+            React.createElement(
+              View,
+              { style: s.totalesRow },
+              React.createElement(Text, { style: s.totalesLabel }, '+ I.V.A. 16%:'),
+              React.createElement(Text, { style: s.totalesValue }, formatMXN(iva))
+            ),
+            React.createElement(
+              View,
+              { style: s.totalesTotal },
+              React.createElement(Text, { style: s.totalLabel }, 'TOTAL:'),
+              React.createElement(Text, { style: s.totalValue }, formatMXN(total))
+            ),
+            React.createElement(Text, { style: s.letras }, montoConLetra)
           )
-        ),
+        )
+      ),
 
-        // Totales
-        React.createElement(
-          View,
-          { style: styles.totalesContainer },
-          React.createElement(
-            View,
-            { style: styles.totalesCard },
-            React.createElement(
-              View,
-              { style: styles.totalesRow },
-              React.createElement(Text, { style: styles.totalesLabel }, 'Subtotal:'),
-              React.createElement(Text, { style: styles.totalesValue }, formatMXN(totales.subtotal))
-            ),
-            React.createElement(
-              View,
-              { style: styles.totalesRow },
-              React.createElement(Text, { style: styles.totalesLabel }, 'IVA (16%):'),
-              React.createElement(Text, { style: styles.totalesValue }, formatMXN(totales.iva))
-            ),
-            React.createElement(
-              View,
-              { style: styles.totalFinalRow },
-              React.createElement(Text, { style: styles.totalFinalLabel }, 'TOTAL:'),
-              React.createElement(Text, { style: styles.totalFinalValue }, formatMXN(totales.total))
-            ),
-            React.createElement(Text, { style: styles.letrasText }, totales.montoConLetra)
-          )
-        ),
+      React.createElement(View, { style: s.divider }),
 
-        // Sellos
+      // ── Section 6: Sellos Digitales (light gray) ──────────────────────────
+      React.createElement(
+        View,
+        { style: [s.section, s.sectionGray] },
+        React.createElement(Text, { style: s.sectionTitle }, 'SELLOS DIGITALES'),
         sellos.selloCFDI
           ? React.createElement(
               View,
-              { style: styles.selloCard },
-              React.createElement(Text, { style: styles.selloTitle }, 'Sello Digital del CFDI'),
-              React.createElement(Text, { style: styles.selloText }, sellos.selloCFDI)
+              { style: s.selloBlock },
+              React.createElement(Text, { style: s.selloLabel }, 'Sello Digital del CFDI:'),
+              React.createElement(Text, { style: s.selloValue }, sellos.selloCFDI)
             )
           : null,
         sellos.selloSAT
           ? React.createElement(
               View,
-              { style: styles.selloCard },
-              React.createElement(Text, { style: styles.selloTitle }, 'Sello Digital del SAT'),
-              React.createElement(Text, { style: styles.selloText }, sellos.selloSAT)
+              { style: s.selloBlock },
+              React.createElement(Text, { style: s.selloLabel }, 'Sello Digital del SAT:'),
+              React.createElement(Text, { style: s.selloValue }, sellos.selloSAT)
             )
           : null,
         sellos.cadenaOriginal
           ? React.createElement(
               View,
-              { style: styles.selloCard },
-              React.createElement(Text, { style: styles.selloTitle }, 'Cadena Original del Complemento de Certificación Digital del SAT'),
-              React.createElement(Text, { style: styles.selloText }, sellos.cadenaOriginal)
+              { style: s.selloBlock },
+              React.createElement(
+                Text,
+                { style: s.selloLabel },
+                'Cadena Original del Complemento de Certificación Digital del SAT:'
+              ),
+              React.createElement(Text, { style: s.selloValue }, sellos.cadenaOriginal)
             )
           : null
       ),
 
-      // ── Footer ──
+      // ── Footer (fixed — repeats on every page) ────────────────────────────
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       React.createElement(
         View,
-        { style: styles.footer, fixed: true },
-        React.createElement(Text, { style: styles.footerText }, 'Este documento es una representación impresa de un CFDI · www.tripoli.media'),
-        React.createElement(Text, { style: styles.footerBrand }, 'TRIPOLI MEDIA')
+        { style: s.footer, fixed: true } as React.ComponentProps<typeof View> & { fixed?: boolean },
+
+        // Left: folio + cert date + legal note
+        React.createElement(
+          View,
+          { style: s.footerCol },
+          React.createElement(Text, { style: s.footerLabel }, 'Folio Fiscal:'),
+          React.createElement(Text, { style: s.footerValue }, factura.folioFiscalUUID),
+          certDate
+            ? React.createElement(
+                Text,
+                { style: s.footerLabelTop },
+                `Fecha de Certificación: ${certDate}`
+              )
+            : null,
+          React.createElement(
+            Text,
+            { style: s.footerNote },
+            'Este documento es una representación impresa de un CFDI'
+          )
+        ),
+
+        // Center: contact info
+        React.createElement(
+          View,
+          { style: s.footerColCenter },
+          React.createElement(Text, { style: s.footerContact }, 'www.tripoli.media'),
+          React.createElement(Text, { style: s.footerContact }, 'contacto@tripoli.media'),
+          React.createElement(Text, { style: s.footerContact }, '+52 33 2817 5756'),
+          React.createElement(Text, { style: s.footerContact }, 'Av. de las Rosas 585 int. 2, Zapopan, Jal.')
+        ),
+
+        // Right: QR placeholder
+        // TODO: Generate QR from SAT verification URL
+        // (see https://verificacfdi.facturaelectronica.sat.gob.mx)
+        React.createElement(
+          View,
+          { style: s.footerColRight },
+          React.createElement(
+            View,
+            { style: s.qrBox },
+            React.createElement(Text, { style: s.qrText }, 'QR')
+          ),
+          React.createElement(Text, { style: s.qrCaption }, 'QR SAT')
+        )
       )
     )
   );
