@@ -11,7 +11,8 @@ import {
   renderToBuffer,
   Font,
 } from '@react-pdf/renderer';
-import React from 'react';
+import type { DocumentProps } from '@react-pdf/renderer';
+import React, { type ReactElement } from 'react';
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -258,7 +259,7 @@ function formatMXN(n: number): string {
 
 // ─── PDF Document ─────────────────────────────────────────────────────────────
 
-function InvoiceDocument({ data }: { data: InvoiceData }) {
+function InvoiceDocument({ data }: { data: InvoiceData }): ReactElement<DocumentProps> {
   const { emisor, receptor, factura, conceptos, totales, sellos } = data;
 
   return React.createElement(
@@ -539,12 +540,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se recibieron datos de factura.' }, { status: 400 });
     }
 
-    const pdfBuffer = await renderToBuffer(React.createElement(InvoiceDocument, { data }));
+    const pdfBuffer = await renderToBuffer(
+      React.createElement(InvoiceDocument, { data }) as unknown as ReactElement<DocumentProps>
+    );
 
     const uuid = data.factura?.folioFiscalUUID?.slice(0, 8) || 'factura';
     const filename = `factura-tripoli-${uuid}.pdf`;
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

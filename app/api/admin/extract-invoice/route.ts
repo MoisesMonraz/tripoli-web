@@ -171,13 +171,13 @@ function parseInvoice(raw: string): InvoiceData {
   // ── Sellos ────────────────────────────────────────────────────────────────
   // Each sello is a long base64 string. They appear after their label on the same or next line.
   const sellosCFDIMatch = text.match(
-    /Sello\s+digital\s+del\s+CFDI:\s*\n?([\w+/=\s]{40,}?)(?=\n\n|\nSello\s+digital\s+del\s+SAT)/is
+    /Sello\s+digital\s+del\s+CFDI:\s*\n?([\w+/=\s]{40,}?)(?=\n\n|\nSello\s+digital\s+del\s+SAT)/i
   );
   const sellosSATMatch = text.match(
-    /Sello\s+digital\s+del\s+SAT:\s*\n?([\w+/=\s]{40,}?)(?=\n\n|\nCadena\s+Original)/is
+    /Sello\s+digital\s+del\s+SAT:\s*\n?([\w+/=\s]{40,}?)(?=\n\n|\nCadena\s+Original)/i
   );
   const cadenaMatch = text.match(
-    /Cadena\s+Original\s+del\s+complemento[^:]*:\s*\n?(\|\|[\s\S]+?)(?=\n\n|RFC\s+del\s+proveedor|$)/is
+    /Cadena\s+Original\s+del\s+complemento[^:]*:\s*\n?(\|\|[\s\S]+?)(?=\n\n|RFC\s+del\s+proveedor|$)/i
   );
 
   const selloCFDI = sellosCFDIMatch ? sellosCFDIMatch[1].replace(/\s+/g, '') : '';
