@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const QRCode = require('qrcode') as { toDataURL(text: string, opts?: { width?: number; margin?: number }): Promise<string> };
 import { getAdminSessionCookieName, verifyAdminSession } from '../../../../lib/security/adminSession';
 import type { InvoiceData } from '../../../../components/admin/FacturacionModule';
 
@@ -144,7 +146,6 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   const black     = rgb(0, 0, 0);
   const blue      = rgb(0.118, 0.227, 0.373);  // #1E3A5F
   const gray      = rgb(0.42,  0.447, 0.502);  // #6B7280
-  const red       = rgb(0.85,  0.11,  0.11);   // #D91C1C
   const lightgray = rgb(0.9,   0.9,   0.9);
 
   type DrawOpts = { size?: number; color?: ReturnType<typeof rgb>; bold?: boolean; maxWidth?: number };
@@ -164,9 +165,9 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   };
 
   // Helper: draw text centered within a column
-  const colCenter = (text: string, x0: number, x1: number, y: number, sz: number) => {
+  const colCenter = (text: string, x0: number, x1: number, y: number, sz: number, opts?: DrawOpts) => {
     const w = font.widthOfTextAtSize(text, sz);
-    draw(text, (x0 + x1) / 2 - w / 2, y, { size: sz });
+    draw(text, (x0 + x1) / 2 - w / 2, y, { size: sz, ...opts });
   };
 
   // ── IVA recalculation ────────────────────────────────────────────────────
@@ -202,14 +203,14 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Logo: geometric pixel blocks
-  page.drawRectangle({ x:  95, y: 935, width: 20, height: 20, color: red });
-  page.drawRectangle({ x: 115, y: 895, width: 20, height: 20, color: red });
-  page.drawRectangle({ x: 115, y: 935, width: 20, height: 20, color: rgb(0.5,  0.05, 0.05) });
-  page.drawRectangle({ x: 115, y: 915, width: 20, height: 20, color: rgb(0.35, 0.05, 0.05) });
-  page.drawRectangle({ x: 135, y: 935, width: 20, height: 20, color: rgb(0.25, 0.05, 0.05) });
+  page.drawRectangle({ x:  95, y: 935, width: 20, height: 20, color: rgb(0.20, 0.45, 0.70) });
+  page.drawRectangle({ x: 115, y: 895, width: 20, height: 20, color: rgb(0.20, 0.45, 0.70) });
+  page.drawRectangle({ x: 115, y: 935, width: 20, height: 20, color: rgb(0.55, 0.70, 0.85) });
+  page.drawRectangle({ x: 115, y: 915, width: 20, height: 20, color: rgb(0.38, 0.58, 0.78) });
+  page.drawRectangle({ x: 135, y: 935, width: 20, height: 20, color: rgb(0.70, 0.82, 0.92) });
 
   // TRIPOLI MEDIA logotype
-  draw('TRIPOLI MEDIA', 188, 921, { size: 20, color: red, bold: true });
+  draw('TRIPOLI MEDIA', 188, 921, { size: 20, color: rgb(0.20, 0.45, 0.70), bold: true });
 
   // DATOS DEL EMISOR (static — always hardcoded)
   draw('DATOS DEL EMISOR',                                    427, 962, { size: 7, color: blue, bold: true });
@@ -281,12 +282,12 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   }
 
   // Column headers
-  colCenter('Clave SAT',    87.5, 210,   562, 8);
-  colCenter('Descripción',  210,  327.5, 562, 8);
-  colCenter('Unidad',       327.5, 407.5, 562, 8);
-  colCenter('Cant.',        407.5, 490,   562, 8);
-  colCenter('Precio',       490,  609,   562, 8);
-  colCenter('Total',        609,  727.5, 562, 8);
+  colCenter('Clave SAT',    87.5, 210,   562, 8, { color: blue });
+  colCenter('Descripción',  210,  327.5, 562, 8, { color: blue });
+  colCenter('Unidad',       327.5, 407.5, 562, 8, { color: blue });
+  colCenter('Cant.',        407.5, 490,   562, 8, { color: blue });
+  colCenter('Precio',       490,  609,   562, 8, { color: blue });
+  colCenter('Total',        609,  727.5, 562, 8, { color: blue });
 
   // Data rows (max 5)
   conceptos.slice(0, 5).forEach((c, i) => {
@@ -309,8 +310,18 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // SECTION 4 — TOTALES + CERT INFO  (y: 274.5–413.5)
   // ══════════════════════════════════════════════════════════════════════════
 
-  // QR code placeholder (empty rect — generation out of scope)
-  page.drawRectangle({ x: 97, y: 306, width: 76, height: 76, borderColor: gray, borderWidth: 0.5 });
+  // QR code — generated from folio fiscal UUID
+  let qrDrawn = false;
+  try {
+    const qrDataUrl = await QRCode.toDataURL(factura.folioFiscalUUID, { width: 76, margin: 0 });
+    const qrBase64  = qrDataUrl.replace(/^data:image\/png;base64,/, '');
+    const qrImage   = await pdfDoc.embedPng(Buffer.from(qrBase64, 'base64'));
+    page.drawImage(qrImage, { x: 97, y: 306, width: 76, height: 76 });
+    qrDrawn = true;
+  } catch { /* fall through */ }
+  if (!qrDrawn) {
+    page.drawRectangle({ x: 97, y: 306, width: 76, height: 76, borderColor: gray, borderWidth: 0.5 });
+  }
 
   // Left block — certification data
   draw('Fecha y hora de Certificación:',      182, 366, { size: 7, color: blue });
@@ -322,11 +333,11 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   draw('Este documento es una representación impresa de un CFDI', 182, 306, { size: 6, color: gray });
 
   // Right block — currency totals
-  draw('Subtotal :',     548, 369, { size: 8 });
+  draw('Subtotal :',     548, 369, { size: 8, color: blue });
   rightAlign(formatMXN(subtotal), 720, 369, 8);
-  draw('+ I.V.A. 16% :', 516, 341, { size: 8 });
+  draw('+ I.V.A. 16% :', 516, 341, { size: 8, color: blue });
   rightAlign(formatMXN(iva),      720, 341, 8);
-  draw('Total :',        564, 313, { size: 9, bold: true });
+  draw('Total :',        564, 313, { size: 9, bold: true, color: blue });
   rightAlign(formatMXN(total),    720, 313, 9);
 
   // Monto con letra — centered between x=490 and x=727
@@ -344,21 +355,24 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // ══════════════════════════════════════════════════════════════════════════
 
   if (sellos.selloCFDI) {
-    draw('Sello Digital del CFDI:', 97.5, 255, { size: 7, color: blue });
+    draw('Sello Digital del CFDI:', 97.5, 258, { size: 7, color: blue });
     wrapText(sellos.selloCFDI, 95).slice(0, 3).forEach((line, i) => {
-      draw(line, 97.5, 246 - i * 7, { size: 5 });
+      draw(line, 97.5, [250, 244, 238][i], { size: 5 });
     });
   }
   if (sellos.selloSAT) {
-    draw('Sello del SAT:', 97.5, 223, { size: 7, color: blue });
+    draw('Sello del SAT:', 97.5, 228, { size: 7, color: blue });
     wrapText(sellos.selloSAT, 95).slice(0, 3).forEach((line, i) => {
-      draw(line, 97.5, 214 - i * 7, { size: 5 });
+      draw(line, 97.5, [220, 214, 208][i], { size: 5 });
     });
   }
   if (sellos.cadenaOriginal) {
-    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 190, { size: 7, color: blue });
-    wrapText(sellos.cadenaOriginal, 80).slice(0, 3).forEach((line, i) => {
-      draw(line, 97.5, 181 - i * 7, { size: 5 });
+    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 198, { size: 7, color: blue });
+    const cadTrunc = sellos.cadenaOriginal.length > 220
+      ? sellos.cadenaOriginal.slice(0, 219) + '…'
+      : sellos.cadenaOriginal;
+    wrapText(cadTrunc, 110).slice(0, 2).forEach((line, i) => {
+      draw(line, 97.5, [190, 181][i], { size: 5 });
     });
   }
 
