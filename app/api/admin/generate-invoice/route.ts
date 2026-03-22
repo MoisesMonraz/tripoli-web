@@ -78,9 +78,11 @@ function numToWords(n: number): string {
 }
 
 function totalToLetras(total: number): string {
-  const int = Math.floor(total);
-  const dec = Math.round((total - int) * 100);
-  return `${numToWords(int)} PESOS ${String(dec).padStart(2, '0')}/100 M.N.`;
+  const int    = Math.floor(total);
+  const dec    = Math.round((total - int) * 100);
+  const decStr = String(dec).padStart(2, '0');
+  if (int === 1) return `UN PESO ${decStr}/100 M.N.`;
+  return `${numToWords(int)} PESOS ${decStr}/100 M.N.`;
 }
 
 function extractCertDate(cadena: string): string {
@@ -94,8 +96,21 @@ function wrapText(text: string, maxChars: number): string[] {
   const lines: string[] = [];
   let current = '';
   for (const w of words) {
-    if ((current + ' ' + w).trim().length <= maxChars) { current = (current + ' ' + w).trim(); }
-    else { if (current) lines.push(current); current = w; }
+    let word = w;
+    // Break oversized words character-by-character (e.g. base64 sello with no spaces)
+    while (word.length > maxChars) {
+      if (current) { lines.push(current); current = ''; }
+      lines.push(word.slice(0, maxChars));
+      word = word.slice(maxChars);
+    }
+    if (!word) continue;
+    const candidate = current ? current + ' ' + word : word;
+    if (candidate.length <= maxChars) {
+      current = candidate;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
   }
   if (current) lines.push(current);
   return lines;
@@ -236,7 +251,7 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   draw('Folio Fiscal:',                427, 781, { size: 7, color: blue });
   draw(factura.folioFiscalUUID,        484, 781, { size: 6.5 });
   draw('No. de serie del CSD:',        427, 767, { size: 7, color: blue });
-  draw(serieYFolio,                    531, 767, { size: 6.5 });
+  draw(certSerial || serieYFolio || 'S/N', 531, 767, { size: 6.5 });
   draw('Fecha y hora de emisión:',     427, 753, { size: 7, color: blue });
   draw(factura.fechaEmision,           548, 753, { size: 7 });
   draw('Código Postal de expedición:', 427, 739, { size: 7, color: blue });
@@ -283,7 +298,7 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     colCenter(c.unidad,                      327.5, 407.5, yRow, 7);
     colCenter(String(c.cantidad),            407.5, 490,   yRow, 7);
     rightAlign(formatMXN(c.valorUnitario),   600, yRow, 7);
-    rightAlign(formatMXN(c.importe),         720, yRow, 7);
+    rightAlign(formatMXN(c.importe ?? c.valorUnitario * c.cantidad), 720, yRow, 7);
   });
 
   // Conceptos bottom separators
@@ -330,19 +345,19 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
 
   if (sellos.selloCFDI) {
     draw('Sello Digital del CFDI:', 97.5, 255, { size: 7, color: blue });
-    wrapText(sellos.selloCFDI, 140).slice(0, 3).forEach((line, i) => {
+    wrapText(sellos.selloCFDI, 95).slice(0, 3).forEach((line, i) => {
       draw(line, 97.5, 246 - i * 7, { size: 5 });
     });
   }
   if (sellos.selloSAT) {
     draw('Sello del SAT:', 97.5, 223, { size: 7, color: blue });
-    wrapText(sellos.selloSAT, 140).slice(0, 3).forEach((line, i) => {
+    wrapText(sellos.selloSAT, 95).slice(0, 3).forEach((line, i) => {
       draw(line, 97.5, 214 - i * 7, { size: 5 });
     });
   }
   if (sellos.cadenaOriginal) {
     draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 190, { size: 7, color: blue });
-    wrapText(sellos.cadenaOriginal, 140).slice(0, 3).forEach((line, i) => {
+    wrapText(sellos.cadenaOriginal, 80).slice(0, 3).forEach((line, i) => {
       draw(line, 97.5, 181 - i * 7, { size: 5 });
     });
   }
