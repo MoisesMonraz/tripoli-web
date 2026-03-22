@@ -52,115 +52,8 @@ function extractFirstTTFFromTTC(buf: Buffer): Buffer {
   return out;
 }
 
-// ─── Coordinate map (template: 815 × 1050 pt, origin = bottom-left) ──────────
-//
-//  Derived by scaling proportional estimates from A4 (595×842) to 815×1050:
-//    x_scale = 815/595 = 1.370   y_scale = 1050/842 = 1.247
-//
-//  SECTION               Y range (from bottom)   Notes
-//  ─────────────────────────────────────────────────────────────────────────
-//  HEADER (pre-filled)   903 – 1050              DO NOT overlay
-//  RECEPTOR / FACTURA    735 –  903              two columns
-//  CONCEPTOS table       441 –  735
-//  TOTALES               315 –  441
-//  SELLOS                105 –  315
-//  FOOTER (pre-filled)     0 –  105              DO NOT overlay
-//
-//  Fine-tune by adjusting values below and re-running scripts/test-invoice.mjs
-
-// ─── Coordinate map (template: 815 × 1050 pt, origin = bottom-left) ──────────
-//  Exact values measured from Documento_Factura.pdf with pdfplumber.
-//  Labels marked "(pre-printed)" exist in the template and are not overlaid.
-const C = {
-  // Font sizes
-  fs: {
-    label: 7,
-    value: 7,
-    small: 7,
-    sello: 5,
-  },
-
-  // ── DATOS DEL RECEPTOR — labels (pre-printed in template, reference only) ──
-  rxLabel: {
-    rfc:     { x:  95.0, y: 774.0 },
-    nombre:  { x:  95.0, y: 760.0 },
-    regimen: { x:  95.0, y: 746.0 },
-    cp:      { x:  95.0, y: 732.0 },
-    usoCFDI: { x:  95.0, y: 718.0 },
-  },
-
-  // ── DATOS DEL RECEPTOR — values ───────────────────────────────────────────
-  rx: {
-    rfc:     { x: 120.3, y: 774.0 },
-    nombre:  { x: 201.9, y: 760.0 },
-    regimen: { x: 170.2, y: 746.0 },
-    cp:      { x: 164.4, y: 732.0 },
-    usoCFDI: { x: 159.6, y: 718.0 },
-  },
-
-  // ── DATOS DE LA FACTURA — labels (pre-printed in template, reference only) ─
-  fxLabel: {
-    uuid:   { x: 427.2, y: 781.0 },
-    serie:  { x: 427.2, y: 767.0 },
-    fecha:  { x: 427.2, y: 753.0 },
-    lugar:  { x: 427.2, y: 739.0 },
-    forma:  { x: 427.2, y: 725.0 },
-    metodo: { x: 427.2, y: 711.0 },
-  },
-
-  // ── DATOS DE LA FACTURA — values ──────────────────────────────────────────
-  fx: {
-    uuid:   { x: 483.9, y: 781.0 },
-    serie:  { x: 530.8, y: 767.0 },
-    fecha:  { x: 547.5, y: 753.0 },
-    lugar:  { x: 564.7, y: 739.0 },
-    forma:  { x: 504.2, y: 725.0 },
-    metodo: { x: 509.9, y: 711.0 },
-  },
-
-  // ── CONCEPTOS TABLE ───────────────────────────────────────────────────────
-  //   Columns: Clave SAT | Descripción | Unidad | Cant. | Precio | Total
-  tbl: {
-    clave:  120.9,
-    desc:   238.9,
-    unid:   357.0,
-    cant:   445.2,
-    prec:   537.5,
-    tot:    656.6,
-    row0y:  518.1,  // y baseline of first row (clave/unid/cant/prec/tot)
-    descY0: 509.2,  // y baseline of first row description (slightly lower)
-    rowH:    30,    // subtract per additional row
-  },
-
-  // ── TOTALES ───────────────────────────────────────────────────────────────
-  tot: {
-    subtotalVal: { x: 643.5, y: 369.3 },
-    ivaVal:      { x: 635.3, y: 340.8 },
-    totalVal:    { x: 635.3, y: 312.3 },
-    letras:      { x: 568.0, y: 286.1 },
-  },
-
-  // ── FOOTER CERTIFICATION ──────────────────────────────────────────────────
-  //   Labels pre-printed; only values are overlaid.
-  cert: {
-    fecha:  { x: 287.4, y: 366.4 },
-    rfc:    { x: 305.9, y: 346.4 },
-    serie:  { x: 296.1, y: 326.4 },
-  },
-
-  // ── SELLOS DIGITALES ──────────────────────────────────────────────────────
-  sel: {
-    cfdiLabel:   { x:  97.5, y: 255.4 },
-    cfdiLine1:   { x:  97.5, y: 246.6 },
-    cfdiLine2:   { x:  97.5, y: 239.6 },
-    satLabel:    { x:  97.5, y: 222.9 },
-    satLine1:    { x:  97.5, y: 214.1 },
-    satLine2:    { x:  97.5, y: 204.1 },
-    cadenaLabel: { x:  97.5, y: 190.4 },
-    cadenaLine1: { x:  97.5, y: 181.6 },
-    cadenaLine2: { x:  97.5, y: 171.6 },
-  },
-} as const;
+// ─── Default font sizes (referenced by draw / rightAlign helpers) ─────────────
+const C = { fs: { label: 7, value: 7, small: 7, sello: 5 } } as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -211,12 +104,11 @@ function wrapText(text: string, maxChars: number): string[] {
 // ─── Core overlay function ────────────────────────────────────────────────────
 
 async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
-  // ── Load template ──────────────────────────────────────────────────────────
-  const templatePath = path.join(process.cwd(), 'public', 'factura-template.pdf');
-  const templateBytes = fs.readFileSync(templatePath);
-  const pdfDoc = await PDFDocument.load(templateBytes);
+  // ── Create document from scratch ─────────────────────────────────────────
+  const pdfDoc = await PDFDocument.create();
+  const page   = pdfDoc.addPage([815, 1050]);
 
-  // ── Register fontkit + embed font ──────────────────────────────────────────
+  // ── Register fontkit + embed font ────────────────────────────────────────
   pdfDoc.registerFontkit(fontkit);
 
   let font: Awaited<ReturnType<typeof pdfDoc.embedFont>>;
@@ -234,10 +126,11 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   }
 
-  const page  = pdfDoc.getPages()[0];
-  const black = rgb(0, 0, 0);
-  const blue  = rgb(0.118, 0.227, 0.373);  // #1E3A5F
-  const gray  = rgb(0.42, 0.447, 0.502);   // #6B7280
+  const black     = rgb(0, 0, 0);
+  const blue      = rgb(0.118, 0.227, 0.373);  // #1E3A5F
+  const gray      = rgb(0.42,  0.447, 0.502);  // #6B7280
+  const red       = rgb(0.85,  0.11,  0.11);   // #D91C1C
+  const lightgray = rgb(0.9,   0.9,   0.9);
 
   type DrawOpts = { size?: number; color?: ReturnType<typeof rgb>; bold?: boolean; maxWidth?: number };
   const draw = (text: string, x: number, y: number, opts?: DrawOpts) => {
@@ -255,7 +148,13 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     draw(text, x - w, y, { size: sz });
   };
 
-  // ── IVA recalculation ──────────────────────────────────────────────────────
+  // Helper: draw text centered within a column
+  const colCenter = (text: string, x0: number, x1: number, y: number, sz: number) => {
+    const w = font.widthOfTextAtSize(text, sz);
+    draw(text, (x0 + x1) / 2 - w / 2, y, { size: sz });
+  };
+
+  // ── IVA recalculation ────────────────────────────────────────────────────
   const subtotal    = data.totales.subtotal;
   let iva           = data.totales.iva;
   let total         = data.totales.total;
@@ -278,81 +177,193 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   const rfcPAC     = cadParts[3] || '';
   const certSerial = cadParts[5] || '';
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 1. DATOS DEL RECEPTOR
-  // ═══════════════════════════════════════════════════════════════════════════
-  draw(receptor.rfc,           C.rx.rfc.x,     C.rx.rfc.y,     { size: C.fs.value });
-  draw(receptor.nombre,        C.rx.nombre.x,  C.rx.nombre.y,  { size: C.fs.value });
-  draw(receptor.regimenFiscal, C.rx.regimen.x, C.rx.regimen.y, { size: C.fs.value });
-  draw(receptor.codigoPostal,  C.rx.cp.x,      C.rx.cp.y,      { size: C.fs.value });
-  draw(receptor.usoCFDI,       C.rx.usoCFDI.x, C.rx.usoCFDI.y, { size: C.fs.value });
+  // ──────────────────────────────────────────────────────────────────────────
+  // OUTER BORDER
+  // ──────────────────────────────────────────────────────────────────────────
+  page.drawRectangle({ x: 50.5, y: 50.5, width: 714, height: 949, borderColor: black, borderWidth: 0.5 });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 2. DATOS DE LA FACTURA
-  // ═══════════════════════════════════════════════════════════════════════════
-  draw(factura.folioFiscalUUID, C.fx.uuid.x,   C.fx.uuid.y,   { size: C.fs.value });
-  draw(serieYFolio,             C.fx.serie.x,  C.fx.serie.y,  { size: C.fs.value });
-  draw(factura.fechaEmision,    C.fx.fecha.x,  C.fx.fecha.y,  { size: C.fs.value });
-  draw(factura.lugarExpedicion, C.fx.lugar.x,  C.fx.lugar.y,  { size: C.fs.value });
-  draw(factura.formaPago,       C.fx.forma.x,  C.fx.forma.y,  { size: C.fs.value });
-  draw(factura.metodoPago,      C.fx.metodo.x, C.fx.metodo.y, { size: C.fs.value });
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 1 — HEADER  (y: 850–1050)
+  // ══════════════════════════════════════════════════════════════════════════
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 3. CONCEPTOS (up to 5 rows)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // Logo: geometric pixel blocks
+  page.drawRectangle({ x:  95, y: 935, width: 20, height: 20, color: red });
+  page.drawRectangle({ x: 115, y: 895, width: 20, height: 20, color: red });
+  page.drawRectangle({ x: 115, y: 935, width: 20, height: 20, color: rgb(0.5,  0.05, 0.05) });
+  page.drawRectangle({ x: 115, y: 915, width: 20, height: 20, color: rgb(0.35, 0.05, 0.05) });
+  page.drawRectangle({ x: 135, y: 935, width: 20, height: 20, color: rgb(0.25, 0.05, 0.05) });
+
+  // TRIPOLI MEDIA logotype
+  draw('TRIPOLI MEDIA', 188, 921, { size: 20, color: red, bold: true });
+
+  // DATOS DEL EMISOR (static — always hardcoded)
+  draw('DATOS DEL EMISOR',                                    427, 962, { size: 7, color: blue, bold: true });
+  draw('RFC:',                                                427, 946, { size: 7, color: blue });
+  draw('MOEM000520NK2',                                       452, 946, { size: 7 });
+  draw('Nombre/Razón Social:',                                427, 932, { size: 7, color: blue });
+  draw('Moisés Monraz Escoto',                                534, 932, { size: 7 });
+  draw('Régimen Fiscal:',                                     427, 918, { size: 7, color: blue });
+  draw('626 - RESICO',                                        502, 918, { size: 7 });
+  draw('Dirección Fiscal:',                                   427, 904, { size: 7, color: blue });
+  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente',      504, 904, { size: 7 });
+  draw('45040, Zapopan, Jal.',                                427, 890, { size: 7 });
+
+  // Header separator
+  page.drawLine({ start: { x: 87.5, y: 850 }, end: { x: 727.5, y: 850 }, thickness: 0.5, color: black });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 2 — RECEPTOR + FACTURA  (y: 675–850)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Vertical divider between columns
+  page.drawLine({ start: { x: 407.5, y: 705 }, end: { x: 407.5, y: 820 }, thickness: 0.5, color: black });
+
+  // Left column — DATOS DEL RECEPTOR
+  draw('DATOS DEL RECEPTOR',    95, 810, { size: 7, color: blue, bold: true });
+  draw('RFC:',                  95, 774, { size: 7, color: blue });
+  draw(receptor.rfc,           120, 774, { size: 7 });
+  draw('Nombre/Razón Social:',  95, 760, { size: 7, color: blue });
+  draw(receptor.nombre,        202, 760, { size: 7, maxWidth: 38 });
+  draw('Régimen Fiscal:',       95, 746, { size: 7, color: blue });
+  draw(receptor.regimenFiscal, 170, 746, { size: 7, maxWidth: 38 });
+  draw('Código Postal:',        95, 732, { size: 7, color: blue });
+  draw(receptor.codigoPostal,  164, 732, { size: 7 });
+  draw('Uso de CFDI:',          95, 718, { size: 7, color: blue });
+  draw(receptor.usoCFDI,       160, 718, { size: 7, maxWidth: 38 });
+
+  // Right column — DATOS DE LA FACTURA
+  draw('DATOS DE LA FACTURA',          427, 810, { size: 7, color: blue, bold: true });
+  draw('Folio Fiscal:',                427, 781, { size: 7, color: blue });
+  draw(factura.folioFiscalUUID,        484, 781, { size: 6.5 });
+  draw('No. de serie del CSD:',        427, 767, { size: 7, color: blue });
+  draw(serieYFolio,                    531, 767, { size: 6.5 });
+  draw('Fecha y hora de emisión:',     427, 753, { size: 7, color: blue });
+  draw(factura.fechaEmision,           548, 753, { size: 7 });
+  draw('Código Postal de expedición:', 427, 739, { size: 7, color: blue });
+  draw(factura.lugarExpedicion,        565, 739, { size: 7 });
+  draw('Forma de pago:',               427, 725, { size: 7, color: blue });
+  draw(factura.formaPago,              504, 725, { size: 7 });
+  draw('Método de pago:',              427, 711, { size: 7, color: blue });
+  draw(factura.metodoPago,             510, 711, { size: 7 });
+
+  // Separator after receptor/factura
+  page.drawLine({ start: { x: 87.5, y: 675 }, end: { x: 727.5, y: 675 }, thickness: 0.5, color: black });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 3 — CONCEPTOS  (y: 413.5–675)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  draw('Conceptos', 98, 637, { size: 18 });
+
+  // Table header background + borders
+  page.drawRectangle({ x: 87.5, y: 552.5, width: 640, height: 48.9, color: lightgray });
+  page.drawLine({ start: { x: 87.5, y: 601.4 }, end: { x: 727.5, y: 601.4 }, thickness: 0.3, color: black });
+  page.drawLine({ start: { x: 87.5, y: 552.5 }, end: { x: 727.5, y: 552.5 }, thickness: 0.3, color: black });
+
+  // Column vertical dividers (header + data rows)
+  for (const divX of [210, 327.5, 407.5, 490, 609] as const) {
+    page.drawLine({ start: { x: divX, y: 478.6 }, end: { x: divX, y: 601.4 }, thickness: 0.3, color: gray });
+  }
+
+  // Column headers
+  colCenter('Clave SAT',    87.5, 210,   562, 8);
+  colCenter('Descripción',  210,  327.5, 562, 8);
+  colCenter('Unidad',       327.5, 407.5, 562, 8);
+  colCenter('Cant.',        407.5, 490,   562, 8);
+  colCenter('Precio',       490,  609,   562, 8);
+  colCenter('Total',        609,  727.5, 562, 8);
+
+  // Data rows (max 5)
   conceptos.slice(0, 5).forEach((c, i) => {
-    const yRow  = C.tbl.row0y  - i * C.tbl.rowH;
-    const yDesc = C.tbl.descY0 - i * C.tbl.rowH;
-    draw(c.claveSAT,                 C.tbl.clave, yRow,  { size: C.fs.label });
-    draw(c.descripcion,              C.tbl.desc,  yDesc, { size: C.fs.label });
-    draw(c.unidad,                   C.tbl.unid,  yRow,  { size: C.fs.label });
-    draw(String(c.cantidad),         C.tbl.cant,  yRow,  { size: C.fs.label });
-    draw(formatMXN(c.valorUnitario), C.tbl.prec,  yRow,  { size: C.fs.label });
-    draw(formatMXN(c.importe),       C.tbl.tot,   yRow,  { size: C.fs.label });
+    const yRow = 517 - i * 30;
+    colCenter(c.claveSAT,                    87.5, 210,   yRow, 7);
+    // Description: left-aligned at x=215, wrap if needed
+    const descLines = wrapText(c.descripcion, 20);
+    descLines.slice(0, 2).forEach((line, j) => draw(line, 215, yRow - j * 10, { size: 7 }));
+    colCenter(c.unidad,                      327.5, 407.5, yRow, 7);
+    colCenter(String(c.cantidad),            407.5, 490,   yRow, 7);
+    rightAlign(formatMXN(c.valorUnitario),   600, yRow, 7);
+    rightAlign(formatMXN(c.importe),         720, yRow, 7);
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 4. TOTALES
-  // ═══════════════════════════════════════════════════════════════════════════
-  draw(formatMXN(subtotal), C.tot.subtotalVal.x, C.tot.subtotalVal.y, { size: C.fs.value });
-  draw(formatMXN(iva),      C.tot.ivaVal.x,      C.tot.ivaVal.y,      { size: C.fs.value });
-  draw(formatMXN(total),    C.tot.totalVal.x,    C.tot.totalVal.y,    { size: C.fs.value });
+  // Conceptos bottom separators
+  page.drawLine({ start: { x: 87.5, y: 503   }, end: { x: 727.5, y: 503   }, thickness: 0.5, color: black });
+  page.drawLine({ start: { x: 87.5, y: 413.5 }, end: { x: 727.5, y: 413.5 }, thickness: 0.5, color: black });
 
-  // Monto con letra — left-aligned at C.tot.letras
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 4 — TOTALES + CERT INFO  (y: 274.5–413.5)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // QR code placeholder (empty rect — generation out of scope)
+  page.drawRectangle({ x: 97, y: 306, width: 76, height: 76, borderColor: gray, borderWidth: 0.5 });
+
+  // Left block — certification data
+  draw('Fecha y hora de Certificación:',      182, 366, { size: 7, color: blue });
+  draw(certDate,                              287, 366, { size: 7 });
+  draw('RFC del proveedor de certificación:', 182, 346, { size: 7, color: blue });
+  draw(rfcPAC,                               306, 346, { size: 7 });
+  draw('No. de serie del certificado SAT:',   182, 326, { size: 7, color: blue });
+  draw(certSerial,                            296, 326, { size: 7 });
+  draw('Este documento es una representación impresa de un CFDI', 182, 306, { size: 6, color: gray });
+
+  // Right block — currency totals
+  draw('Subtotal :',     548, 369, { size: 8 });
+  rightAlign(formatMXN(subtotal), 720, 369, 8);
+  draw('+ I.V.A. 16% :', 516, 341, { size: 8 });
+  rightAlign(formatMXN(iva),      720, 341, 8);
+  draw('Total :',        564, 313, { size: 9, bold: true });
+  rightAlign(formatMXN(total),    720, 313, 9);
+
+  // Monto con letra — centered between x=490 and x=727
   const letraLines = wrapText(montoConLetra, 95);
   letraLines.slice(0, 2).forEach((line, i) => {
-    draw(line, C.tot.letras.x, C.tot.letras.y - i * 9, { size: C.fs.value });
+    const lw = font.widthOfTextAtSize(line, 7);
+    draw(line, (490 + 727) / 2 - lw / 2, 286 - i * 9, { size: 7, color: gray });
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 5. FOOTER CERTIFICATION (labels are pre-printed; overlay values only)
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (certDate)   draw(certDate,   C.cert.fecha.x, C.cert.fecha.y, { size: C.fs.small });
-  if (rfcPAC)     draw(rfcPAC,     C.cert.rfc.x,   C.cert.rfc.y,   { size: C.fs.small });
-  if (certSerial) draw(certSerial, C.cert.serie.x, C.cert.serie.y, { size: C.fs.small });
+  // Separator after totales
+  page.drawLine({ start: { x: 87.5, y: 274.5 }, end: { x: 727.5, y: 274.5 }, thickness: 0.5, color: black });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 6. SELLOS DIGITALES
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 5 — SELLOS DIGITALES  (y: 164.5–274.5)
+  // ══════════════════════════════════════════════════════════════════════════
+
   if (sellos.selloCFDI) {
-    draw('Sello Digital del CFDI:', C.sel.cfdiLabel.x, C.sel.cfdiLabel.y, { size: C.fs.label, color: blue });
-    const cfdiLines = wrapText(sellos.selloCFDI, 140);
-    if (cfdiLines[0]) draw(cfdiLines[0], C.sel.cfdiLine1.x, C.sel.cfdiLine1.y, { size: C.fs.sello });
-    if (cfdiLines[1]) draw(cfdiLines[1], C.sel.cfdiLine2.x, C.sel.cfdiLine2.y, { size: C.fs.sello });
+    draw('Sello Digital del CFDI:', 97.5, 255, { size: 7, color: blue });
+    wrapText(sellos.selloCFDI, 140).slice(0, 3).forEach((line, i) => {
+      draw(line, 97.5, 246 - i * 7, { size: 5 });
+    });
   }
   if (sellos.selloSAT) {
-    draw('Sello Digital del SAT:', C.sel.satLabel.x, C.sel.satLabel.y, { size: C.fs.label, color: blue });
-    const satLines = wrapText(sellos.selloSAT, 140);
-    if (satLines[0]) draw(satLines[0], C.sel.satLine1.x, C.sel.satLine1.y, { size: C.fs.sello });
-    if (satLines[1]) draw(satLines[1], C.sel.satLine2.x, C.sel.satLine2.y, { size: C.fs.sello });
+    draw('Sello del SAT:', 97.5, 223, { size: 7, color: blue });
+    wrapText(sellos.selloSAT, 140).slice(0, 3).forEach((line, i) => {
+      draw(line, 97.5, 214 - i * 7, { size: 5 });
+    });
   }
   if (sellos.cadenaOriginal) {
-    draw('Cadena Original del Complemento de Certificación Digital del SAT:',
-      C.sel.cadenaLabel.x, C.sel.cadenaLabel.y, { size: C.fs.label, color: blue });
-    const cadenaLines = wrapText(sellos.cadenaOriginal, 140);
-    if (cadenaLines[0]) draw(cadenaLines[0], C.sel.cadenaLine1.x, C.sel.cadenaLine1.y, { size: C.fs.sello });
-    if (cadenaLines[1]) draw(cadenaLines[1], C.sel.cadenaLine2.x, C.sel.cadenaLine2.y, { size: C.fs.sello });
+    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 190, { size: 7, color: blue });
+    wrapText(sellos.cadenaOriginal, 140).slice(0, 3).forEach((line, i) => {
+      draw(line, 97.5, 181 - i * 7, { size: 5 });
+    });
   }
+
+  // Separator after sellos
+  page.drawLine({ start: { x: 87.5, y: 164.5 }, end: { x: 727.5, y: 164.5 }, thickness: 0.5, color: black });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION 6 — FOOTER  (y: 0–164.5)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Left — contact info (static)
+  draw('www.tripoli.media',                                                    97, 139, { size: 8 });
+  draw('+52 33 2817 5756',                                                     97, 125, { size: 8 });
+  draw('contacto@tripoli.media',                                               97, 111, { size: 8 });
+  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.', 97,  97, { size: 7 });
+
+  // Right — signature block
+  page.drawLine({ start: { x: 487.5, y: 120 }, end: { x: 647.5, y: 120 }, thickness: 0.5, color: black });
+  draw('Lic. Moisés Monraz Escoto', 494, 108, { size: 8 });
+  draw('Dir. Tripoli Media',        529,  96, { size: 7, color: gray });
 
   return pdfDoc.save();
 }
