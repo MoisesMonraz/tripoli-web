@@ -68,77 +68,97 @@ function extractFirstTTFFromTTC(buf: Buffer): Buffer {
 //
 //  Fine-tune by adjusting values below and re-running scripts/test-invoice.mjs
 
+// ─── Coordinate map (template: 815 × 1050 pt, origin = bottom-left) ──────────
+//  Exact values measured from Documento_Factura.pdf with pdfplumber.
+//  Labels marked "(pre-printed)" exist in the template and are not overlaid.
 const C = {
   // Font sizes
   fs: {
-    label:   7,
-    value:   8,
-    small:   5.5,
-    sello:   5,
+    label: 7,
+    value: 7,
+    small: 7,
+    sello: 5,
   },
 
-  // ── Receptor (left column) ─────────────────────────────────────────────────
+  // ── DATOS DEL RECEPTOR — labels (pre-printed in template, reference only) ──
+  rxLabel: {
+    rfc:     { x:  95.0, y: 774.0 },
+    nombre:  { x:  95.0, y: 760.0 },
+    regimen: { x:  95.0, y: 746.0 },
+    cp:      { x:  95.0, y: 732.0 },
+    usoCFDI: { x:  95.0, y: 718.0 },
+  },
+
+  // ── DATOS DEL RECEPTOR — values ───────────────────────────────────────────
   rx: {
-    value: 178,   // x where field values start (after longest label)
-  },
-  receptor: {
-    rfc:      873,
-    nombre:   855,
-    regimen:  838,
-    direccion:820,
-    usoCFDI:  795,
+    rfc:     { x: 120.3, y: 774.0 },
+    nombre:  { x: 201.9, y: 760.0 },
+    regimen: { x: 170.2, y: 746.0 },
+    cp:      { x: 164.4, y: 732.0 },
+    usoCFDI: { x: 159.6, y: 718.0 },
   },
 
-  // ── Factura (right column) ─────────────────────────────────────────────────
+  // ── DATOS DE LA FACTURA — labels (pre-printed in template, reference only) ─
+  fxLabel: {
+    uuid:   { x: 427.2, y: 781.0 },
+    serie:  { x: 427.2, y: 767.0 },
+    fecha:  { x: 427.2, y: 753.0 },
+    lugar:  { x: 427.2, y: 739.0 },
+    forma:  { x: 427.2, y: 725.0 },
+    metodo: { x: 427.2, y: 711.0 },
+  },
+
+  // ── DATOS DE LA FACTURA — values ──────────────────────────────────────────
   fx: {
-    value: 548,   // x where field values start
-  },
-  factura: {
-    uuid:   873,
-    serie:  855,
-    fecha:  838,
-    lugar:  820,
-    forma:  803,
-    metodo: 786,
+    uuid:   { x: 483.9, y: 781.0 },
+    serie:  { x: 530.8, y: 767.0 },
+    fecha:  { x: 547.5, y: 753.0 },
+    lugar:  { x: 564.7, y: 739.0 },
+    forma:  { x: 504.2, y: 725.0 },
+    metodo: { x: 509.9, y: 711.0 },
   },
 
-  // ── Conceptos table ────────────────────────────────────────────────────────
+  // ── CONCEPTOS TABLE ───────────────────────────────────────────────────────
   //   Columns: Clave SAT | Descripción | Unidad | Cant. | Precio | Total
   tbl: {
-    clave:  52,
-    desc:  158,
-    unid:  418,
-    cant:  504,
-    prec:  568,
-    tot:   678,
-    row0:  676,   // first data row y
-    rowH:   21,   // row height (subtract per additional row)
+    clave:  120.9,
+    desc:   238.9,
+    unid:   357.0,
+    cant:   445.2,
+    prec:   537.5,
+    tot:    656.6,
+    row0y:  518.1,  // y baseline of first row (clave/unid/cant/prec/tot)
+    descY0: 509.2,  // y baseline of first row description (slightly lower)
+    rowH:    30,    // subtract per additional row
   },
 
-  // ── Totales ────────────────────────────────────────────────────────────────
+  // ── TOTALES ───────────────────────────────────────────────────────────────
   tot: {
-    folioLabel:  416,
-    folioValue:  398,
-    certLabel:   379,
-    certValue:   360,
-    noteY:       342,
-    subtotalVal: 424,
-    ivaVal:      404,
-    totalVal:    384,
-    letrasY:     354,
-    leftX:       127,
-    rightX:      727,
+    subtotalVal: { x: 643.5, y: 369.3 },
+    ivaVal:      { x: 635.3, y: 340.8 },
+    totalVal:    { x: 635.3, y: 312.3 },
+    letras:      { x: 568.0, y: 286.1 },
   },
 
-  // ── Sellos ─────────────────────────────────────────────────────────────────
+  // ── FOOTER CERTIFICATION ──────────────────────────────────────────────────
+  //   Labels pre-printed; only values are overlaid.
+  cert: {
+    fecha:  { x: 287.4, y: 366.4 },
+    rfc:    { x: 305.9, y: 346.4 },
+    serie:  { x: 296.1, y: 326.4 },
+  },
+
+  // ── SELLOS DIGITALES ──────────────────────────────────────────────────────
   sel: {
-    cfdiLabel:   303,
-    cfdiValue:   288,
-    satLabel:    262,
-    satValue:    247,
-    cadenaLabel: 221,
-    cadenaValue: 206,
-    x:            52,
+    cfdiLabel:   { x:  97.5, y: 255.4 },
+    cfdiLine1:   { x:  97.5, y: 246.6 },
+    cfdiLine2:   { x:  97.5, y: 239.6 },
+    satLabel:    { x:  97.5, y: 222.9 },
+    satLine1:    { x:  97.5, y: 214.1 },
+    satLine2:    { x:  97.5, y: 204.1 },
+    cadenaLabel: { x:  97.5, y: 190.4 },
+    cadenaLine1: { x:  97.5, y: 181.6 },
+    cadenaLine2: { x:  97.5, y: 171.6 },
   },
 } as const;
 
@@ -252,85 +272,86 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   const serieYFolio = factura.serieYFolio?.trim() || 'S/N';
   const certDate    = extractCertDate(sellos.cadenaOriginal);
 
+  // Parse RFC PAC and cert serial from cadena original
+  // Format: ||1.1|UUID|DATE|RFC_PAC|SELLO_CFDI|CERT_SERIAL||
+  const cadParts   = sellos.cadenaOriginal.split('|').filter(Boolean);
+  const rfcPAC     = cadParts[3] || '';
+  const certSerial = cadParts[5] || '';
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 1. DATOS DEL RECEPTOR
   // ═══════════════════════════════════════════════════════════════════════════
-  draw(receptor.rfc,            C.rx.value, C.receptor.rfc,       { maxWidth: 20 });
-  draw(receptor.nombre,         C.rx.value, C.receptor.nombre,    { maxWidth: 38 });
-  draw(receptor.regimenFiscal,  C.rx.value, C.receptor.regimen,   { maxWidth: 38 });
-  draw(receptor.codigoPostal,   C.rx.value, C.receptor.direccion, { maxWidth: 38 });
-  draw(receptor.usoCFDI,        C.rx.value, C.receptor.usoCFDI,   { maxWidth: 38 });
+  draw(receptor.rfc,           C.rx.rfc.x,     C.rx.rfc.y,     { size: C.fs.value });
+  draw(receptor.nombre,        C.rx.nombre.x,  C.rx.nombre.y,  { size: C.fs.value });
+  draw(receptor.regimenFiscal, C.rx.regimen.x, C.rx.regimen.y, { size: C.fs.value });
+  draw(receptor.codigoPostal,  C.rx.cp.x,      C.rx.cp.y,      { size: C.fs.value });
+  draw(receptor.usoCFDI,       C.rx.usoCFDI.x, C.rx.usoCFDI.y, { size: C.fs.value });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 2. DATOS DE LA FACTURA
   // ═══════════════════════════════════════════════════════════════════════════
-  draw(factura.folioFiscalUUID, C.fx.value, C.factura.uuid,   { size: C.fs.small, maxWidth: 48 });
-  draw(serieYFolio,             C.fx.value, C.factura.serie,  { maxWidth: 20 });
-  draw(factura.fechaEmision,    C.fx.value, C.factura.fecha,  { maxWidth: 30 });
-  draw(factura.lugarExpedicion, C.fx.value, C.factura.lugar,  { maxWidth: 25 });
-  draw(factura.formaPago,       C.fx.value, C.factura.forma,  { maxWidth: 30 });
-  draw(factura.metodoPago,      C.fx.value, C.factura.metodo, { maxWidth: 35 });
+  draw(factura.folioFiscalUUID, C.fx.uuid.x,   C.fx.uuid.y,   { size: C.fs.value });
+  draw(serieYFolio,             C.fx.serie.x,  C.fx.serie.y,  { size: C.fs.value });
+  draw(factura.fechaEmision,    C.fx.fecha.x,  C.fx.fecha.y,  { size: C.fs.value });
+  draw(factura.lugarExpedicion, C.fx.lugar.x,  C.fx.lugar.y,  { size: C.fs.value });
+  draw(factura.formaPago,       C.fx.forma.x,  C.fx.forma.y,  { size: C.fs.value });
+  draw(factura.metodoPago,      C.fx.metodo.x, C.fx.metodo.y, { size: C.fs.value });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 3. CONCEPTOS (up to 5 rows)
   // ═══════════════════════════════════════════════════════════════════════════
   conceptos.slice(0, 5).forEach((c, i) => {
-    const y = C.tbl.row0 - i * C.tbl.rowH;
-    draw(c.claveSAT,                 C.tbl.clave, y, { size: C.fs.label });
-    draw(c.descripcion,              C.tbl.desc,  y, { size: C.fs.label, maxWidth: 35 });
-    draw(c.unidad,                   C.tbl.unid,  y, { size: C.fs.label, maxWidth: 10 });
-    draw(String(c.cantidad),         C.tbl.cant,  y, { size: C.fs.label });
-    draw(formatMXN(c.valorUnitario), C.tbl.prec,  y, { size: C.fs.label });
-    draw(formatMXN(c.importe),       C.tbl.tot,   y, { size: C.fs.label });
+    const yRow  = C.tbl.row0y  - i * C.tbl.rowH;
+    const yDesc = C.tbl.descY0 - i * C.tbl.rowH;
+    draw(c.claveSAT,                 C.tbl.clave, yRow,  { size: C.fs.label });
+    draw(c.descripcion,              C.tbl.desc,  yDesc, { size: C.fs.label });
+    draw(c.unidad,                   C.tbl.unid,  yRow,  { size: C.fs.label });
+    draw(String(c.cantidad),         C.tbl.cant,  yRow,  { size: C.fs.label });
+    draw(formatMXN(c.valorUnitario), C.tbl.prec,  yRow,  { size: C.fs.label });
+    draw(formatMXN(c.importe),       C.tbl.tot,   yRow,  { size: C.fs.label });
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 4. TOTALES
   // ═══════════════════════════════════════════════════════════════════════════
-  // Left: folio + cert date + legal note
-  draw('Folio Fiscal:',  C.tot.leftX, C.tot.folioLabel, { size: C.fs.label, color: blue });
-  draw(factura.folioFiscalUUID, C.tot.leftX, C.tot.folioValue, { size: C.fs.small, maxWidth: 55 });
-  if (certDate) {
-    draw('Fecha de Certificación:', C.tot.leftX, C.tot.certLabel, { size: C.fs.label, color: blue });
-    draw(certDate, C.tot.leftX, C.tot.certValue, { size: C.fs.small });
-  }
-  draw('Este documento es una representación impresa de un CFDI',
-    C.tot.leftX, C.tot.noteY, { size: 6, color: gray });
+  draw(formatMXN(subtotal), C.tot.subtotalVal.x, C.tot.subtotalVal.y, { size: C.fs.value });
+  draw(formatMXN(iva),      C.tot.ivaVal.x,      C.tot.ivaVal.y,      { size: C.fs.value });
+  draw(formatMXN(total),    C.tot.totalVal.x,    C.tot.totalVal.y,    { size: C.fs.value });
 
-  // Right: currency values (right-aligned)
-  rightAlign(formatMXN(subtotal), C.tot.rightX, C.tot.subtotalVal);
-  rightAlign(formatMXN(iva),      C.tot.rightX, C.tot.ivaVal);
-  rightAlign(formatMXN(total),    C.tot.rightX, C.tot.totalVal, 9);
-
-  // Monto con letra — centered
-  const pageWidth = page.getWidth();
+  // Monto con letra — left-aligned at C.tot.letras
   const letraLines = wrapText(montoConLetra, 95);
-  letraLines.forEach((line, i) => {
-    const lw = font.widthOfTextAtSize(line, C.fs.label);
-    draw(line, (pageWidth - lw) / 2, C.tot.letrasY - i * 9, { size: C.fs.label, color: gray });
+  letraLines.slice(0, 2).forEach((line, i) => {
+    draw(line, C.tot.letras.x, C.tot.letras.y - i * 9, { size: C.fs.value });
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 5. SELLOS DIGITALES
+  // 5. FOOTER CERTIFICATION (labels are pre-printed; overlay values only)
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (certDate)   draw(certDate,   C.cert.fecha.x, C.cert.fecha.y, { size: C.fs.small });
+  if (rfcPAC)     draw(rfcPAC,     C.cert.rfc.x,   C.cert.rfc.y,   { size: C.fs.small });
+  if (certSerial) draw(certSerial, C.cert.serie.x, C.cert.serie.y, { size: C.fs.small });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 6. SELLOS DIGITALES
   // ═══════════════════════════════════════════════════════════════════════════
   if (sellos.selloCFDI) {
-    draw('Sello Digital del CFDI:', C.sel.x, C.sel.cfdiLabel, { size: C.fs.label, color: blue });
-    wrapText(sellos.selloCFDI, 140).slice(0, 2).forEach((line, i) => {
-      draw(line, C.sel.x, C.sel.cfdiValue - i * 8, { size: C.fs.sello });
-    });
+    draw('Sello Digital del CFDI:', C.sel.cfdiLabel.x, C.sel.cfdiLabel.y, { size: C.fs.label, color: blue });
+    const cfdiLines = wrapText(sellos.selloCFDI, 140);
+    if (cfdiLines[0]) draw(cfdiLines[0], C.sel.cfdiLine1.x, C.sel.cfdiLine1.y, { size: C.fs.sello });
+    if (cfdiLines[1]) draw(cfdiLines[1], C.sel.cfdiLine2.x, C.sel.cfdiLine2.y, { size: C.fs.sello });
   }
   if (sellos.selloSAT) {
-    draw('Sello Digital del SAT:', C.sel.x, C.sel.satLabel, { size: C.fs.label, color: blue });
-    wrapText(sellos.selloSAT, 140).slice(0, 2).forEach((line, i) => {
-      draw(line, C.sel.x, C.sel.satValue - i * 8, { size: C.fs.sello });
-    });
+    draw('Sello Digital del SAT:', C.sel.satLabel.x, C.sel.satLabel.y, { size: C.fs.label, color: blue });
+    const satLines = wrapText(sellos.selloSAT, 140);
+    if (satLines[0]) draw(satLines[0], C.sel.satLine1.x, C.sel.satLine1.y, { size: C.fs.sello });
+    if (satLines[1]) draw(satLines[1], C.sel.satLine2.x, C.sel.satLine2.y, { size: C.fs.sello });
   }
   if (sellos.cadenaOriginal) {
     draw('Cadena Original del Complemento de Certificación Digital del SAT:',
-      C.sel.x, C.sel.cadenaLabel, { size: C.fs.label, color: blue });
-    wrapText(sellos.cadenaOriginal, 140).slice(0, 2).forEach((line, i) => {
-      draw(line, C.sel.x, C.sel.cadenaValue - i * 8, { size: C.fs.sello });
-    });
+      C.sel.cadenaLabel.x, C.sel.cadenaLabel.y, { size: C.fs.label, color: blue });
+    const cadenaLines = wrapText(sellos.cadenaOriginal, 140);
+    if (cadenaLines[0]) draw(cadenaLines[0], C.sel.cadenaLine1.x, C.sel.cadenaLine1.y, { size: C.fs.sello });
+    if (cadenaLines[1]) draw(cadenaLines[1], C.sel.cadenaLine2.x, C.sel.cadenaLine2.y, { size: C.fs.sello });
   }
 
   return pdfDoc.save();
