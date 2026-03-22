@@ -143,9 +143,8 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   }
 
-  const black     = rgb(0, 0, 0);
-  const blue      = rgb(0.118, 0.227, 0.373);  // #1E3A5F
-  const gray      = rgb(0.42,  0.447, 0.502);  // #6B7280
+  const black = rgb(0, 0, 0);
+  const gray  = rgb(0.42, 0.447, 0.502);  // #6B7280 — structural elements only
 
   type DrawOpts = { size?: number; color?: ReturnType<typeof rgb>; bold?: boolean; maxWidth?: number };
   const draw = (text: string, x: number, y: number, opts?: DrawOpts) => {
@@ -205,19 +204,15 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   page.drawRectangle({ x: 135, y: 935, width: 20, height: 20, color: rgb(0.70, 0.82, 0.92) });
 
   // TRIPOLI MEDIA logotype
-  draw('TRIPOLI MEDIA', 188, 921, { size: 20, color: rgb(0.20, 0.45, 0.70), bold: true });
+  draw('TRIPOLI MEDIA', 188.2, 928.6, { size: 24, bold: true });
 
-  // DATOS DEL EMISOR (static — always hardcoded)
-  draw('DATOS DEL EMISOR',                                    427, 962, { size: 7, color: blue, bold: true });
-  draw('RFC:',                                                427, 946, { size: 7, color: blue });
-  draw('MOEM000520NK2',                                       452, 946, { size: 7 });
-  draw('Nombre/Razón Social:',                                427, 932, { size: 7, color: blue });
-  draw('Moisés Monraz Escoto',                                534, 932, { size: 7 });
-  draw('Régimen Fiscal:',                                     427, 918, { size: 7, color: blue });
-  draw('626 - RESICO',                                        502, 918, { size: 7 });
-  draw('Dirección Fiscal:',                                   427, 904, { size: 7, color: blue });
-  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente',      504, 904, { size: 7 });
-  draw('45040, Zapopan, Jal.',                                427, 890, { size: 7 });
+  // DATOS DEL EMISOR (static — always hardcoded, each line label+value combined)
+  draw('DATOS DEL EMISOR',                                                        427.3, 962.5, { size: 10 });
+  draw('RFC: MOEM000520NK2',                                                      427.3, 946.5, { size: 10 });
+  draw('Nombre/Razón Social: Moisés Monraz Escoto',                               427.3, 932.5, { size: 10 });
+  draw('Régimen Fiscal: 626 - RESICO',                                            427.3, 918.5, { size: 10 });
+  draw('Dirección Fiscal: Av. de las Rosas 585 int. 2, Chapalita Oriente',        427.3, 904.5, { size: 10 });
+  draw('45040, Zapopan, Jal.',                                                    427.3, 890.5, { size: 10 });
 
   // Header separator
   page.drawLine({ start: { x: 87.5, y: 850 }, end: { x: 727.5, y: 850 }, thickness: 0.5, color: black });
@@ -229,33 +224,22 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // Vertical divider between columns
   page.drawLine({ start: { x: 407.5, y: 705 }, end: { x: 407.5, y: 820 }, thickness: 0.5, color: black });
 
-  // Left column — DATOS DEL RECEPTOR
-  draw('DATOS DEL RECEPTOR',    95, 810, { size: 7, color: blue, bold: true });
-  draw('RFC:',                  95, 774, { size: 7, color: blue });
-  draw(receptor.rfc,           120, 774, { size: 7 });
-  draw('Nombre/Razón Social:',  95, 760, { size: 7, color: blue });
-  draw(receptor.nombre,        202, 760, { size: 7, maxWidth: 38 });
-  draw('Régimen Fiscal:',       95, 746, { size: 7, color: blue });
-  draw(receptor.regimenFiscal, 170, 746, { size: 7, maxWidth: 38 });
-  draw('Código Postal:',        95, 732, { size: 7, color: blue });
-  draw(receptor.codigoPostal,  164, 732, { size: 7 });
-  draw('Uso de CFDI:',          95, 718, { size: 7, color: blue });
-  draw(receptor.usoCFDI,       160, 718, { size: 7, maxWidth: 38 });
+  // Left column — DATOS DEL RECEPTOR (label+value as single strings)
+  draw('DATOS DEL RECEPTOR',                                          95.0, 800.0, { size: 10 });
+  draw('RFC: ' + receptor.rfc,                                        95.0, 784.0, { size: 10 });
+  draw('Nombre/Razón Social: ' + receptor.nombre,                     95.0, 770.0, { size: 10 });
+  draw('Régimen Fiscal: ' + receptor.regimenFiscal,                   95.0, 756.0, { size: 10 });
+  draw('Código Postal: ' + receptor.codigoPostal,                     95.0, 742.0, { size: 10 });
+  draw('Uso de CFDI: ' + receptor.usoCFDI,                            95.0, 728.0, { size: 10 });
 
-  // Right column — DATOS DE LA FACTURA
-  draw('DATOS DE LA FACTURA',          427, 810, { size: 7, color: blue, bold: true });
-  draw('Folio Fiscal:',                427, 781, { size: 7, color: blue });
-  draw(factura.folioFiscalUUID,        484, 781, { size: 6.5 });
-  draw('No. de serie del CSD:',        427, 767, { size: 7, color: blue });
-  draw(certSerial || serieYFolio || 'S/N', 531, 767, { size: 6.5 });
-  draw('Fecha y hora de emisión:',     427, 753, { size: 7, color: blue });
-  draw(factura.fechaEmision,           548, 753, { size: 7 });
-  draw('Código Postal de expedición:', 427, 739, { size: 7, color: blue });
-  draw(factura.lugarExpedicion,        565, 739, { size: 7 });
-  draw('Forma de pago:',               427, 725, { size: 7, color: blue });
-  draw(factura.formaPago,              504, 725, { size: 7 });
-  draw('Método de pago:',              427, 711, { size: 7, color: blue });
-  draw(factura.metodoPago,             510, 711, { size: 7 });
+  // Right column — DATOS DE LA FACTURA (label+value as single strings)
+  draw('DATOS DE LA FACTURA',                                                      427.2, 807.0, { size: 10 });
+  draw('Folio Fiscal: ' + factura.folioFiscalUUID,                                 427.2, 791.0, { size: 10 });
+  draw('No. de serie del CSD: ' + (certSerial || serieYFolio || 'S/N'),            427.2, 777.0, { size: 10 });
+  draw('Fecha y hora de emisión: ' + factura.fechaEmision,                         427.2, 763.0, { size: 10 });
+  draw('Código Postal de expedición: ' + factura.lugarExpedicion,                  427.2, 749.0, { size: 10 });
+  draw('Forma de pago: ' + factura.formaPago,                                      427.2, 735.0, { size: 10 });
+  draw('Método de pago: ' + factura.metodoPago,                                    427.2, 721.0, { size: 10 });
 
   // Separator after receptor/factura
   page.drawLine({ start: { x: 87.5, y: 675 }, end: { x: 727.5, y: 675 }, thickness: 0.5, color: black });
@@ -264,7 +248,7 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // SECTION 3 — CONCEPTOS  (y: 413.5–675)
   // ══════════════════════════════════════════════════════════════════════════
 
-  draw('Conceptos', 98, 637, { size: 18 });
+  draw('Conceptos', 98.6, 636.4, { size: 24 });
 
   // Table header borders (white background — no fill)
   page.drawLine({ start: { x: 87.5, y: 601.4 }, end: { x: 727.5, y: 601.4 }, thickness: 0.3, color: black });
@@ -275,25 +259,24 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     page.drawLine({ start: { x: divX, y: 478.6 }, end: { x: divX, y: 601.4 }, thickness: 0.3, color: gray });
   }
 
-  // Column headers
-  colCenter('Clave SAT',    87.5, 210,   562, 8, { color: blue });
-  colCenter('Descripción',  210,  327.5, 562, 8, { color: blue });
-  colCenter('Unidad',       327.5, 407.5, 562, 8, { color: blue });
-  colCenter('Cant.',        407.5, 490,   562, 8, { color: blue });
-  colCenter('Precio',       490,  609,   562, 8, { color: blue });
-  colCenter('Total',        609,  727.5, 562, 8, { color: blue });
+  // Column headers — exact Illustrator positions, size=18
+  draw('Clave SAT',   107.1, 579.7, { size: 18 });
+  draw('Descripción', 221.3, 580.2, { size: 18 });
+  draw('Unidad',      339.1, 580.4, { size: 18 });
+  draw('Cant.',       428.3, 580.2, { size: 18 });
+  draw('Precio',      524.3, 580.2, { size: 18 });
+  draw('Total',       649.5, 580.2, { size: 18 });
 
-  // Data rows (max 5)
+  // Data rows (max 5) — exact Illustrator positions
   conceptos.slice(0, 5).forEach((c, i) => {
-    const yRow = 517 - i * 30;
-    colCenter(c.claveSAT,                    87.5, 210,   yRow, 7);
-    // Description: left-aligned at x=215, wrap if needed
-    const descLines = wrapText(c.descripcion, 20);
-    descLines.slice(0, 2).forEach((line, j) => draw(line, 215, yRow - j * 10, { size: 7 }));
-    colCenter(c.unidad,                      327.5, 407.5, yRow, 7);
-    colCenter(String(c.cantidad),            407.5, 490,   yRow, 7);
-    rightAlign(formatMXN(c.valorUnitario),   600, yRow, 7);
-    rightAlign(formatMXN(c.importe ?? c.valorUnitario * c.cantidad), 720, yRow, 7);
+    const base = 529.1 - i * 30;
+    draw(c.claveSAT,                                             120.9, base + 1.0,  { size: 12 });
+    const descLines = wrapText(c.descripcion, 25);
+    descLines.slice(0, 2).forEach((line, j) => draw(line,       243.7, base + 10.1 - j * 10, { size: 10 }));
+    draw(c.unidad,                                               357.0, base + 0.4,  { size: 12 });
+    draw(String(c.cantidad),                                     445.2, base + 0.2,  { size: 12 });
+    draw(c.valorUnitario.toFixed(2),                             537.5, base,        { size: 12 });
+    draw((c.importe ?? c.valorUnitario * c.cantidad).toFixed(2), 656.6, base,        { size: 12 });
   });
 
   // Conceptos bottom separators
@@ -317,29 +300,22 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     page.drawRectangle({ x: 97, y: 306, width: 76, height: 76, borderColor: gray, borderWidth: 0.5 });
   }
 
-  // Left block — certification data
-  draw('Fecha y hora de Certificación:',      182, 366, { size: 7, color: blue });
-  draw(certDate,                              287, 366, { size: 7 });
-  draw('RFC del proveedor de certificación:', 182, 346, { size: 7, color: blue });
-  draw(rfcPAC,                               306, 346, { size: 7 });
-  draw('No. de serie del certificado SAT:',   182, 326, { size: 7, color: blue });
-  draw(certSerial,                            296, 326, { size: 7 });
-  draw('Este documento es una representación impresa de un CFDI', 182, 306, { size: 6, color: gray });
+  // Left block — certification data (label+value combined, size=7.5)
+  draw('Fecha y hora de Certificación: ' + certDate,              182.5, 373.9, { size: 7.5 });
+  draw('RFC del proveedor de certificación: ' + rfcPAC,           182.5, 353.9, { size: 7.5 });
+  draw('No. de serie del certificado SAT: ' + certSerial,         182.5, 333.9, { size: 7.5 });
+  draw('Este documento es una representación impresa de un CFDI', 182.3, 315.1, { size: 7.5 });
 
-  // Right block — currency totals
-  draw('Subtotal :',     548, 369, { size: 8, color: blue });
-  rightAlign(formatMXN(subtotal), 720, 369, 8);
-  draw('+ I.V.A. 16% :', 516, 341, { size: 8, color: blue });
-  rightAlign(formatMXN(iva),      720, 341, 8);
-  draw('Total :',        564, 313, { size: 9, bold: true, color: blue });
-  rightAlign(formatMXN(total),    720, 313, 9);
+  // Right block — currency totals (size=12)
+  draw('Subtotal :',                         547.2, 381.3, { size: 12 });
+  draw('$ ' + subtotal.toFixed(2) + ' M.N.', 643.5, 381.3, { size: 12 });
+  draw('+ I.V.A. 16% :',                     516.1, 352.8, { size: 12 });
+  draw('$ ' + iva.toFixed(2)     + ' M.N.',  635.3, 352.8, { size: 12 });
+  draw('Total :',                            564.3, 324.8, { size: 12, bold: true });
+  draw('$ ' + total.toFixed(2)   + ' M.N.',  635.3, 324.3, { size: 12 });
 
-  // Monto con letra — centered between x=490 and x=727
-  const letraLines = wrapText(montoConLetra, 95);
-  letraLines.slice(0, 2).forEach((line, i) => {
-    const lw = font.widthOfTextAtSize(line, 7);
-    draw(line, (490 + 727) / 2 - lw / 2, 286 - i * 9, { size: 7, color: gray });
-  });
+  // Monto con letra
+  draw(montoConLetra, 568.0, 293.6, { size: 7.5 });
 
   // Separator after totales
   page.drawLine({ start: { x: 87.5, y: 274.5 }, end: { x: 727.5, y: 274.5 }, thickness: 0.5, color: black });
@@ -349,24 +325,24 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // ══════════════════════════════════════════════════════════════════════════
 
   if (sellos.selloCFDI) {
-    draw('Sello Digital del CFDI:', 97.5, 258, { size: 7, color: blue });
-    (sellos.selloCFDI.match(/.{1,100}/g) ?? []).slice(0, 3).forEach((chunk, i) => {
-      draw(chunk, 97.5, [250, 244, 238][i], { size: 5 });
+    draw('Sello Digital del CFDI:', 97.5, 262.9, { size: 7.5 });
+    (sellos.selloCFDI.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
+      draw(chunk, 97.5, [251.6, 244.6][i], { size: 5 });
     });
   }
   if (sellos.selloSAT) {
-    draw('Sello del SAT:', 97.5, 228, { size: 7, color: blue });
-    (sellos.selloSAT.match(/.{1,100}/g) ?? []).slice(0, 3).forEach((chunk, i) => {
-      draw(chunk, 97.5, [220, 214, 208][i], { size: 5 });
+    draw('Sello del SAT:', 97.5, 230.4, { size: 7.5 });
+    (sellos.selloSAT.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
+      draw(chunk, 97.5, [219.1, 209.1][i], { size: 5 });
     });
   }
   if (sellos.cadenaOriginal) {
-    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 198, { size: 7, color: blue });
+    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 197.9, { size: 7.5 });
     const cadTrunc = sellos.cadenaOriginal.length > 220
       ? sellos.cadenaOriginal.slice(0, 219) + '…'
       : sellos.cadenaOriginal;
-    (cadTrunc.match(/.{1,100}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
-      draw(chunk, 97.5, [190, 181][i], { size: 5 });
+    (cadTrunc.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
+      draw(chunk, 97.5, [186.6, 176.6][i], { size: 5 });
     });
   }
 
@@ -375,15 +351,15 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   // ══════════════════════════════════════════════════════════════════════════
 
   // Left — contact info (static)
-  draw('www.tripoli.media',                                                    97, 139, { size: 8 });
-  draw('+52 33 2817 5756',                                                     97, 125, { size: 8 });
-  draw('contacto@tripoli.media',                                               97, 111, { size: 8 });
-  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.', 97,  97, { size: 7 });
+  draw('www.tripoli.media',                                                    97.5, 138.6, { size: 9 });
+  draw('+52 33 2817 5756',                                                     97.5, 124.6, { size: 9 });
+  draw('contacto@tripoli.media',                                               97.5, 110.6, { size: 9 });
+  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.', 97.5,  96.6, { size: 9 });
 
   // Right — signature block
   page.drawLine({ start: { x: 487.5, y: 120 }, end: { x: 647.5, y: 120 }, thickness: 0.5, color: black });
-  draw('Lic. Moisés Monraz Escoto', 494, 108, { size: 8 });
-  draw('Dir. Tripoli Media',        529,  96, { size: 7, color: gray });
+  draw('Lic. Moisés Monraz Escoto', 494.5, 108.0, { size: 12 });
+  draw('Dir. Tripoli Media',        529.1,  90.9, { size: 10 });
 
   return pdfDoc.save();
 }
