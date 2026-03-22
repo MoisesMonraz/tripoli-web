@@ -146,7 +146,6 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
   const black     = rgb(0, 0, 0);
   const blue      = rgb(0.118, 0.227, 0.373);  // #1E3A5F
   const gray      = rgb(0.42,  0.447, 0.502);  // #6B7280
-  const lightgray = rgb(0.9,   0.9,   0.9);
 
   type DrawOpts = { size?: number; color?: ReturnType<typeof rgb>; bold?: boolean; maxWidth?: number };
   const draw = (text: string, x: number, y: number, opts?: DrawOpts) => {
@@ -170,18 +169,14 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     draw(text, (x0 + x1) / 2 - w / 2, y, { size: sz, ...opts });
   };
 
-  // ── IVA recalculation ────────────────────────────────────────────────────
-  const subtotal    = data.totales.subtotal;
-  let iva           = data.totales.iva;
-  let total         = data.totales.total;
-  const ivaWasZero  = iva === 0 && subtotal > 0;
-  if (ivaWasZero) {
-    iva   = Math.round(subtotal * 0.16 * 100) / 100;
-    total = Math.round((subtotal + iva)  * 100) / 100;
-  }
-  const montoConLetra = ivaWasZero
-    ? totalToLetras(total)
-    : (data.totales.montoConLetra || totalToLetras(total));
+  // ── IVA recalculation (always derive total from subtotal + iva) ──────────
+  const subtotal = data.totales.subtotal;
+  const iva      = data.totales.iva === 0 && subtotal > 0
+    ? Math.round(subtotal * 0.16 * 100) / 100
+    : data.totales.iva;
+  const total    = Math.round((subtotal + iva) * 100) / 100;
+  console.log('[generate-invoice] totals → subtotal:', subtotal, 'iva:', iva, 'total:', total);
+  const montoConLetra = totalToLetras(total);
 
   const { receptor, factura, conceptos, sellos } = data;
   const serieYFolio = factura.serieYFolio?.trim() || 'S/N';
@@ -271,13 +266,12 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
 
   draw('Conceptos', 98, 637, { size: 18 });
 
-  // Table header background + borders
-  page.drawRectangle({ x: 87.5, y: 552.5, width: 640, height: 48.9, color: lightgray });
+  // Table header borders (white background — no fill)
   page.drawLine({ start: { x: 87.5, y: 601.4 }, end: { x: 727.5, y: 601.4 }, thickness: 0.3, color: black });
   page.drawLine({ start: { x: 87.5, y: 552.5 }, end: { x: 727.5, y: 552.5 }, thickness: 0.3, color: black });
 
-  // Column vertical dividers (header + data rows)
-  for (const divX of [210, 327.5, 407.5, 490, 609] as const) {
+  // Column vertical dividers — only 3 (reference design)
+  for (const divX of [407.5, 490, 609] as const) {
     page.drawLine({ start: { x: divX, y: 478.6 }, end: { x: divX, y: 601.4 }, thickness: 0.3, color: gray });
   }
 
@@ -356,14 +350,14 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
 
   if (sellos.selloCFDI) {
     draw('Sello Digital del CFDI:', 97.5, 258, { size: 7, color: blue });
-    wrapText(sellos.selloCFDI, 95).slice(0, 3).forEach((line, i) => {
-      draw(line, 97.5, [250, 244, 238][i], { size: 5 });
+    (sellos.selloCFDI.match(/.{1,100}/g) ?? []).slice(0, 3).forEach((chunk, i) => {
+      draw(chunk, 97.5, [250, 244, 238][i], { size: 5 });
     });
   }
   if (sellos.selloSAT) {
     draw('Sello del SAT:', 97.5, 228, { size: 7, color: blue });
-    wrapText(sellos.selloSAT, 95).slice(0, 3).forEach((line, i) => {
-      draw(line, 97.5, [220, 214, 208][i], { size: 5 });
+    (sellos.selloSAT.match(/.{1,100}/g) ?? []).slice(0, 3).forEach((chunk, i) => {
+      draw(chunk, 97.5, [220, 214, 208][i], { size: 5 });
     });
   }
   if (sellos.cadenaOriginal) {
@@ -371,13 +365,10 @@ async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
     const cadTrunc = sellos.cadenaOriginal.length > 220
       ? sellos.cadenaOriginal.slice(0, 219) + '…'
       : sellos.cadenaOriginal;
-    wrapText(cadTrunc, 110).slice(0, 2).forEach((line, i) => {
-      draw(line, 97.5, [190, 181][i], { size: 5 });
+    (cadTrunc.match(/.{1,100}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
+      draw(chunk, 97.5, [190, 181][i], { size: 5 });
     });
   }
-
-  // Separator after sellos
-  page.drawLine({ start: { x: 87.5, y: 164.5 }, end: { x: 727.5, y: 164.5 }, thickness: 0.5, color: black });
 
   // ══════════════════════════════════════════════════════════════════════════
   // SECTION 6 — FOOTER  (y: 0–164.5)
