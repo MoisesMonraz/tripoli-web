@@ -69,7 +69,7 @@ export const servicesData = [
   },
   {
     id: "accounting",
-    title: "Tripoli Accounting Services",
+    title: "Tripoli Accounting Solutions",
     tagline:
       "Soluciones de administración financiera y fiscal diseñadas para la eficiencia operativa y el crecimiento sostenible.",
     bullets: [
