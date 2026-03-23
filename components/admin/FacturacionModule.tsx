@@ -1,6 +1,33 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+
+// ── Number-to-words helpers (mirrors route.ts logic) ────────────────────────
+function numToWords(n: number): string {
+  const ones = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE',
+    'DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE',
+    'DIECIOCHO', 'DIECINUEVE'];
+  const tens  = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+  const hunds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+  if (n === 0) return 'CERO';
+  if (n === 100) return 'CIEN';
+  let r = '';
+  if (n >= 1000) { const t = Math.floor(n / 1000); r += t === 1 ? 'MIL ' : numToWords(t) + ' MIL '; n %= 1000; }
+  if (n >= 100)  { r += hunds[Math.floor(n / 100)] + ' '; n %= 100; }
+  if (n >= 20)   { r += tens[Math.floor(n / 10)]; if (n % 10) r += ' Y ' + ones[n % 10]; r += ' '; }
+  else if (n > 0){ r += ones[n] + ' '; }
+  return r.trim();
+}
+
+function totalToLetras(total: number): string {
+  const int    = Math.floor(total);
+  const dec    = Math.round((total - int) * 100);
+  const decStr = String(dec).padStart(2, '0');
+  if (int === 1) return `UN PESO ${decStr}/100 M.N.`;
+  return `${numToWords(int)} PESOS ${decStr}/100 M.N.`;
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 export interface ConceptoItem {
   claveSAT: string;
@@ -45,9 +72,12 @@ export interface InvoiceData {
     selloSAT: string;
     cadenaOriginal: string;
   };
+  firmaBase64?: string;
 }
 
 type Phase = 'upload' | 'edit' | 'done';
+
+// ── Shared UI components ─────────────────────────────────────────────────────
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#1E3A5F] border-b border-[#1E3A5F]/20 pb-1 mb-3">
@@ -109,14 +139,31 @@ const NumField = ({
   </div>
 );
 
+// ── Main component ───────────────────────────────────────────────────────────
+
 export default function FacturacionModule() {
-  const [phase, setPhase] = useState<Phase>('upload');
-  const [data, setData] = useState<InvoiceData | null>(null);
+  const [phase, setPhase]           = useState<Phase>('upload');
+  const [data, setData]             = useState<InvoiceData | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]           = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [firmaBase64, setFirmaBase64]   = useState<string | null>(null);
+  const [firmaFileName, setFirmaFileName] = useState<string | null>(null);
+  const fileInputRef  = useRef<HTMLInputElement>(null);
+  const firmaInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Auto-recalc totales whenever conceptos change ──────────────────────────
+  useEffect(() => {
+    if (!data) return;
+    const subtotal = Math.round(data.conceptos.reduce((sum, c) => sum + c.importe, 0) * 100) / 100;
+    const iva      = Math.round(subtotal * 0.16 * 100) / 100;
+    const total    = Math.round((subtotal + iva) * 100) / 100;
+    setData(d => d ? { ...d, totales: { ...d.totales, subtotal, iva, total, montoConLetra: totalToLetras(total) } } : d);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.conceptos]);
+
+  // ── File handlers ──────────────────────────────────────────────────────────
 
   const handleFile = useCallback(async (file: File) => {
     if (!file || file.type !== 'application/pdf') {
@@ -160,6 +207,16 @@ export default function FacturacionModule() {
     [handleFile]
   );
 
+  const handleFirmaFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setFirmaBase64((e.target?.result as string) ?? null);
+      setFirmaFileName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleGenerate = async () => {
     if (!data) return;
     setIsGenerating(true);
@@ -169,7 +226,7 @@ export default function FacturacionModule() {
       const res = await fetch('/api/admin/generate-invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ data: { ...data, firmaBase64: firmaBase64 ?? undefined } }),
       });
 
       if (!res.ok) {
@@ -178,9 +235,9 @@ export default function FacturacionModule() {
       }
 
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
       a.download = `factura-tripoli-${data.factura.folioFiscalUUID || 'sin-folio'}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
@@ -191,6 +248,8 @@ export default function FacturacionModule() {
       setIsGenerating(false);
     }
   };
+
+  // ── State helpers ──────────────────────────────────────────────────────────
 
   const setEmisor = (key: keyof InvoiceData['emisor'], value: string) =>
     setData((d) => d ? { ...d, emisor: { ...d.emisor, [key]: value } } : d);
@@ -211,7 +270,12 @@ export default function FacturacionModule() {
     setData((d) => {
       if (!d) return d;
       const conceptos = [...d.conceptos];
-      conceptos[idx] = { ...conceptos[idx], [key]: value };
+      const updated   = { ...conceptos[idx], [key]: value };
+      // Auto-calc importe when cantidad or valorUnitario changes
+      if (key === 'cantidad' || key === 'valorUnitario') {
+        updated.importe = Math.round(updated.cantidad * updated.valorUnitario * 100) / 100;
+      }
+      conceptos[idx] = updated;
       return { ...d, conceptos };
     });
 
@@ -337,6 +401,7 @@ export default function FacturacionModule() {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">
       <div className="mx-auto max-w-5xl">
+
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -364,6 +429,7 @@ export default function FacturacionModule() {
         )}
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
           {/* EMISOR */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <SectionTitle>Datos del Emisor</SectionTitle>
@@ -404,9 +470,31 @@ export default function FacturacionModule() {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <SectionTitle>Totales</SectionTitle>
             <div className="flex flex-col gap-3">
-              <NumField label="Subtotal (MXN)" value={data.totales.subtotal} onChange={(v) => setTotales('subtotal', v)} />
-              <NumField label="IVA 16% (MXN)" value={data.totales.iva} onChange={(v) => setTotales('iva', v)} />
-              <NumField label="Total (MXN)" value={data.totales.total} onChange={(v) => setTotales('total', v)} />
+              <NumField
+                label="Subtotal (MXN)"
+                value={data.totales.subtotal}
+                onChange={(v) => {
+                  const iva   = Math.round(v * 0.16 * 100) / 100;
+                  const total = Math.round((v + iva) * 100) / 100;
+                  setData(d => d ? { ...d, totales: { ...d.totales, subtotal: v, iva, total, montoConLetra: totalToLetras(total) } } : d);
+                }}
+              />
+              {/* IVA — read-only, auto-calculated */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">IVA 16% (MXN)</label>
+                <div className="rounded border border-slate-100 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 font-mono">
+                  {data.totales.iva.toFixed(2)}
+                </div>
+                <span className="text-[10px] text-slate-400">(calculado automáticamente)</span>
+              </div>
+              {/* Total — read-only, auto-calculated */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total (MXN)</label>
+                <div className="rounded border border-slate-100 bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-800 font-mono">
+                  {data.totales.total.toFixed(2)}
+                </div>
+                <span className="text-[10px] text-slate-400">(calculado automáticamente)</span>
+              </div>
               <Field
                 label="Monto con Letra"
                 value={data.totales.montoConLetra}
@@ -436,7 +524,9 @@ export default function FacturacionModule() {
                   <th className="pb-2 text-left font-semibold uppercase tracking-wider pr-2">Cant.</th>
                   <th className="pb-2 text-left font-semibold uppercase tracking-wider pr-2">Unidad</th>
                   <th className="pb-2 text-left font-semibold uppercase tracking-wider pr-2">V. Unit.</th>
-                  <th className="pb-2 text-left font-semibold uppercase tracking-wider pr-2">Importe</th>
+                  <th className="pb-2 text-left font-semibold uppercase tracking-wider pr-2">
+                    Importe <span className="normal-case font-normal text-slate-400">(auto)</span>
+                  </th>
                   <th className="pb-2" />
                 </tr>
               </thead>
@@ -482,13 +572,9 @@ export default function FacturacionModule() {
                       />
                     </td>
                     <td className="py-1.5 pr-2">
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={c.importe}
-                        onChange={(e) => setConcepto(idx, 'importe', parseFloat(e.target.value) || 0)}
-                        className="w-20 rounded border border-slate-200 px-1.5 py-1 font-mono text-xs focus:border-[#1E3A5F] focus:outline-none"
-                      />
+                      <span className="inline-block w-20 rounded border border-slate-100 bg-slate-50 px-1.5 py-1 font-mono text-xs text-slate-600">
+                        {c.importe.toFixed(2)}
+                      </span>
                     </td>
                     <td className="py-1.5">
                       <button
@@ -537,6 +623,52 @@ export default function FacturacionModule() {
           </div>
         </div>
 
+        {/* FIRMA */}
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <SectionTitle>Firma del Director</SectionTitle>
+          {firmaBase64 ? (
+            <div className="flex flex-col gap-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={firmaBase64}
+                  alt="Firma"
+                  style={{ maxWidth: 160, objectFit: 'contain' }}
+                  className="border border-slate-100"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono truncate">{firmaFileName}</p>
+              <button
+                onClick={() => {
+                  setFirmaBase64(null);
+                  setFirmaFileName(null);
+                  if (firmaInputRef.current) firmaInputRef.current.value = '';
+                }}
+                className="self-start rounded border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+              >
+                Eliminar firma
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => firmaInputRef.current?.click()}
+              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 px-6 py-8 text-center hover:border-[#1E3A5F]/40 hover:bg-slate-50 transition"
+            >
+              <p className="text-xs font-semibold text-slate-500">
+                Sin firma cargada — se usará la firma predeterminada del PDF
+              </p>
+              <p className="text-[10px] text-slate-400">Haz clic para subir imagen (.png o .jpg)</p>
+            </div>
+          )}
+          <input
+            ref={firmaInputRef}
+            type="file"
+            accept="image/png,image/jpeg"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFirmaFile(f); }}
+          />
+        </div>
+
         {/* Footer action */}
         <div className="mt-6 flex items-center justify-end gap-4">
           {error && (
@@ -550,6 +682,7 @@ export default function FacturacionModule() {
             {isGenerating ? 'Generando PDF...' : 'Generar PDF Tripoli'}
           </button>
         </div>
+
       </div>
     </div>
   );
