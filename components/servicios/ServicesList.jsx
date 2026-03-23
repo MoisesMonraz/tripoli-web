@@ -69,7 +69,7 @@ export default function ServicesList() {
                         </li>
                       ))}
                     </ul>
-                    {closing ? <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed text-justify">{closing}</p> : null}
+                    {closing ? <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed text-justify" dangerouslySetInnerHTML={{ __html: closing }} /> : null}
                   </div>
                 </div>
               )}

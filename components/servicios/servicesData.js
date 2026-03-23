@@ -14,7 +14,7 @@ export const servicesData = [
     introLabel: "SOLUCIONES ESTRATÉGICAS A LA MEDIDA",
     description: undefined,
     closing:
-      "Con Tripoli Publishing House potencia la autoridad y visibilidad de tu empresa mediante narrativas editoriales de alto valor, diseñadas para amplificar el mensaje correcto en los canales adecuados con impacto medible y resultados tangibles.",
+      "Con <strong>Tripoli Publishing House</strong> potencia la autoridad y visibilidad de tu empresa mediante narrativas editoriales de alto valor, diseñadas para amplificar el mensaje correcto en los canales adecuados con impacto medible y resultados tangibles.",
   },
   {
     id: "analytics",
@@ -32,7 +32,7 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Analytic Services potencia la toma de decisiones ejecutivas de tu empresa mediante analítica avanzada, transformando las operaciones de datos en insights accionables que se traducen en crecimiento y rentabilidad.",
+      "Con <strong>Tripoli Analytic Services</strong> impulsa la toma de decisiones ejecutivas de tu empresa mediante analítica avanzada, transformando las operaciones de datos en insights accionables que se traducen en crecimiento y rentabilidad.",
   },
   {
     id: "web",
@@ -49,7 +49,7 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Web Structures potencia la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
+      "Con <strong>Tripoli Web Structures</strong> fortalece la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
   },
   {
     id: "audiovisual",
@@ -65,7 +65,7 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Audiovisual Production potencia la comunicación de tu empresa mediante contenido audiovisual de alto impacto, diseñado para traducir el mensaje correcto en imágenes y sonidos que generan conexión, autoridad y resultados medibles.",
+      "Con <strong>Tripoli Audiovisual Production</strong> amplifica la comunicación de tu empresa mediante contenido audiovisual de alto impacto, diseñado para traducir el mensaje correcto en imágenes y sonidos que generan conexión, autoridad y resultados medibles.",
   },
   {
     id: "accounting",
@@ -81,6 +81,6 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Accounting Solutions potencia la gestión financiera y fiscal de tu empresa mediante soluciones contables precisas y estratégicas, diseñadas para garantizar el cumplimiento, reducir riesgos y liberar tu tiempo para enfocarte en crecer.",
+      "Con <strong>Tripoli Accounting Solutions</strong> optimiza la gestión financiera y fiscal de tu empresa mediante soluciones contables precisas y estratégicas, diseñadas para garantizar el cumplimiento, reducir riesgos y liberar tu tiempo para enfocarte en crecer.",
   },
 ];
