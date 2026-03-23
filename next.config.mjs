@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
+  outputFileTracingIncludes: {
+    '/api/admin/generate-invoice': ['./public/factura-bg.png'],
+  },
   images: {
     remotePatterns: [
       {

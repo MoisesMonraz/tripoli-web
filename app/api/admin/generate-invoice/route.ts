@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import fs from 'fs';
+import path from 'path';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -7,11 +9,12 @@ const QRCode = require('qrcode') as { toDataURL(text: string, opts?: { width?: n
 import { getAdminSessionCookieName, verifyAdminSession } from '../../../../lib/security/adminSession';
 import type { InvoiceData } from '../../../../components/admin/FacturacionModule';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Background image (loaded once at cold start) ─────────────────────────────
+const bgPath    = path.join(process.cwd(), 'public', 'factura-bg.png');
+const bgBase64  = fs.readFileSync(bgPath).toString('base64');
+const bgDataURL = `data:image/png;base64,${bgBase64}`;
 
-function formatMXN(n: number): string {
-  return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M.N.`;
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function numToWords(n: number): string {
   const ones = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE',
@@ -62,12 +65,11 @@ async function buildInvoiceHTML(data: InvoiceData): Promise<string> {
   const montoConLetra = totalToLetras(total);
 
   const { receptor, factura, conceptos, sellos } = data;
-  const serieYFolio = factura.serieYFolio?.trim() || 'S/N';
-  const certDate    = extractCertDate(sellos.cadenaOriginal);
-  const cadParts    = sellos.cadenaOriginal.split('|').filter(Boolean);
-  const rfcPAC      = cadParts[3] || 'SAT970701NN3';
-  const certSerial  = cadParts[5] || '';
-  const csdSerial   = certSerial || serieYFolio || 'S/N';
+  const certDate   = extractCertDate(sellos.cadenaOriginal);
+  const cadParts   = sellos.cadenaOriginal.split('|').filter(Boolean);
+  const rfcPAC     = cadParts[3] || 'SAT970701NN3';
+  const certSerial = cadParts[5] || '';
+  const noCertSAT  = cadParts[cadParts.length - 1] || '';
 
   // SAT verification URL for QR
   const satUrl = [
@@ -87,208 +89,93 @@ async function buildInvoiceHTML(data: InvoiceData): Promise<string> {
   const truncSello = (s: string, max = 250) =>
     s.length > max ? s.slice(0, max) + '...' : s;
 
-  const fieldRow = (label: string, value: string) =>
-    `<div style="line-height:1.8;font-size:10px;">` +
-    `<span style="color:#1E3A5F;font-weight:600;">${esc(label)}: </span>` +
-    `<span style="color:#000;">${esc(value)}</span></div>`;
+  // Absolutely positioned label (blue) + value (black) on one line
+  const labelField = (label: string, value: string, left: number, top: number, fontSize = 10) =>
+    `<div style="position:absolute;left:${left}px;top:${top}px;font-size:${fontSize}px;white-space:nowrap;z-index:1;">` +
+    `<span style="color:#1E6B8A;">${esc(label)}: </span>` +
+    `<span style="color:#000;">${esc(value)}</span>` +
+    `</div>`;
 
-  const conceptoRows = conceptos.slice(0, 5).map(c => `
-    <tr>
-      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${esc(c.claveSAT)}</td>
-      <td style="padding:8px 4px;text-align:left;border-bottom:1px solid #eee;font-size:11px;">${esc(c.descripcion)}</td>
-      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${esc(c.unidad)}</td>
-      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${c.cantidad}</td>
-      <td style="padding:8px 4px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">${c.valorUnitario.toFixed(2)}</td>
-      <td style="padding:8px 4px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">${(c.importe ?? c.valorUnitario * c.cantidad).toFixed(2)}</td>
-    </tr>`).join('');
+  // Absolutely positioned value-only field
+  const valField = (value: string, left: number, top: number, fontSize: number, extra = '') =>
+    `<div style="position:absolute;left:${left}px;top:${top}px;font-size:${fontSize}px;color:#000;${extra}z-index:1;">${esc(value)}</div>`;
 
-  const hr = `<hr style="border:none;border-top:1px solid #ccc;margin:0;">`;
+  // Concepto rows — first row at top=520, subsequent rows offset by ROW_HEIGHT
+  const ROW_HEIGHT = 40;
+  const conceptoOverlays = conceptos.slice(0, 5).map((c, idx) => {
+    const rowTop  = 520 + idx * ROW_HEIGHT;
+    const descTop = 511 + idx * ROW_HEIGHT;
+    const importe = (c.importe ?? c.valorUnitario * c.cantidad).toFixed(2);
+    return [
+      valField(c.claveSAT,                  113, rowTop,  12, 'text-align:center;width:97px;'),
+      `<div style="position:absolute;left:213px;top:${descTop}px;font-size:10px;width:114px;line-height:1.4;color:#000;word-wrap:break-word;z-index:1;">${esc(c.descripcion)}</div>`,
+      valField(String(c.cantidad),           415, rowTop,  12, 'text-align:center;width:75px;'),
+      valField(c.valorUnitario.toFixed(2),   525, rowTop,  12, 'text-align:center;width:84px;'),
+      valField(importe,                      630, rowTop,  12, 'text-align:center;width:97px;'),
+    ].join('');
+  }).join('');
 
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    width: 815px;
-    min-height: 1050px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 10px;
-    color: #000;
-    background: #fff;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 815px; height: 1050px; overflow: hidden; }
+  .page { position: relative; width: 815px; height: 1050px; font-family: 'Helvetica Neue', Arial, sans-serif; }
 </style>
 </head>
 <body>
-<div style="width:815px;min-height:1050px;padding:40px;border:1px solid #ccc;">
+<div class="page">
 
-  <!-- ── SECTION 1: HEADER ── -->
-  <div style="display:flex;align-items:flex-start;padding-bottom:20px;min-height:160px;">
+  <!-- Background -->
+  <img src="${bgDataURL}" style="position:absolute;top:0;left:0;width:815px;height:1050px;z-index:0;">
 
-    <!-- Left: Logo + brand name -->
-    <div style="width:42%;display:flex;flex-direction:column;gap:14px;">
-      <div style="position:relative;width:65px;height:65px;flex-shrink:0;">
-        <div style="position:absolute;left:0px;top:0px;width:20px;height:20px;background:#3373B2;"></div>
-        <div style="position:absolute;left:20px;top:0px;width:20px;height:20px;background:#8CB4D8;"></div>
-        <div style="position:absolute;left:40px;top:0px;width:20px;height:20px;background:#B3CDE8;"></div>
-        <div style="position:absolute;left:20px;top:20px;width:20px;height:20px;background:#6194C7;"></div>
-        <div style="position:absolute;left:20px;top:40px;width:20px;height:20px;background:#3373B2;"></div>
-      </div>
-      <div style="font-size:24px;font-weight:600;color:#1E3A5F;letter-spacing:2px;">TRIPOLI MEDIA</div>
-    </div>
+  <!-- ── DATOS DEL RECEPTOR ── -->
+  ${labelField('RFC', receptor.rfc, 95, 258)}
+  ${labelField('Nombre/Razón Social', receptor.nombre, 95, 274)}
+  ${labelField('Régimen Fiscal', receptor.regimenFiscal, 95, 290)}
+  ${labelField('Código Postal', receptor.codigoPostal, 95, 306)}
+  ${labelField('Uso de CFDI', receptor.usoCFDI, 95, 322)}
 
-    <!-- Right: Emisor data -->
-    <div style="width:58%;padding-left:24px;border-left:1px solid #e5e5e5;">
-      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DEL EMISOR</div>
-      ${fieldRow('RFC', 'MOEM000520NK2')}
-      ${fieldRow('Nombre/Razón Social', 'Moisés Monraz Escoto')}
-      ${fieldRow('Régimen Fiscal', '626 - RESICO')}
-      ${fieldRow('Dirección Fiscal', 'Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.')}
-    </div>
-  </div>
+  <!-- ── DATOS DE LA FACTURA ── -->
+  ${labelField('Folio Fiscal', factura.folioFiscalUUID, 427, 254)}
+  ${labelField('No. de serie del CSD', noCertSAT, 427, 270)}
+  ${labelField('Fecha y hora de emisión', factura.fechaEmision, 427, 286)}
+  ${labelField('Código Postal de expedición', factura.lugarExpedicion, 427, 302)}
+  ${labelField('Forma de pago', factura.formaPago, 427, 318)}
+  ${labelField('Método de pago', factura.metodoPago, 427, 334)}
 
-  ${hr}
+  <!-- ── CONCEPTOS ── -->
+  ${conceptoOverlays}
 
-  <!-- ── SECTION 2: RECEPTOR + FACTURA ── -->
-  <div style="display:flex;padding:18px 0;min-height:150px;">
+  <!-- ── TOTALES ── -->
+  ${valField(total.toFixed(2),    635, 325, 12, 'font-weight:700;')}
+  ${valField(subtotal.toFixed(2), 643, 369, 12)}
+  ${valField(iva.toFixed(2),      635, 397, 12)}
+  <div style="position:absolute;left:430px;top:282px;font-size:7px;color:#888888;width:270px;text-align:center;z-index:1;">${esc(montoConLetra)}</div>
 
-    <!-- Left: Receptor -->
-    <div style="width:50%;padding-right:20px;">
-      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DEL RECEPTOR</div>
-      ${fieldRow('RFC', receptor.rfc)}
-      ${fieldRow('Nombre/Razón Social', receptor.nombre)}
-      ${fieldRow('Régimen Fiscal', receptor.regimenFiscal)}
-      ${fieldRow('Código Postal', receptor.codigoPostal)}
-      ${fieldRow('Uso de CFDI', receptor.usoCFDI)}
-    </div>
+  <!-- ── QR + CERT INFO ── -->
+  ${qrDataUrl ? `<img src="${qrDataUrl}" style="position:absolute;left:97px;top:294px;width:76px;height:76px;z-index:1;">` : ''}
+  ${valField(certDate,    287, 365, 7.5)}
+  ${valField(rfcPAC,      306, 343, 7.5)}
+  ${valField(certSerial,  296, 323, 7.5)}
 
-    <!-- Vertical divider -->
-    <div style="width:1px;background:#ccc;margin:0 20px;"></div>
+  <!-- ── SELLOS DIGITALES ── -->
+  ${sellos.selloCFDI
+    ? `<div style="position:absolute;left:97px;top:792px;font-size:5px;width:630px;word-break:break-all;line-height:1.5;color:#000;z-index:1;">${esc(truncSello(sellos.selloCFDI))}</div>`
+    : ''}
+  ${sellos.selloSAT
+    ? `<div style="position:absolute;left:97px;top:826px;font-size:5px;width:630px;word-break:break-all;line-height:1.5;color:#000;z-index:1;">${esc(truncSello(sellos.selloSAT))}</div>`
+    : ''}
+  ${sellos.cadenaOriginal
+    ? `<div style="position:absolute;left:97px;top:858px;font-size:5px;width:630px;word-break:break-all;line-height:1.5;color:#000;z-index:1;">${esc(truncSello(sellos.cadenaOriginal))}</div>`
+    : ''}
 
-    <!-- Right: Factura -->
-    <div style="width:50%;padding-left:20px;">
-      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DE LA FACTURA</div>
-      ${fieldRow('Folio Fiscal', factura.folioFiscalUUID)}
-      ${fieldRow('No. de serie del CSD', csdSerial)}
-      ${fieldRow('Fecha y hora de emisión', factura.fechaEmision)}
-      ${fieldRow('Código Postal de expedición', factura.lugarExpedicion)}
-      ${fieldRow('Forma de pago', factura.formaPago)}
-      ${fieldRow('Método de pago', factura.metodoPago)}
-    </div>
-  </div>
-
-  ${hr}
-
-  <!-- ── SECTION 3: CONCEPTOS ── -->
-  <div style="padding:18px 0;">
-    <div style="font-size:24px;color:#000;margin-bottom:16px;">Conceptos</div>
-    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
-      <colgroup>
-        <col style="width:15%">
-        <col style="width:30%">
-        <col style="width:12%">
-        <col style="width:8%">
-        <col style="width:17%">
-        <col style="width:18%">
-      </colgroup>
-      <thead>
-        <tr style="border-top:1px solid #ccc;border-bottom:1px solid #ccc;">
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Clave SAT</th>
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:left;">Descripción</th>
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Unidad</th>
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Cant.</th>
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:right;">Precio</th>
-          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:right;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${conceptoRows}
-        <tr><td colspan="6" style="padding:8px;"></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  ${hr}
-
-  <!-- ── SECTION 4: TOTALES + CERT INFO ── -->
-  <div style="display:flex;padding:18px 0;min-height:130px;align-items:flex-start;">
-
-    <!-- Left: QR + cert details -->
-    <div style="width:55%;display:flex;gap:14px;align-items:flex-start;">
-      <div style="flex-shrink:0;">
-        ${qrDataUrl
-          ? `<img src="${qrDataUrl}" width="76" height="76" style="display:block;">`
-          : `<div style="width:76px;height:76px;border:1px solid #ccc;"></div>`}
-      </div>
-      <div style="font-size:7.5px;line-height:2;color:#000;">
-        <div><span style="color:#1E3A5F;font-weight:600;">Fecha y hora de Certificación: </span>${esc(certDate)}</div>
-        <div><span style="color:#1E3A5F;font-weight:600;">RFC del proveedor de certificación: </span>${esc(rfcPAC)}</div>
-        <div><span style="color:#1E3A5F;font-weight:600;">No. de serie del certificado SAT: </span>${esc(certSerial)}</div>
-        <div style="color:#888;font-size:7px;margin-top:6px;">Este documento es una representación impresa de un CFDI</div>
-      </div>
-    </div>
-
-    <!-- Right: Totals -->
-    <div style="width:45%;display:flex;flex-direction:column;gap:0;justify-content:center;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;">
-        <span>Subtotal :</span><span>$ ${subtotal.toFixed(2)} M.N.</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;">
-        <span>+ I.V.A. 16% :</span><span>$ ${iva.toFixed(2)} M.N.</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;font-weight:700;">
-        <span>Total :</span><span>$ ${total.toFixed(2)} M.N.</span>
-      </div>
-      <div style="font-size:7.5px;color:#888;text-align:center;margin-top:8px;">${esc(montoConLetra)}</div>
-    </div>
-  </div>
-
-  ${hr}
-
-  <!-- ── SECTION 5: SELLOS DIGITALES ── -->
-  <div style="padding:14px 0;line-height:1.4;">
-    ${sellos.selloCFDI ? `
-    <div style="margin-bottom:8px;">
-      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Sello Digital del CFDI:</div>
-      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.selloCFDI))}</div>
-    </div>` : ''}
-    ${sellos.selloSAT ? `
-    <div style="margin-bottom:8px;">
-      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Sello del SAT:</div>
-      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.selloSAT))}</div>
-    </div>` : ''}
-    ${sellos.cadenaOriginal ? `
-    <div style="margin-bottom:8px;">
-      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Cadena Original del Complemento de Certificación Digital del SAT:</div>
-      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.cadenaOriginal))}</div>
-    </div>` : ''}
-  </div>
-
-  ${hr}
-
-  <!-- ── SECTION 6: FOOTER ── -->
-  <div style="display:flex;align-items:center;padding-top:18px;">
-
-    <!-- Left: Contact info -->
-    <div style="width:55%;font-size:9px;line-height:2;color:#000;">
-      <div>www.tripoli.media</div>
-      <div>+52 33 2817 5756</div>
-      <div>contacto@tripoli.media</div>
-      <div>Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.</div>
-    </div>
-
-    <!-- Right: Signature block -->
-    <div style="width:45%;display:flex;flex-direction:column;align-items:center;gap:6px;">
-      ${data.firmaBase64
-        ? `<img src="${data.firmaBase64}" style="max-width:120px;max-height:50px;object-fit:contain;display:block;">`
-        : ''}
-      <div style="border-top:1px solid #000;width:160px;text-align:center;padding-top:6px;">
-        <div style="font-size:12px;">Lic. Moisés Monraz Escoto</div>
-        <div style="font-size:10px;font-style:italic;color:#555;">Dir. Tripoli Media</div>
-      </div>
-    </div>
-  </div>
+  <!-- ── FIRMA ── -->
+  ${data.firmaBase64
+    ? `<img src="${data.firmaBase64}" style="position:absolute;left:487px;top:880px;max-width:120px;max-height:50px;object-fit:contain;z-index:1;">`
+    : ''}
 
 </div>
 </body>
@@ -350,6 +237,7 @@ export async function POST(request: Request) {
       height:          '1050px',
       printBackground: true,
       margin:          { top: '0', right: '0', bottom: '0', left: '0' },
+      pageRanges:      '1',
     });
 
     const uuid     = data.factura?.folioFiscalUUID?.slice(0, 8) || 'factura';
@@ -374,6 +262,3 @@ export async function POST(request: Request) {
     if (browser) await browser.close();
   }
 }
-
-// Tree-shake unused helpers (referenced to satisfy linter)
-void formatMXN;
