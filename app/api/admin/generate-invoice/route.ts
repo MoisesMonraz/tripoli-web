@@ -1,61 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import fs from 'fs';
-import path from 'path';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const QRCode = require('qrcode') as { toDataURL(text: string, opts?: { width?: number; margin?: number }): Promise<string> };
 import { getAdminSessionCookieName, verifyAdminSession } from '../../../../lib/security/adminSession';
 import type { InvoiceData } from '../../../../components/admin/FacturacionModule';
-
-// ─── TTC → TTF extraction ─────────────────────────────────────────────────────
-// TrueType Collection files embed multiple TTFs sharing table data at absolute
-// offsets. pdf-lib/fontkit cannot handle TTC directly; we extract the first
-// font and rebuild a standalone TTF with corrected (relative) offsets.
-function extractFirstTTFFromTTC(buf: Buffer): Buffer {
-  const tag = buf.slice(0, 4).toString('binary');
-  if (tag !== 'ttcf') return buf;                          // not a TTC — pass through
-
-  const firstOffset = buf.readUInt32BE(12);                // offset to 1st OffsetTable
-  const numTables   = buf.readUInt16BE(firstOffset + 4);
-
-  // Read table directory entries (each is 16 bytes)
-  const tables: { tag: string; checksum: number; offset: number; length: number }[] = [];
-  for (let i = 0; i < numTables; i++) {
-    const base = firstOffset + 12 + i * 16;
-    tables.push({
-      tag:      buf.slice(base, base + 4).toString('binary'),
-      checksum: buf.readUInt32BE(base + 4),
-      offset:   buf.readUInt32BE(base + 8),
-      length:   buf.readUInt32BE(base + 12),
-    });
-  }
-
-  // Layout: OffsetTable(12) + TableDirectory(numTables×16) + table data (4-byte aligned)
-  const headerSize = 12 + numTables * 16;
-  let dataSize = 0;
-  for (const t of tables) dataSize += Math.ceil(t.length / 4) * 4;
-
-  const out = Buffer.alloc(headerSize + dataSize);
-  buf.copy(out, 0, firstOffset, firstOffset + 12);         // copy OffsetTable header
-
-  let cursor = headerSize;
-  for (let i = 0; i < tables.length; i++) {
-    const t   = tables[i];
-    const dir = 12 + i * 16;
-    out.write(t.tag, dir, 'binary');
-    out.writeUInt32BE(t.checksum, dir + 4);
-    out.writeUInt32BE(cursor,     dir + 8);                // patched offset
-    out.writeUInt32BE(t.length,   dir + 12);
-    buf.copy(out, cursor, t.offset, t.offset + t.length);  // copy table data
-    cursor += Math.ceil(t.length / 4) * 4;
-  }
-  return out;
-}
-
-// ─── Default font sizes (referenced by draw / rightAlign helpers) ─────────────
-const C = { fs: { label: 7, value: 7, small: 7, sello: 5 } } as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,276 +42,257 @@ function extractCertDate(cadena: string): string {
   return m ? m[1].replace('T', ' ') : '';
 }
 
-function wrapText(text: string, maxChars: number): string[] {
-  if (text.length <= maxChars) return [text];
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let current = '';
-  for (const w of words) {
-    let word = w;
-    // Break oversized words character-by-character (e.g. base64 sello with no spaces)
-    while (word.length > maxChars) {
-      if (current) { lines.push(current); current = ''; }
-      lines.push(word.slice(0, maxChars));
-      word = word.slice(maxChars);
-    }
-    if (!word) continue;
-    const candidate = current ? current + ' ' + word : word;
-    if (candidate.length <= maxChars) {
-      current = candidate;
-    } else {
-      if (current) lines.push(current);
-      current = word;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
+// HTML-escape user data
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-// ─── Core overlay function ────────────────────────────────────────────────────
+// ─── HTML Template ────────────────────────────────────────────────────────────
 
-async function overlayInvoiceData(data: InvoiceData): Promise<Uint8Array> {
-  // ── Create document from scratch ─────────────────────────────────────────
-  const pdfDoc = await PDFDocument.create();
-  const page   = pdfDoc.addPage([815, 1050]);
-
-  // ── Register fontkit + embed font ────────────────────────────────────────
-  pdfDoc.registerFontkit(fontkit);
-
-  let font: Awaited<ReturnType<typeof pdfDoc.embedFont>>;
-  let fontBold: Awaited<ReturnType<typeof pdfDoc.embedFont>>;
-  try {
-    const fontPath  = path.join(process.cwd(), 'public', 'Shree714.ttc');
-    const rawBytes  = fs.readFileSync(fontPath);
-    const fontBytes = extractFirstTTFFromTTC(rawBytes); // extract TTF from TTC
-    font     = await pdfDoc.embedFont(fontBytes);
-    fontBold = font;
-    console.log('[generate-invoice] ✓ Shree714.ttc embedded');
-  } catch (fontErr) {
-    console.warn('[generate-invoice] ⚠ Font fallback to Helvetica:', fontErr);
-    font     = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  }
-
-  const black = rgb(0, 0, 0);
-  const gray  = rgb(0.42, 0.447, 0.502);  // #6B7280 — structural elements only
-
-  type DrawOpts = { size?: number; color?: ReturnType<typeof rgb>; bold?: boolean; maxWidth?: number };
-  const draw = (text: string, x: number, y: number, opts?: DrawOpts) => {
-    const sz      = opts?.size  ?? C.fs.value;
-    const color   = opts?.color ?? black;
-    const f       = opts?.bold  ? fontBold : font;
-    const display = opts?.maxWidth
-      ? (text.length > opts.maxWidth ? text.slice(0, opts.maxWidth - 1) + '…' : text)
-      : text;
-    page.drawText(display, { x, y, size: sz, font: f, color });
-  };
-
-  const rightAlign = (text: string, x: number, y: number, sz: number = C.fs.value) => {
-    const w = font.widthOfTextAtSize(text, sz);
-    draw(text, x - w, y, { size: sz });
-  };
-
-  // Helper: draw text centered within a column
-  const colCenter = (text: string, x0: number, x1: number, y: number, sz: number, opts?: DrawOpts) => {
-    const w = font.widthOfTextAtSize(text, sz);
-    draw(text, (x0 + x1) / 2 - w / 2, y, { size: sz, ...opts });
-  };
-
-  // ── IVA recalculation (always derive total from subtotal + iva) ──────────
+async function buildInvoiceHTML(data: InvoiceData): Promise<string> {
   const subtotal = data.totales.subtotal;
   const iva      = data.totales.iva === 0 && subtotal > 0
     ? Math.round(subtotal * 0.16 * 100) / 100
     : data.totales.iva;
-  const total    = Math.round((subtotal + iva) * 100) / 100;
-  console.log('[generate-invoice] totals → subtotal:', subtotal, 'iva:', iva, 'total:', total);
+  const total         = Math.round((subtotal + iva) * 100) / 100;
   const montoConLetra = totalToLetras(total);
 
   const { receptor, factura, conceptos, sellos } = data;
   const serieYFolio = factura.serieYFolio?.trim() || 'S/N';
   const certDate    = extractCertDate(sellos.cadenaOriginal);
+  const cadParts    = sellos.cadenaOriginal.split('|').filter(Boolean);
+  const rfcPAC      = cadParts[3] || 'SAT970701NN3';
+  const certSerial  = cadParts[5] || '';
+  const csdSerial   = certSerial || serieYFolio || 'S/N';
 
-  // Parse RFC PAC and cert serial from cadena original
-  // Format: ||1.1|UUID|DATE|RFC_PAC|SELLO_CFDI|CERT_SERIAL||
-  const cadParts   = sellos.cadenaOriginal.split('|').filter(Boolean);
-  const rfcPAC     = cadParts[3] || '';
-  const certSerial = cadParts[5] || '';
+  // SAT verification URL for QR
+  const satUrl = [
+    'https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx',
+    `?id=${factura.folioFiscalUUID}`,
+    `&re=MOEM000520NK2`,
+    `&rr=${encodeURIComponent(receptor.rfc)}`,
+    `&tt=${total.toFixed(6)}`,
+    `&fe=${encodeURIComponent(sellos.selloCFDI.slice(-8))}`,
+  ].join('');
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // OUTER BORDER
-  // ──────────────────────────────────────────────────────────────────────────
-  page.drawRectangle({ x: 50.5, y: 50.5, width: 714, height: 949, borderColor: black, borderWidth: 0.5 });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 1 — HEADER  (y: 850–1050)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // Logo: geometric pixel blocks
-  page.drawRectangle({ x:  95, y: 935, width: 20, height: 20, color: rgb(0.20, 0.45, 0.70) });
-  page.drawRectangle({ x: 115, y: 895, width: 20, height: 20, color: rgb(0.20, 0.45, 0.70) });
-  page.drawRectangle({ x: 115, y: 935, width: 20, height: 20, color: rgb(0.55, 0.70, 0.85) });
-  page.drawRectangle({ x: 115, y: 915, width: 20, height: 20, color: rgb(0.38, 0.58, 0.78) });
-  page.drawRectangle({ x: 135, y: 935, width: 20, height: 20, color: rgb(0.70, 0.82, 0.92) });
-
-  // TRIPOLI MEDIA logotype
-  draw('TRIPOLI MEDIA', 188.2, 928.6, { size: 24, bold: true });
-
-  // DATOS DEL EMISOR (static — always hardcoded, each line label+value combined)
-  draw('DATOS DEL EMISOR',                                                        427.3, 962.5, { size: 10 });
-  draw('RFC: MOEM000520NK2',                                                      427.3, 946.5, { size: 10 });
-  draw('Nombre/Razón Social: Moisés Monraz Escoto',                               427.3, 932.5, { size: 10 });
-  draw('Régimen Fiscal: 626 - RESICO',                                            427.3, 918.5, { size: 10 });
-  draw('Dirección Fiscal: Av. de las Rosas 585 int. 2, Chapalita Oriente',        427.3, 904.5, { size: 10 });
-  draw('45040, Zapopan, Jal.',                                                    427.3, 890.5, { size: 10 });
-
-  // Header separator
-  page.drawLine({ start: { x: 87.5, y: 850 }, end: { x: 727.5, y: 850 }, thickness: 0.5, color: black });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 2 — RECEPTOR + FACTURA  (y: 675–850)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // Vertical divider between columns
-  page.drawLine({ start: { x: 407.5, y: 705 }, end: { x: 407.5, y: 820 }, thickness: 0.5, color: black });
-
-  // Left column — DATOS DEL RECEPTOR (label+value as single strings)
-  draw('DATOS DEL RECEPTOR',                                          95.0, 800.0, { size: 10 });
-  draw('RFC: ' + receptor.rfc,                                        95.0, 784.0, { size: 10 });
-  draw('Nombre/Razón Social: ' + receptor.nombre,                     95.0, 770.0, { size: 10 });
-  draw('Régimen Fiscal: ' + receptor.regimenFiscal,                   95.0, 756.0, { size: 10 });
-  draw('Código Postal: ' + receptor.codigoPostal,                     95.0, 742.0, { size: 10 });
-  draw('Uso de CFDI: ' + receptor.usoCFDI,                            95.0, 728.0, { size: 10 });
-
-  // Right column — DATOS DE LA FACTURA (label+value as single strings)
-  draw('DATOS DE LA FACTURA',                                                      427.2, 807.0, { size: 10 });
-  draw('Folio Fiscal: ' + factura.folioFiscalUUID,                                 427.2, 791.0, { size: 10 });
-  draw('No. de serie del CSD: ' + (certSerial || serieYFolio || 'S/N'),            427.2, 777.0, { size: 10 });
-  draw('Fecha y hora de emisión: ' + factura.fechaEmision,                         427.2, 763.0, { size: 10 });
-  draw('Código Postal de expedición: ' + factura.lugarExpedicion,                  427.2, 749.0, { size: 10 });
-  draw('Forma de pago: ' + factura.formaPago,                                      427.2, 735.0, { size: 10 });
-  draw('Método de pago: ' + factura.metodoPago,                                    427.2, 721.0, { size: 10 });
-
-  // Separator after receptor/factura
-  page.drawLine({ start: { x: 87.5, y: 675 }, end: { x: 727.5, y: 675 }, thickness: 0.5, color: black });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 3 — CONCEPTOS  (y: 413.5–675)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  draw('Conceptos', 98.6, 636.4, { size: 24 });
-
-  // Table header borders (white background — no fill)
-  page.drawLine({ start: { x: 87.5, y: 601.4 }, end: { x: 727.5, y: 601.4 }, thickness: 0.3, color: black });
-  page.drawLine({ start: { x: 87.5, y: 552.5 }, end: { x: 727.5, y: 552.5 }, thickness: 0.3, color: black });
-
-  // Column vertical dividers — only 3 (reference design)
-  for (const divX of [407.5, 490, 609] as const) {
-    page.drawLine({ start: { x: divX, y: 478.6 }, end: { x: divX, y: 601.4 }, thickness: 0.3, color: gray });
-  }
-
-  // Column headers — exact Illustrator positions, size=18
-  draw('Clave SAT',   107.1, 579.7, { size: 18 });
-  draw('Descripción', 221.3, 580.2, { size: 18 });
-  draw('Unidad',      339.1, 580.4, { size: 18 });
-  draw('Cant.',       428.3, 580.2, { size: 18 });
-  draw('Precio',      524.3, 580.2, { size: 18 });
-  draw('Total',       649.5, 580.2, { size: 18 });
-
-  // Data rows (max 5) — exact Illustrator positions
-  conceptos.slice(0, 5).forEach((c, i) => {
-    const base = 529.1 - i * 30;
-    draw(c.claveSAT,                                             120.9, base + 1.0,  { size: 12 });
-    const descLines = wrapText(c.descripcion, 25);
-    descLines.slice(0, 2).forEach((line, j) => draw(line,       243.7, base + 10.1 - j * 10, { size: 10 }));
-    draw(c.unidad,                                               357.0, base + 0.4,  { size: 12 });
-    draw(String(c.cantidad),                                     445.2, base + 0.2,  { size: 12 });
-    draw(c.valorUnitario.toFixed(2),                             537.5, base,        { size: 12 });
-    draw((c.importe ?? c.valorUnitario * c.cantidad).toFixed(2), 656.6, base,        { size: 12 });
-  });
-
-  // Conceptos bottom separators
-  page.drawLine({ start: { x: 87.5, y: 503   }, end: { x: 727.5, y: 503   }, thickness: 0.5, color: black });
-  page.drawLine({ start: { x: 87.5, y: 413.5 }, end: { x: 727.5, y: 413.5 }, thickness: 0.5, color: black });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 4 — TOTALES + CERT INFO  (y: 274.5–413.5)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // QR code — generated from folio fiscal UUID
-  let qrDrawn = false;
+  let qrDataUrl = '';
   try {
-    const qrDataUrl = await QRCode.toDataURL(factura.folioFiscalUUID, { width: 76, margin: 0 });
-    const qrBase64  = qrDataUrl.replace(/^data:image\/png;base64,/, '');
-    const qrImage   = await pdfDoc.embedPng(Buffer.from(qrBase64, 'base64'));
-    page.drawImage(qrImage, { x: 97, y: 306, width: 76, height: 76 });
-    qrDrawn = true;
-  } catch { /* fall through */ }
-  if (!qrDrawn) {
-    page.drawRectangle({ x: 97, y: 306, width: 76, height: 76, borderColor: gray, borderWidth: 0.5 });
+    qrDataUrl = await QRCode.toDataURL(satUrl, { width: 76, margin: 1 });
+  } catch { /* fall through — QR omitted */ }
+
+  const truncSello = (s: string, max = 250) =>
+    s.length > max ? s.slice(0, max) + '...' : s;
+
+  const fieldRow = (label: string, value: string) =>
+    `<div style="line-height:1.8;font-size:10px;">` +
+    `<span style="color:#1E3A5F;font-weight:600;">${esc(label)}: </span>` +
+    `<span style="color:#000;">${esc(value)}</span></div>`;
+
+  const conceptoRows = conceptos.slice(0, 5).map(c => `
+    <tr>
+      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${esc(c.claveSAT)}</td>
+      <td style="padding:8px 4px;text-align:left;border-bottom:1px solid #eee;font-size:11px;">${esc(c.descripcion)}</td>
+      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${esc(c.unidad)}</td>
+      <td style="padding:8px 4px;text-align:center;border-bottom:1px solid #eee;font-size:11px;">${c.cantidad}</td>
+      <td style="padding:8px 4px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">${c.valorUnitario.toFixed(2)}</td>
+      <td style="padding:8px 4px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">${(c.importe ?? c.valorUnitario * c.cantidad).toFixed(2)}</td>
+    </tr>`).join('');
+
+  const hr = `<hr style="border:none;border-top:1px solid #ccc;margin:0;">`;
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width: 815px;
+    min-height: 1050px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    color: #000;
+    background: #fff;
   }
+</style>
+</head>
+<body>
+<div style="width:815px;min-height:1050px;padding:40px;border:1px solid #ccc;">
 
-  // Left block — certification data (label+value combined, size=7.5)
-  draw('Fecha y hora de Certificación: ' + certDate,              182.5, 373.9, { size: 7.5 });
-  draw('RFC del proveedor de certificación: ' + rfcPAC,           182.5, 353.9, { size: 7.5 });
-  draw('No. de serie del certificado SAT: ' + certSerial,         182.5, 333.9, { size: 7.5 });
-  draw('Este documento es una representación impresa de un CFDI', 182.3, 315.1, { size: 7.5 });
+  <!-- ── SECTION 1: HEADER ── -->
+  <div style="display:flex;align-items:flex-start;padding-bottom:20px;min-height:160px;">
 
-  // Right block — currency totals (size=12)
-  draw('Subtotal :',                         547.2, 381.3, { size: 12 });
-  draw('$ ' + subtotal.toFixed(2) + ' M.N.', 643.5, 381.3, { size: 12 });
-  draw('+ I.V.A. 16% :',                     516.1, 352.8, { size: 12 });
-  draw('$ ' + iva.toFixed(2)     + ' M.N.',  635.3, 352.8, { size: 12 });
-  draw('Total :',                            564.3, 324.8, { size: 12, bold: true });
-  draw('$ ' + total.toFixed(2)   + ' M.N.',  635.3, 324.3, { size: 12 });
+    <!-- Left: Logo + brand name -->
+    <div style="width:42%;display:flex;flex-direction:column;gap:14px;">
+      <div style="position:relative;width:65px;height:65px;flex-shrink:0;">
+        <div style="position:absolute;left:0px;top:0px;width:20px;height:20px;background:#3373B2;"></div>
+        <div style="position:absolute;left:20px;top:0px;width:20px;height:20px;background:#8CB4D8;"></div>
+        <div style="position:absolute;left:40px;top:0px;width:20px;height:20px;background:#B3CDE8;"></div>
+        <div style="position:absolute;left:20px;top:20px;width:20px;height:20px;background:#6194C7;"></div>
+        <div style="position:absolute;left:20px;top:40px;width:20px;height:20px;background:#3373B2;"></div>
+      </div>
+      <div style="font-size:24px;font-weight:600;color:#1E3A5F;letter-spacing:2px;">TRIPOLI MEDIA</div>
+    </div>
 
-  // Monto con letra
-  draw(montoConLetra, 568.0, 293.6, { size: 7.5 });
+    <!-- Right: Emisor data -->
+    <div style="width:58%;padding-left:24px;border-left:1px solid #e5e5e5;">
+      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DEL EMISOR</div>
+      ${fieldRow('RFC', 'MOEM000520NK2')}
+      ${fieldRow('Nombre/Razón Social', 'Moisés Monraz Escoto')}
+      ${fieldRow('Régimen Fiscal', '626 - RESICO')}
+      ${fieldRow('Dirección Fiscal', 'Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.')}
+    </div>
+  </div>
 
-  // Separator after totales
-  page.drawLine({ start: { x: 87.5, y: 274.5 }, end: { x: 727.5, y: 274.5 }, thickness: 0.5, color: black });
+  ${hr}
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 5 — SELLOS DIGITALES  (y: 164.5–274.5)
-  // ══════════════════════════════════════════════════════════════════════════
+  <!-- ── SECTION 2: RECEPTOR + FACTURA ── -->
+  <div style="display:flex;padding:18px 0;min-height:150px;">
 
-  if (sellos.selloCFDI) {
-    draw('Sello Digital del CFDI:', 97.5, 262.9, { size: 7.5 });
-    (sellos.selloCFDI.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
-      draw(chunk, 97.5, [251.6, 244.6][i], { size: 5 });
-    });
-  }
-  if (sellos.selloSAT) {
-    draw('Sello del SAT:', 97.5, 230.4, { size: 7.5 });
-    (sellos.selloSAT.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
-      draw(chunk, 97.5, [219.1, 209.1][i], { size: 5 });
-    });
-  }
-  if (sellos.cadenaOriginal) {
-    draw('Cadena Original del Complemento de Certificación Digital del SAT:', 97.5, 197.9, { size: 7.5 });
-    const cadTrunc = sellos.cadenaOriginal.length > 220
-      ? sellos.cadenaOriginal.slice(0, 219) + '…'
-      : sellos.cadenaOriginal;
-    (cadTrunc.match(/.{1,90}/g) ?? []).slice(0, 2).forEach((chunk, i) => {
-      draw(chunk, 97.5, [186.6, 176.6][i], { size: 5 });
-    });
-  }
+    <!-- Left: Receptor -->
+    <div style="width:50%;padding-right:20px;">
+      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DEL RECEPTOR</div>
+      ${fieldRow('RFC', receptor.rfc)}
+      ${fieldRow('Nombre/Razón Social', receptor.nombre)}
+      ${fieldRow('Régimen Fiscal', receptor.regimenFiscal)}
+      ${fieldRow('Código Postal', receptor.codigoPostal)}
+      ${fieldRow('Uso de CFDI', receptor.usoCFDI)}
+    </div>
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // SECTION 6 — FOOTER  (y: 0–164.5)
-  // ══════════════════════════════════════════════════════════════════════════
+    <!-- Vertical divider -->
+    <div style="width:1px;background:#ccc;margin:0 20px;"></div>
 
-  // Left — contact info (static)
-  draw('www.tripoli.media',                                                    97.5, 138.6, { size: 9 });
-  draw('+52 33 2817 5756',                                                     97.5, 124.6, { size: 9 });
-  draw('contacto@tripoli.media',                                               97.5, 110.6, { size: 9 });
-  draw('Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.', 97.5,  96.6, { size: 9 });
+    <!-- Right: Factura -->
+    <div style="width:50%;padding-left:20px;">
+      <div style="font-size:10px;color:#1E3A5F;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">DATOS DE LA FACTURA</div>
+      ${fieldRow('Folio Fiscal', factura.folioFiscalUUID)}
+      ${fieldRow('No. de serie del CSD', csdSerial)}
+      ${fieldRow('Fecha y hora de emisión', factura.fechaEmision)}
+      ${fieldRow('Código Postal de expedición', factura.lugarExpedicion)}
+      ${fieldRow('Forma de pago', factura.formaPago)}
+      ${fieldRow('Método de pago', factura.metodoPago)}
+    </div>
+  </div>
 
-  // Right — signature block
-  page.drawLine({ start: { x: 487.5, y: 120 }, end: { x: 647.5, y: 120 }, thickness: 0.5, color: black });
-  draw('Lic. Moisés Monraz Escoto', 494.5, 108.0, { size: 12 });
-  draw('Dir. Tripoli Media',        529.1,  90.9, { size: 10 });
+  ${hr}
 
-  return pdfDoc.save();
+  <!-- ── SECTION 3: CONCEPTOS ── -->
+  <div style="padding:18px 0;">
+    <div style="font-size:24px;color:#000;margin-bottom:16px;">Conceptos</div>
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <colgroup>
+        <col style="width:15%">
+        <col style="width:30%">
+        <col style="width:12%">
+        <col style="width:8%">
+        <col style="width:17%">
+        <col style="width:18%">
+      </colgroup>
+      <thead>
+        <tr style="border-top:1px solid #ccc;border-bottom:1px solid #ccc;">
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Clave SAT</th>
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:left;">Descripción</th>
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Unidad</th>
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:center;">Cant.</th>
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:right;">Precio</th>
+          <th style="padding:8px 4px;font-size:11px;font-weight:600;color:#000;text-align:right;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${conceptoRows}
+        <tr><td colspan="6" style="padding:8px;"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  ${hr}
+
+  <!-- ── SECTION 4: TOTALES + CERT INFO ── -->
+  <div style="display:flex;padding:18px 0;min-height:130px;align-items:flex-start;">
+
+    <!-- Left: QR + cert details -->
+    <div style="width:55%;display:flex;gap:14px;align-items:flex-start;">
+      <div style="flex-shrink:0;">
+        ${qrDataUrl
+          ? `<img src="${qrDataUrl}" width="76" height="76" style="display:block;">`
+          : `<div style="width:76px;height:76px;border:1px solid #ccc;"></div>`}
+      </div>
+      <div style="font-size:7.5px;line-height:2;color:#000;">
+        <div><span style="color:#1E3A5F;font-weight:600;">Fecha y hora de Certificación: </span>${esc(certDate)}</div>
+        <div><span style="color:#1E3A5F;font-weight:600;">RFC del proveedor de certificación: </span>${esc(rfcPAC)}</div>
+        <div><span style="color:#1E3A5F;font-weight:600;">No. de serie del certificado SAT: </span>${esc(certSerial)}</div>
+        <div style="color:#888;font-size:7px;margin-top:6px;">Este documento es una representación impresa de un CFDI</div>
+      </div>
+    </div>
+
+    <!-- Right: Totals -->
+    <div style="width:45%;display:flex;flex-direction:column;gap:0;justify-content:center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;">
+        <span>Subtotal :</span><span>$ ${subtotal.toFixed(2)} M.N.</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;">
+        <span>+ I.V.A. 16% :</span><span>$ ${iva.toFixed(2)} M.N.</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;font-weight:700;">
+        <span>Total :</span><span>$ ${total.toFixed(2)} M.N.</span>
+      </div>
+      <div style="font-size:7.5px;color:#888;text-align:center;margin-top:8px;">${esc(montoConLetra)}</div>
+    </div>
+  </div>
+
+  ${hr}
+
+  <!-- ── SECTION 5: SELLOS DIGITALES ── -->
+  <div style="padding:14px 0;line-height:1.4;">
+    ${sellos.selloCFDI ? `
+    <div style="margin-bottom:8px;">
+      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Sello Digital del CFDI:</div>
+      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.selloCFDI))}</div>
+    </div>` : ''}
+    ${sellos.selloSAT ? `
+    <div style="margin-bottom:8px;">
+      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Sello del SAT:</div>
+      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.selloSAT))}</div>
+    </div>` : ''}
+    ${sellos.cadenaOriginal ? `
+    <div style="margin-bottom:8px;">
+      <div style="font-size:7.5px;color:#1E3A5F;font-weight:600;margin-bottom:2px;">Cadena Original del Complemento de Certificación Digital del SAT:</div>
+      <div style="font-size:5px;word-break:break-all;color:#000;">${esc(truncSello(sellos.cadenaOriginal))}</div>
+    </div>` : ''}
+  </div>
+
+  ${hr}
+
+  <!-- ── SECTION 6: FOOTER ── -->
+  <div style="display:flex;align-items:center;padding-top:18px;">
+
+    <!-- Left: Contact info -->
+    <div style="width:55%;font-size:9px;line-height:2;color:#000;">
+      <div>www.tripoli.media</div>
+      <div>+52 33 2817 5756</div>
+      <div>contacto@tripoli.media</div>
+      <div>Av. de las Rosas 585 int. 2, Chapalita Oriente 45040, Zapopan, Jal.</div>
+    </div>
+
+    <!-- Right: Signature block -->
+    <div style="width:45%;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      ${data.firmaBase64
+        ? `<img src="${data.firmaBase64}" style="max-width:120px;max-height:50px;object-fit:contain;display:block;">`
+        : ''}
+      <div style="border-top:1px solid #000;width:160px;text-align:center;padding-top:6px;">
+        <div style="font-size:12px;">Lic. Moisés Monraz Escoto</div>
+        <div style="font-size:10px;font-style:italic;color:#555;">Dir. Tripoli Media</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>`;
 }
 
 // ─── Route ────────────────────────────────────────────────────────────────────
@@ -375,6 +306,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let browser: any = null;
+
   try {
     const body = await request.json() as { data: InvoiceData };
     const { data } = body;
@@ -383,16 +317,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se recibieron datos de factura.' }, { status: 400 });
     }
 
-    const pdfBytes = await overlayInvoiceData(data);
+    const html = await buildInvoiceHTML(data);
+
+    browser = await puppeteer.launch({
+      args:            chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath:  process.env.CHROMIUM_PATH || await chromium.executablePath(),
+      headless:        chromium.headless,
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      width:           '815px',
+      height:          '1050px',
+      printBackground: true,
+      margin:          { top: '0', right: '0', bottom: '0', left: '0' },
+    });
+
     const uuid     = data.factura?.folioFiscalUUID?.slice(0, 8) || 'factura';
     const filename = `factura-tripoli-${uuid}.pdf`;
 
-    return new Response(Buffer.from(pdfBytes), {
+    return new Response(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type':        'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length':      String(pdfBytes.length),
+        'Content-Length':      String(pdfBuffer.length),
       },
     });
   } catch (err) {
@@ -402,5 +354,10 @@ export async function POST(request: Request) {
       { error: `No se pudo generar el PDF: ${message}` },
       { status: 500 }
     );
+  } finally {
+    if (browser) await browser.close();
   }
 }
+
+// Tree-shake unused helpers (referenced to satisfy linter)
+void formatMXN;

@@ -1,15 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // Bundle binary assets (template PDF + font) into the generate-invoice
-    // serverless function. Without this, public/ files are not accessible
-    // via fs.readFileSync inside Vercel serverless functions.
-    outputFileTracingIncludes: {
-      '/api/admin/generate-invoice': [
-        './public/factura-template.pdf',
-        './public/Shree714.ttc',
-      ],
-    },
+    serverComponentsExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   },
   images: {
     remotePatterns: [
