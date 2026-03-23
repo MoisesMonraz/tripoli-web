@@ -319,12 +319,28 @@ export async function POST(request: Request) {
 
     const html = await buildInvoiceHTML(data);
 
-    browser = await puppeteer.launch({
-      args:            chromium.args,
-      defaultViewport: { width: 815, height: 1050 },
-      executablePath:  process.env.CHROMIUM_PATH || await chromium.executablePath(),
-      headless:        true,
-    });
+    const isLocal = process.env.NODE_ENV === 'development';
+    browser = await puppeteer.launch(
+      isLocal
+        ? {
+            // Option A (default): uses locally installed Google Chrome
+            channel: 'chrome',
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            // Option B: if Chrome is not installed, run:
+            //   npm install --save-dev puppeteer
+            // then replace the block above with:
+            //   executablePath: (await import('puppeteer')).executablePath(),
+            //   headless: true,
+            //   args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          }
+        : {
+            args:            chromium.args,
+            defaultViewport: { width: 815, height: 1050 },
+            executablePath:  await chromium.executablePath(),
+            headless:        true,
+          }
+    );
 
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
