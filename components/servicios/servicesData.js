@@ -51,4 +51,36 @@ export const servicesData = [
     closing:
       "Con Tripoli Web Services potencia la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
   },
+  {
+    id: "audiovisual",
+    title: "Tripoli Audiovisual Production",
+    tagline:
+      "Desarrollo de piezas visuales y sonoras enfocadas en narrativa de marca, alcance sectorial e impacto medible.",
+    bullets: [
+      "Producción de contenido audiovisual estratégico alineado a los objetivos de comunicación y posicionamiento de marca.",
+      "Realización de videos corporativos, documentales y contenido optimizado para redes sociales y plataformas digitales.",
+      "Construcción de narrativa de marca y storytelling visual que conecta con audiencias específicas y genera recordación.",
+      "Producción multiplataforma adaptada a los formatos y requisitos técnicos de cada canal de distribución.",
+    ],
+    introLabel: "Soluciones estratégicas a la medida",
+    description: undefined,
+    closing:
+      "Con Tripoli Audiovisual Production potencia la comunicación de tu empresa mediante contenido audiovisual de alto impacto, diseñado para traducir el mensaje correcto en imágenes y sonidos que generan conexión, autoridad y resultados medibles.",
+  },
+  {
+    id: "accounting",
+    title: "Tripoli Accounting Services",
+    tagline:
+      "Soluciones de administración financiera y fiscal diseñadas para la eficiencia operativa y el crecimiento sostenible.",
+    bullets: [
+      "Servicios integrales de contabilidad y gestión fiscal orientados a la salud financiera y el cumplimiento normativo de tu empresa.",
+      "Presentación de declaraciones fiscales, cumplimiento SAT y seguimiento puntual de obligaciones ante las autoridades tributarias.",
+      "Administración financiera para personas físicas y empresas, con reportes claros y toma de decisiones basada en datos reales.",
+      "Asesoría especializada en Régimen RESICO y facturación electrónica CFDI 4.0 para una operación fiscal eficiente y sin contratiempos.",
+    ],
+    introLabel: "Soluciones estratégicas a la medida",
+    description: undefined,
+    closing:
+      "Con Tripoli Accounting Services potencia la gestión financiera y fiscal de tu empresa mediante soluciones contables precisas y estratégicas, diseñadas para garantizar el cumplimiento, reducir riesgos y liberar tu tiempo para enfocarte en crecer.",
+  },
 ];
