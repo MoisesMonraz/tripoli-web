@@ -14,7 +14,7 @@ export const servicesData = [
     introLabel: "SOLUCIONES ESTRATÉGICAS A LA MEDIDA",
     description: undefined,
     closing:
-      "Con <strong>Tripoli Publishing House</strong> potencia la autoridad y visibilidad de tu empresa mediante narrativas editoriales de alto valor, diseñadas para amplificar el mensaje correcto en los canales adecuados con impacto medible y resultados tangibles.",
+      "Con <strong>Tripoli Publishing House</strong> fortalece la autoridad y visibilidad de tu empresa mediante narrativas editoriales de alto valor, diseñadas para amplificar el mensaje correcto en los canales adecuados con impacto medible y resultados tangibles.",
   },
   {
     id: "analytics",
@@ -49,7 +49,7 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con <strong>Tripoli Web Structures</strong> fortalece la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
+      "Con <strong>Tripoli Web Structures</strong> potencia la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
   },
   {
     id: "audiovisual",
