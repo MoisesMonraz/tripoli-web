@@ -36,7 +36,7 @@ export const servicesData = [
   },
   {
     id: "web",
-    title: "Tripoli Web Services",
+    title: "Tripoli Web Structures",
     tagline:
       "Creación de plataformas y estructuras web personalizadas, orientadas a la operación y habilitación de retail digital.",
     bullets: [
@@ -49,7 +49,7 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Web Services potencia la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
+      "Con Tripoli Web Structures potencia la presencia digital de tu empresa con plataformas web diseñadas para rendimiento y crecimiento, convirtiendo tu sitio en un activo comercial funcional, medible y listo para generar resultados.",
   },
   {
     id: "audiovisual",
