@@ -194,13 +194,7 @@ export default function AdminPage() {
               >
                 Shortener
               </a>
-              <a
-                href="/admin/facturacion"
-                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
-              >
-                Facturación
-              </a>
-              <button
+<button
                 type="button"
                 onClick={handleLogout}
                 className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 transition"
