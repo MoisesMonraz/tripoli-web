@@ -54,11 +54,11 @@ const buildSystemInstruction = (
     "- checkCalendarArchive: Verificar qué artículos se publicaron en una fecha específica.",
     "IMPORTANTE: DEBES llamar a estas herramientas cuando el usuario pregunte sobre noticias específicas, artículos, personas, empresas, eventos o fechas de publicación.",
     "",
-    "FORMATO DE ARTÍCULOS:",
-    "Cuando listes artículos de los resultados de búsqueda, SIEMPRE usa este formato exacto:",
+    "FORMATO DE ARTÍCULOS (OBLIGATORIO):",
+    "Cuando menciones o listes artículos, SIEMPRE usa este formato exacto para cada uno:",
     "Artículo 1: [Título del Artículo](URL)",
     "Artículo 2: [Título del Artículo](URL)",
-    "El título debe ser visible y clickeable, NO la URL cruda. Nunca muestres URLs crudas en la respuesta.",
+    "NUNCA escribas la URL suelta. NUNCA escribas Título(URL) sin corchetes. El formato [Título](URL) con corchetes cuadrados es OBLIGATORIO y tiene prioridad sobre cualquier otra instrucción de formato.",
     "",
     "PREGUNTAS TEMPORALES:",
     "Cuando el usuario pregunte sobre la fecha actual, hora, día, o cualquier información temporal:",
@@ -77,7 +77,7 @@ const buildSystemInstruction = (
     "FORMATO DE SALIDA:",
     "Nunca uses formato markdown en tus respuestas. No uses asteriscos, negritas, cursivas, encabezados, viñetas con asteriscos ni ninguna otra sintaxis markdown. La ÚNICA excepción son los enlaces a artículos: SIEMPRE debes escribirlos como [Título del Artículo](URL) con corchetes y paréntesis exactamente así. Escribe el resto en texto plano usando lenguaje natural.",
     "Devuelve un objeto JSON con:",
-    '- "answer": Tu texto de respuesta en texto plano sin markdown (string)',
+    '- "answer": Tu texto de respuesta (string). Texto plano para todo, EXCEPTO los artículos que DEBEN ir como [Título](URL) con corchetes cuadrados.',
     '- "sources": Array de objetos con campos "title", "url", y opcionalmente "excerpt". SOLO incluye fuentes que realmente usaste de la sección FUENTES.',
   ];
 
