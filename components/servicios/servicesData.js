@@ -81,6 +81,6 @@ export const servicesData = [
     introLabel: "Soluciones estratégicas a la medida",
     description: undefined,
     closing:
-      "Con Tripoli Accounting Services potencia la gestión financiera y fiscal de tu empresa mediante soluciones contables precisas y estratégicas, diseñadas para garantizar el cumplimiento, reducir riesgos y liberar tu tiempo para enfocarte en crecer.",
+      "Con Tripoli Accounting Solutions potencia la gestión financiera y fiscal de tu empresa mediante soluciones contables precisas y estratégicas, diseñadas para garantizar el cumplimiento, reducir riesgos y liberar tu tiempo para enfocarte en crecer.",
   },
 ];
