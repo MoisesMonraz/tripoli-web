@@ -19,18 +19,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import * as Icons from 'lucide-react';
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  orderBy,
-  query,
-  writeBatch,
-} from 'firebase/firestore';
-import { db } from '../../../lib/firebase/client';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -161,13 +149,13 @@ function SortableRow({
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function AdminLinksPage() {
-  const [links, setLinks]           = useState<LinkItem[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [saving, setSaving]         = useState(false);
-  const [error, setError]           = useState('');
-  const [showForm, setShowForm]     = useState(false);
-  const [editingId, setEditingId]   = useState<string | null>(null);
-  const [form, setForm]             = useState<FormState>(EMPTY_FORM);
+  const [links, setLinks]         = useState<LinkItem[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [saving, setSaving]       = useState(false);
+  const [error, setError]         = useState('');
+  const [showForm, setShowForm]   = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm]           = useState<FormState>(EMPTY_FORM);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -177,10 +165,12 @@ export default function AdminLinksPage() {
   // ── Fetch ──────────────────────────────────────────────────────────────
 
   const fetchLinks = useCallback(async () => {
-    if (!db) { setLoading(false); return; }
+    setLoading(true);
     try {
-      const snap = await getDocs(query(collection(db, 'links'), orderBy('order', 'asc')));
-      setLinks(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<LinkItem, 'id'>) })));
+      const res = await fetch('/api/admin/links');
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setLinks(data.links ?? []);
     } catch (e) {
       setError('Error al cargar los enlaces.');
       console.error(e);
@@ -197,17 +187,19 @@ export default function AdminLinksPage() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = links.findIndex((l) => l.id === active.id);
-    const newIndex = links.findIndex((l) => l.id === over.id);
+    const oldIndex  = links.findIndex((l) => l.id === active.id);
+    const newIndex  = links.findIndex((l) => l.id === over.id);
     const reordered = arrayMove(links, oldIndex, newIndex).map((l, i) => ({ ...l, order: i + 1 }));
 
     setLinks(reordered);
 
-    if (!db) return;
     try {
-      const batch = writeBatch(db);
-      reordered.forEach((l) => batch.update(doc(db!, 'links', l.id), { order: l.order }));
-      await batch.commit();
+      const res = await fetch('/api/admin/links/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: reordered.map(({ id, order }) => ({ id, order })) }),
+      });
+      if (!res.ok) throw new Error(await res.text());
     } catch (e) {
       console.error('Error saving order:', e);
       setError('Error al guardar el orden.');
@@ -218,9 +210,13 @@ export default function AdminLinksPage() {
 
   async function handleToggle(id: string, active: boolean) {
     setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, active } : l)));
-    if (!db) return;
     try {
-      await updateDoc(doc(db, 'links', id), { active });
+      const res = await fetch(`/api/admin/links/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active }),
+      });
+      if (!res.ok) throw new Error(await res.text());
     } catch (e) {
       console.error(e);
       setError('Error al actualizar.');
@@ -231,9 +227,9 @@ export default function AdminLinksPage() {
 
   async function handleDelete(id: string) {
     if (!confirm('¿Eliminar este enlace?')) return;
-    if (!db) return;
     try {
-      await deleteDoc(doc(db, 'links', id));
+      const res = await fetch(`/api/admin/links/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
       setLinks((prev) => prev.filter((l) => l.id !== id));
     } catch (e) {
       console.error(e);
@@ -247,29 +243,41 @@ export default function AdminLinksPage() {
     setEditingId(link.id);
     setForm({ label: link.label, url: link.url, icon: link.icon, active: link.active });
     setShowForm(true);
+    setError('');
   }
 
   function handleNew() {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setShowForm(true);
+    setError('');
   }
 
   // ── Save form ──────────────────────────────────────────────────────────
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!db) return;
     setSaving(true);
     setError('');
     try {
       if (editingId) {
-        await updateDoc(doc(db, 'links', editingId), { ...form });
+        const res = await fetch(`/api/admin/links/${editingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+        if (!res.ok) throw new Error(await res.text());
         setLinks((prev) => prev.map((l) => (l.id === editingId ? { ...l, ...form } : l)));
       } else {
         const nextOrder = links.length > 0 ? Math.max(...links.map((l) => l.order)) + 1 : 1;
-        const newDoc = await addDoc(collection(db, 'links'), { ...form, order: nextOrder });
-        setLinks((prev) => [...prev, { id: newDoc.id, ...form, order: nextOrder }]);
+        const res = await fetch('/api/admin/links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, order: nextOrder }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const { id } = await res.json();
+        setLinks((prev) => [...prev, { id, ...form, order: nextOrder }]);
       }
       setShowForm(false);
       setEditingId(null);
