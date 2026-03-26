@@ -95,7 +95,7 @@ export default async function LinksPage() {
       .tm-btn:hover {
         background-image: linear-gradient(90deg,#c9e8fb,#9cd8f6,#6cc6f0,#36b3e8,#009fe3,#36b3e8,#6cc6f0,#9cd8f6,#c9e8fb);
         background-size: 300% 100%;
-        animation: tmTitleFlow 10s linear infinite;
+        animation: tmTitleFlow 15s linear infinite;
         color: white !important;
         border-color: transparent;
       }
