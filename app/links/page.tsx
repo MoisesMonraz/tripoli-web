@@ -69,12 +69,12 @@ export default async function LinksPage() {
             <Image
               src={logoSrc}
               alt="Tripoli Media"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
               priority
             />
-            <h1 className="text-base font-semibold tracking-[0.12em] uppercase text-[#009FE3]">
+            <h1 className="text-[1.2rem] font-semibold tracking-[0.12em] uppercase text-[#009FE3]">
               Tripoli Media
             </h1>
           </div>
