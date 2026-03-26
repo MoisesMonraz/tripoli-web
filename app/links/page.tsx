@@ -56,6 +56,20 @@ async function getLinks(): Promise<LinkItem[]> {
 
 type LucideIcon = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
+/** Convert webmail compose URLs to mailto: so the native mail app opens on mobile */
+function resolveHref(url: string): string {
+  try {
+    const u = new URL(url);
+    if (
+      (u.hostname === 'mail.google.com' || u.hostname === 'gmail.com') &&
+      u.searchParams.has('to')
+    ) {
+      return `mailto:${u.searchParams.get('to')}`;
+    }
+  } catch {}
+  return url;
+}
+
 export default async function LinksPage() {
   const links = await getLinks();
 
@@ -88,11 +102,12 @@ export default async function LinksPage() {
           {links.map((link) => {
             const iconMap = Icons as unknown as Record<string, LucideIcon>;
             const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
-            const isNative = link.url.startsWith('tel:') || link.url.startsWith('mailto:');
+            const href = resolveHref(link.url);
+            const isNative = href.startsWith('tel:') || href.startsWith('mailto:');
             return (
               <a
                 key={link.id}
-                href={link.url}
+                href={href}
                 {...(!isNative && { target: '_blank', rel: 'noopener noreferrer' })}
                 className="
                   flex items-center gap-3 rounded-full
