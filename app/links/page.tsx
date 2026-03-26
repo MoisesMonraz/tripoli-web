@@ -64,7 +64,7 @@ export default async function LinksPage() {
       <div className="w-full max-w-[480px] flex flex-col items-center gap-6">
 
         {/* Logo + Title + Tagline */}
-        <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex items-center gap-3">
             <Image
               src={logoSrc}
