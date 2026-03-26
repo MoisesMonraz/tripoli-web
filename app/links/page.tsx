@@ -89,6 +89,16 @@ export default async function LinksPage() {
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
+      .tm-btn {
+        transition: background-image 0.2s, background-color 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+      }
+      .tm-btn:hover {
+        background-image: linear-gradient(90deg,#c9e8fb,#9cd8f6,#6cc6f0,#36b3e8,#009fe3,#36b3e8,#6cc6f0,#9cd8f6,#c9e8fb);
+        background-size: 300% 100%;
+        animation: tmTitleFlow 10s linear infinite;
+        color: white !important;
+        border-color: transparent;
+      }
     `}</style>
     <main className="min-h-screen flex flex-col items-center justify-start bg-[#F8FAFC] px-4 py-14">
       <div className="w-full max-w-[480px] flex flex-col items-center gap-6">
@@ -114,7 +124,7 @@ export default async function LinksPage() {
         </div>
 
         {/* Link buttons — all same width (widest item) */}
-        <div className="flex flex-col gap-3 mt-2 w-fit mx-auto">
+        <div className="flex flex-col gap-3 w-fit mx-auto">
           {links.map((link) => {
             const iconMap = Icons as unknown as Record<string, LucideIcon>;
             const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
@@ -126,13 +136,12 @@ export default async function LinksPage() {
                 href={href}
                 {...(!isNative && { target: '_blank', rel: 'noopener noreferrer' })}
                 className="
+                  tm-btn
                   flex items-center gap-3 rounded-full
                   border-[1.5px] border-[#009FE3]
                   bg-white text-[#009FE3]
-                  hover:bg-[#009FE3] hover:text-white
                   hover:scale-[1.02]
                   px-6 py-3 text-sm font-semibold
-                  transition-all duration-200
                 "
               >
                 {IconComponent ? <IconComponent size={18} strokeWidth={1.8} /> : null}
