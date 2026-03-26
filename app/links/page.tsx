@@ -69,12 +69,14 @@ export default async function LinksPage() {
             <Image
               src={logoSrc}
               alt="Tripoli Media"
-              width={60}
-              height={60}
-              className="object-contain"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
               priority
             />
-            <h1 className="text-2xl font-bold text-[#1E3A5F]">Tripoli Media</h1>
+            <h1 className="text-base font-semibold tracking-[0.12em] uppercase text-[#009FE3]">
+              Tripoli Media
+            </h1>
           </div>
           <p className="text-sm text-[#6B7280]">
             ¡Contáctanos y síguenos en nuestras redes sociales!
@@ -94,9 +96,9 @@ export default async function LinksPage() {
                 {...(!isNative && { target: '_blank', rel: 'noopener noreferrer' })}
                 className="
                   flex items-center gap-3 rounded-full
-                  border-[1.5px] border-[#1E3A5F]
-                  bg-white text-[#1E3A5F]
-                  hover:bg-[#1E3A5F] hover:text-white
+                  border-[1.5px] border-[#009FE3]
+                  bg-white text-[#009FE3]
+                  hover:bg-[#009FE3] hover:text-white
                   hover:scale-[1.02]
                   px-6 py-3 text-sm font-semibold
                   transition-all duration-200
