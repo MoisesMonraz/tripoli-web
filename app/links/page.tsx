@@ -2,6 +2,7 @@ import Image from "next/image";
 import * as Icons from "lucide-react";
 import type { Metadata } from "next";
 import logoSrc from "../../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
+import { db } from "../../lib/firebase/server";
 
 export const metadata: Metadata = {
   title: "Tripoli Media — Links",
@@ -38,27 +39,16 @@ const FALLBACK_LINKS: LinkItem[] = [
 
 async function getLinks(): Promise<LinkItem[]> {
   try {
-    const { initializeApp, getApps, getApp } = await import("firebase/app");
-    const { getFirestore, collection, query, where, orderBy, getDocs } = await import("firebase/firestore");
+    if (!db) return FALLBACK_LINKS;
 
-    const cfg = {
-      apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    };
-
-    if (!cfg.apiKey || !cfg.projectId) return FALLBACK_LINKS;
-
-    const app  = getApps().length ? getApp() : initializeApp(cfg);
-    const db   = getFirestore(app);
-    const snap = await getDocs(query(collection(db, "links"), where("active", "==", true), orderBy("order", "asc")));
-
+    const snap = await db.collection("links").orderBy("order", "asc").get();
     if (snap.empty) return FALLBACK_LINKS;
 
-    return snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<LinkItem, "id">) }));
+    const links = snap.docs
+      .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<LinkItem, "id">) }))
+      .filter((link) => link.active);
+
+    return links.length > 0 ? links : FALLBACK_LINKS;
   } catch {
     return FALLBACK_LINKS;
   }
