@@ -162,13 +162,6 @@ export default async function LinksPage() {
         </footer>
       </div>
     </main>
-    {/* Prevent iOS Safari from opening a new tab on tel: links */}
-    <script dangerouslySetInnerHTML={{ __html: `
-      document.addEventListener('click', function(e) {
-        var a = e.target.closest('a[href^="tel:"]');
-        if (a) { e.preventDefault(); window.location.href = a.getAttribute('href'); }
-      });
-    `}} />
-    </>
+</>
   );
 }
