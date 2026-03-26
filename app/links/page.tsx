@@ -56,7 +56,7 @@ async function getLinks(): Promise<LinkItem[]> {
 
 type LucideIcon = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
-/** Convert webmail compose URLs to mailto: so the native mail app opens on mobile */
+/** Convert Gmail compose URLs to googlegmail:// deep link so the Gmail app opens on mobile */
 function resolveHref(url: string): string {
   try {
     const u = new URL(url);
@@ -64,7 +64,8 @@ function resolveHref(url: string): string {
       (u.hostname === 'mail.google.com' || u.hostname === 'gmail.com') &&
       u.searchParams.has('to')
     ) {
-      return `mailto:${u.searchParams.get('to')}`;
+      const to = encodeURIComponent(u.searchParams.get('to')!);
+      return `googlegmail://co?to=${to}&subject=${encodeURIComponent('Contacto Tripoli Media')}`;
     }
   } catch {}
   return url;
@@ -129,7 +130,7 @@ export default async function LinksPage() {
             const iconMap = Icons as unknown as Record<string, LucideIcon>;
             const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
             const href = resolveHref(link.url);
-            const isNative = href.startsWith('tel:') || href.startsWith('mailto:');
+            const isNative = href.startsWith('tel:') || href.startsWith('mailto:') || href.startsWith('googlegmail://');
             return (
               <a
                 key={link.id}
@@ -157,6 +158,13 @@ export default async function LinksPage() {
         </footer>
       </div>
     </main>
+    {/* Prevent iOS Safari from opening a new tab on tel: links */}
+    <script dangerouslySetInnerHTML={{ __html: `
+      document.addEventListener('click', function(e) {
+        var a = e.target.closest('a[href^="tel:"]');
+        if (a) { e.preventDefault(); window.location.href = a.getAttribute('href'); }
+      });
+    `}} />
     </>
   );
 }
