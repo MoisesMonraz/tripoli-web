@@ -41,9 +41,9 @@ type FormState = {
 const EMPTY_FORM: FormState = { label: '', url: '', icon: 'Globe', active: true };
 
 const ICON_OPTIONS = [
-  'Globe', 'MessageCircle', 'Mail', 'Facebook', 'Instagram',
-  'Twitter', 'Linkedin', 'Link', 'Youtube', 'Phone',
-  'MapPin', 'ExternalLink', 'BookOpen', 'Rss',
+  'Globe', 'MessageCircle', 'Mail', 'Share2', 'Camera',
+  'X', 'Briefcase', 'Link', 'Video', 'Phone',
+  'MapPin', 'ExternalLink', 'BookOpen', 'Rss', 'AtSign', 'Send',
 ];
 
 type LucideIcon = React.ComponentType<{ size?: number; strokeWidth?: number }>;

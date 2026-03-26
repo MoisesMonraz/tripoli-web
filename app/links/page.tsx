@@ -84,7 +84,8 @@ export default async function LinksPage() {
         {/* Link buttons */}
         <div className="flex w-full flex-col gap-3 mt-2 items-center">
           {links.map((link) => {
-            const IconComponent = (Icons as unknown as Record<string, LucideIcon>)[link.icon] ?? null;
+            const iconMap = Icons as unknown as Record<string, LucideIcon>;
+            const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
             return (
               <a
                 key={link.id}
