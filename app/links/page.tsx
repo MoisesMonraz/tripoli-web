@@ -77,7 +77,7 @@ export default async function LinksPage() {
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold text-[#1E3A5F]">Tripoli Media</h1>
           <p className="text-sm text-[#6B7280]">
-            Noticias e inteligencia de negocios para México
+            Contáctanos y síguenos en nuestras redes sociales
           </p>
         </div>
 
