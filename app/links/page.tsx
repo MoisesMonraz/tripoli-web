@@ -74,6 +74,22 @@ export default async function LinksPage() {
   const links = await getLinks();
 
   return (
+    <>
+    <style>{`
+      @keyframes tmTitleFlow {
+        0%   { background-position: 0% 0; }
+        50%  { background-position: 100% 0; }
+        100% { background-position: 0% 0; }
+      }
+      .tm-title-animated {
+        background-image: linear-gradient(90deg,#c9e8fb,#9cd8f6,#6cc6f0,#36b3e8,#009fe3,#36b3e8,#6cc6f0,#9cd8f6,#c9e8fb);
+        background-size: 300% 100%;
+        animation: tmTitleFlow 10s linear infinite;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    `}</style>
     <main className="min-h-screen flex flex-col items-center justify-start bg-[#F8FAFC] px-4 py-14">
       <div className="w-full max-w-[480px] flex flex-col items-center gap-6">
 
@@ -88,7 +104,7 @@ export default async function LinksPage() {
               className="h-10 w-10 object-contain"
               priority
             />
-            <h1 className="text-[1.2rem] font-semibold tracking-[0.12em] uppercase text-[#009FE3]">
+            <h1 className="tm-title-animated text-[1.2rem] font-semibold tracking-[0.12em] uppercase">
               Tripoli Media
             </h1>
           </div>
@@ -132,5 +148,6 @@ export default async function LinksPage() {
         </footer>
       </div>
     </main>
+    </>
   );
 }
