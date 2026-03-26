@@ -63,19 +63,19 @@ export default async function LinksPage() {
     <main className="min-h-screen flex flex-col items-center justify-start bg-[#F8FAFC] px-4 py-14">
       <div className="w-full max-w-[480px] flex flex-col items-center gap-6">
 
-        {/* Logo */}
-        <Image
-          src={logoSrc}
-          alt="Tripoli Media"
-          width={60}
-          height={60}
-          className="object-contain"
-          priority
-        />
-
-        {/* Brand + tagline */}
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">Tripoli Media</h1>
+        {/* Logo + Title + Tagline */}
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex items-center gap-3">
+            <Image
+              src={logoSrc}
+              alt="Tripoli Media"
+              width={60}
+              height={60}
+              className="object-contain"
+              priority
+            />
+            <h1 className="text-2xl font-bold text-[#1E3A5F]">Tripoli Media</h1>
+          </div>
           <p className="text-sm text-[#6B7280]">
             ¡Contáctanos y síguenos en nuestras redes sociales!
           </p>
