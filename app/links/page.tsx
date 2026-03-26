@@ -70,11 +70,7 @@ function resolveHref(url: string): string {
       return `googlegmail://co?to=${to}&subject=${encodeURIComponent('Contacto Tripoli Media')}`;
     }
 
-    // Instagram → open Instagram app to profile
-    if (u.hostname === 'www.instagram.com' || u.hostname === 'instagram.com') {
-      const username = u.pathname.replace(/\//g, '').trim();
-      if (username) return `instagram://user?username=${username}`;
-    }
+
   } catch {}
   return url;
 }
@@ -138,7 +134,7 @@ export default async function LinksPage() {
             const iconMap = Icons as unknown as Record<string, LucideIcon>;
             const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
             const href = resolveHref(link.url);
-            const isNative = href.startsWith('tel:') || href.startsWith('mailto:') || href.startsWith('googlegmail://') || href.startsWith('instagram://');
+            const isNative = href.startsWith('tel:') || href.startsWith('mailto:') || href.startsWith('googlegmail://');
             return (
               <a
                 key={link.id}
