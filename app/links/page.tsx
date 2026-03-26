@@ -82,7 +82,7 @@ export default async function LinksPage() {
         </div>
 
         {/* Link buttons */}
-        <div className="flex w-full flex-col gap-3 mt-2">
+        <div className="flex w-full flex-col gap-3 mt-2 items-center">
           {links.map((link) => {
             const IconComponent = (Icons as unknown as Record<string, LucideIcon>)[link.icon] ?? null;
             return (
@@ -92,17 +92,17 @@ export default async function LinksPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="
-                  flex items-center gap-3 w-full rounded-full
+                  inline-flex items-center gap-3 rounded-full
                   border-[1.5px] border-[#1E3A5F]
                   bg-white text-[#1E3A5F]
                   hover:bg-[#1E3A5F] hover:text-white
                   hover:scale-[1.02]
-                  px-5 py-3 text-sm font-semibold
+                  px-6 py-3 text-sm font-semibold
                   transition-all duration-200
                 "
               >
                 {IconComponent ? <IconComponent size={18} strokeWidth={1.8} /> : null}
-                <span className="flex-1 text-center">{link.label}</span>
+                <span>{link.label}</span>
               </a>
             );
           })}
