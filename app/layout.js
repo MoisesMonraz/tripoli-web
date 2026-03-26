@@ -1,4 +1,5 @@
 import "./globals.css";
+import { headers } from "next/headers";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -102,18 +103,22 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') ?? '';
+  const standalone = pathname === '/links';
+
   return (
     <html lang="es">
       <body className="min-h-screen bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
         <FavoritesProvider>
           <OrganizationJsonLd />
           <ScrollToTop />
-          <Header />
+          {!standalone && <Header />}
           {children}
-          <Footer />
+          {!standalone && <Footer />}
           <AccessGateModal />
-          <AIChatWidget />
+          {!standalone && <AIChatWidget />}
         </FavoritesProvider>
       </body>
     </html>

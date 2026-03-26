@@ -62,9 +62,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set('x-pathname', pathname);
+  return response;
 }
 
 export const config = {
-  matcher: ['/admin/shortener/:path*', '/admin/links/:path*'],
+  matcher: ['/admin/shortener/:path*', '/admin/links/:path*', '/links'],
 };
