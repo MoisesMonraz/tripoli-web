@@ -67,8 +67,8 @@ export default async function LinksPage() {
         <Image
           src={logoSrc}
           alt="Tripoli Media"
-          width={80}
-          height={80}
+          width={60}
+          height={60}
           className="object-contain"
           priority
         />
@@ -77,23 +77,23 @@ export default async function LinksPage() {
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold text-[#1E3A5F]">Tripoli Media</h1>
           <p className="text-sm text-[#6B7280]">
-            Contáctanos y síguenos en nuestras redes sociales
+            ¡Contáctanos y síguenos en nuestras redes sociales!
           </p>
         </div>
 
-        {/* Link buttons */}
-        <div className="flex w-full flex-col gap-3 mt-2 items-center">
+        {/* Link buttons — all same width (widest item) */}
+        <div className="flex flex-col gap-3 mt-2 w-fit mx-auto">
           {links.map((link) => {
             const iconMap = Icons as unknown as Record<string, LucideIcon>;
             const IconComponent = iconMap[link.icon] ?? iconMap['Link'];
+            const isNative = link.url.startsWith('tel:') || link.url.startsWith('mailto:');
             return (
               <a
                 key={link.id}
                 href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(!isNative && { target: '_blank', rel: 'noopener noreferrer' })}
                 className="
-                  inline-flex items-center gap-3 rounded-full
+                  flex items-center gap-3 rounded-full
                   border-[1.5px] border-[#1E3A5F]
                   bg-white text-[#1E3A5F]
                   hover:bg-[#1E3A5F] hover:text-white
