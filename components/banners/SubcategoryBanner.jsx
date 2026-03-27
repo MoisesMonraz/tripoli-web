@@ -25,7 +25,7 @@ const bannerMap = {
 
 const defaultBanner = "/images/banners/banner-tripoli-media.png";
 const analyticsBanner = { id: "analytics", src: "/banners/banner-analytic-services.png", alt: "Tripoli Analytics Services" };
-const webBanner = { id: "web", src: "/banners/banner-web-services.png", alt: "Tripoli Web Services" };
+const webBanner = { id: "web", src: "/banners/Banner_Web_Structures.png", alt: "Tripoli Web Services" };
 
 export default function SubcategoryBanner({ subcategorySlug }) {
   const bannerSrc = bannerMap[subcategorySlug] ?? defaultBanner;

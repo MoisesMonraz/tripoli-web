@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import bannerTripoli from "../../public/banners/banner-tripoli-media.png";
 import bannerAnalytics from "../../public/banners/banner-analytic-services.png";
-import bannerWeb from "../../public/banners/banner-web-services.png";
+import bannerWeb from "../../public/banners/Banner_Web_Structures.png";
 
 const SLIDE_DURATION_MS = 7500;
 

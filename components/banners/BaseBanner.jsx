@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 export const defaultSlides = [
   { id: "tripoli", src: "/banners/banner-tripoli-media.png", alt: "Tripoli Media" },
   { id: "analytics", src: "/banners/banner-analytic-services.png", alt: "Tripoli Analytics Services" },
-  { id: "web", src: "/banners/banner-web-services.png", alt: "Tripoli Web Services" },
+  { id: "web", src: "/banners/Banner_Web_Structures.png", alt: "Tripoli Web Services" },
 ];
 
 const DEFAULT_DURATION = 7500;
