@@ -3,23 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase/client";
-
 const ROLE_LABELS = {
   owner: "Owner",
   admin: "Admin",
   editor: "Editor",
   viewer: "Viewer",
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return "Nunca";
-  return new Date(dateString).toLocaleDateString("es-MX", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 export default function AdminPage() {
@@ -30,9 +18,6 @@ export default function AdminPage() {
   const [setupData, setSetupData] = useState(null);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [leads, setLeads] = useState([]);
-  const [isLoadingLeads, setIsLoadingLeads] = useState(false);
-
   const fetchStatus = useCallback(async () => {
     setIsChecking(true);
     try {
@@ -50,29 +35,9 @@ export default function AdminPage() {
     }
   }, []);
 
-  const fetchLeads = useCallback(async () => {
-    setIsLoadingLeads(true);
-    try {
-      const result = await getRegisteredUsers();
-      if (result.ok && result.leads) {
-        setLeads(result.leads);
-      }
-    } catch {
-      // no-op
-    } finally {
-      setIsLoadingLeads(false);
-    }
-  }, []);
-
   useEffect(() => {
     fetchStatus();
   }, [fetchStatus]);
-
-  useEffect(() => {
-    if (session?.ok) {
-      fetchLeads();
-    }
-  }, [session, fetchLeads]);
 
   const handleSignIn = async () => {
     if (!auth) {
@@ -178,16 +143,18 @@ export default function AdminPage() {
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Admin Dashboard</p>
-              <h1 className="text-2xl font-bold text-slate-900">Usuarios Registrados</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Panel de Administración</h1>
               <p className="text-sm text-slate-500 mt-1">
                 Autenticado como: <span className="font-medium text-slate-700">{session.email}</span> ({ROLE_LABELS[session.role] || session.role})
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Usuarios</p>
-                <p className="text-2xl font-bold text-slate-900">{leads.length}</p>
-              </div>
+            <div className="flex items-center gap-3 flex-wrap justify-end">
+              <a
+                href="/admin/directorio"
+                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
+              >
+                Directorio
+              </a>
               <a
                 href="/admin/shortener"
                 className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
@@ -198,7 +165,13 @@ export default function AdminPage() {
                 href="/admin/links"
                 className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
               >
-                Tripoli Links
+                Links
+              </a>
+              <a
+                href="/admin/finanzas"
+                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
+              >
+                Finanzas
               </a>
               <button
                 type="button"
@@ -209,75 +182,6 @@ export default function AdminPage() {
               </button>
             </div>
           </header>
-
-          <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-slate-800">Directorio de Usuarios</h2>
-              {isLoadingLeads && <span className="text-xs font-medium text-blue-600 animate-pulse">Actualizando lista...</span>}
-            </div>
-
-            <div className="overflow-x-auto">
-              {leads.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="rounded-full bg-slate-100 p-3 mb-3">
-                    <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-medium text-slate-900">No hay leads registrados aún</p>
-                  <p className="text-xs text-slate-500 mt-1">Los usuarios aparecerán aquí cuando se registren.</p>
-                </div>
-              ) : (
-                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Email / Info</th>
-                      <th scope="col" className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Registro</th>
-                      <th scope="col" className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Último Acceso</th>
-                      <th scope="col" className="px-6 py-3 font-semibold text-xs uppercase tracking-wider">Proveedor</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
-                    {leads.map((lead) => (
-                      <tr key={lead.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200">
-                              {lead.photo ? (
-                                <img src={lead.photo} alt="" className="h-8 w-8 rounded-full object-cover" />
-                              ) : (
-                                (lead.email || "?")[0].toUpperCase()
-                              )}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-slate-900">{lead.email}</span>
-                              <span className="text-xs text-slate-500">{lead.name}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-600">
-                          {formatDate(lead.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-600">
-                          {formatDate(lead.lastLogin)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 border border-slate-200 capitalize">
-                            {lead.provider || "email"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-            <div className="bg-slate-50 border-t border-slate-200 px-6 py-3 flex items-center justify-between">
-              <p className="text-xs text-slate-500">
-                Mostrando <span className="font-medium">{leads.length}</span> usuarios más recientes.
-              </p>
-            </div>
-          </section>
         </div>
       </main>
     );
