@@ -156,10 +156,10 @@ export default function AdminPage() {
                 Directorio
               </a>
               <a
-                href="/admin/shortener"
+                href="/admin/finanzas"
                 className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
               >
-                Shortener
+                Finanzas
               </a>
               <a
                 href="/admin/links"
@@ -168,10 +168,10 @@ export default function AdminPage() {
                 Links
               </a>
               <a
-                href="/admin/finanzas"
+                href="/admin/shortener"
                 className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
               >
-                Finanzas
+                Shortener
               </a>
               <button
                 type="button"

@@ -107,6 +107,7 @@ export default async function RootLayout({ children }) {
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') ?? '';
   const standalone = pathname === '/links';
+  const isAdmin = pathname.startsWith('/admin');
 
   return (
     <html lang="es">
@@ -118,7 +119,7 @@ export default async function RootLayout({ children }) {
           {children}
           {!standalone && <Footer />}
           <AccessGateModal />
-          {!standalone && <AIChatWidget />}
+          {!standalone && !isAdmin && <AIChatWidget />}
         </FavoritesProvider>
       </body>
     </html>
