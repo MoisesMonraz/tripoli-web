@@ -68,5 +68,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/shortener/:path*', '/admin/links/:path*', '/admin/directorio/:path*', '/admin/finanzas/:path*', '/links'],
+  matcher: ['/admin', '/admin/:path*', '/links'],
 };
