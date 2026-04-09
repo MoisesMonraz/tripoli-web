@@ -1,5 +1,7 @@
 import type { Accionista, Categoria, Distribucion, Servicio, Venta } from '../types/finanzas';
 
+export const OWNER_EMAIL = 'monrazescoto@gmail.com';
+
 export const ACCIONISTAS_SEED: Accionista[] = [
   { nombre: 'Moisés Monraz', rol: 'Director', porcentajeAcciones: 80 },
   { nombre: 'Juan Ignacio Armenta', rol: 'Contaduría', porcentajeAcciones: 2.5 },

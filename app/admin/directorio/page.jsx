@@ -74,10 +74,23 @@ export default function DirectorioPage() {
       <main className="min-h-screen bg-white px-6 py-16 text-slate-900">
         <p className="text-sm text-slate-500">
           Acceso no autorizado.{" "}
-          <a href="/admin" className="text-[#1E3A5F] underline">
-            Volver al admin
-          </a>
+          <a href="/admin" className="text-[#1E3A5F] underline">Volver al admin</a>
         </p>
+      </main>
+    );
+  }
+
+  if (session.email !== 'monrazescoto@gmail.com') {
+    return (
+      <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 py-16 text-slate-900">
+        <div className="max-w-md text-center">
+          <p className="text-lg font-semibold text-slate-700 mb-6">
+            Lo sentimos, actualmente no tienes autorización para acceder a esta sección.
+          </p>
+          <a href="/admin" className="rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
+            Regresar
+          </a>
+        </div>
       </main>
     );
   }

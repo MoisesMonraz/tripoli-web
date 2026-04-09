@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase/client";
+const OWNER_EMAIL = 'monrazescoto@gmail.com';
+
 const ROLE_LABELS = {
   owner: "Owner",
   admin: "Admin",
@@ -137,6 +139,7 @@ export default function AdminPage() {
   }
 
   if (session?.ok) {
+    const isOwner = session.email === OWNER_EMAIL;
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
@@ -145,39 +148,32 @@ export default function AdminPage() {
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Admin Dashboard</p>
               <h1 className="text-2xl font-bold text-slate-900">Panel de Administración</h1>
               <p className="text-sm text-slate-500 mt-1">
-                Autenticado como: <span className="font-medium text-slate-700">{session.email}</span> ({ROLE_LABELS[session.role] || session.role})
+                Autenticado como: <span className="font-medium text-slate-700">{session.email}</span>{' '}
+                ({isOwner ? (ROLE_LABELS[session.role] || session.role) : 'Coordinador'})
               </p>
             </div>
             <div className="flex items-center gap-3 flex-wrap justify-end">
-              <a
-                href="/admin/directorio"
-                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
-              >
-                Directorio
-              </a>
-              <a
-                href="/admin/finanzas"
-                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
-              >
+              {isOwner && (
+                <>
+                  <a href="/admin/directorio" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
+                    Directorio
+                  </a>
+                </>
+              )}
+              <a href="/admin/finanzas" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
                 Finanzas
               </a>
-              <a
-                href="/admin/links"
-                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
-              >
-                Links
-              </a>
-              <a
-                href="/admin/shortener"
-                className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition"
-              >
-                Shortener
-              </a>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 transition"
-              >
+              {isOwner && (
+                <>
+                  <a href="/admin/links" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
+                    Links
+                  </a>
+                  <a href="/admin/shortener" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
+                    Shortener
+                  </a>
+                </>
+              )}
+              <button type="button" onClick={handleLogout} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 transition">
                 Cerrar sesión
               </button>
             </div>

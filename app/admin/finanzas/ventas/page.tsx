@@ -16,6 +16,8 @@ import {
 } from '../../../../lib/finanzas';
 import type { Categoria, Distribucion, Servicio, Venta } from '../../../../types/finanzas';
 
+const OWNER_EMAIL = 'monrazescoto@gmail.com';
+
 function FinanzasNav() {
   return (
     <div className="flex gap-2 flex-wrap items-center">
@@ -30,7 +32,6 @@ function FinanzasNav() {
           {l.label}
         </a>
       ))}
-      <a href="/admin" className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition">← Admin</a>
     </div>
   );
 }
@@ -269,6 +270,7 @@ export default function VentasPage() {
   const [editingVenta, setEditingVenta] = useState<Venta | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [showNoAccess, setShowNoAccess] = useState(false);
 
   const [filterFechaInicio, setFilterFechaInicio] = useState('');
   const [filterFechaFin, setFilterFechaFin] = useState('');
@@ -357,6 +359,22 @@ export default function VentasPage() {
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl flex flex-col gap-6">
 
+        {/* No-access modal */}
+        {showNoAccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNoAccess(false)} />
+            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+              <p className="text-base font-semibold text-slate-700 mb-5">
+                Lo sentimos, actualmente no tienes autorización para acceder a esta sección.
+              </p>
+              <button onClick={() => setShowNoAccess(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                Regresar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Edit modal */}
         {editingVenta && (
           <EditModal
@@ -396,23 +414,28 @@ export default function VentasPage() {
         )}
 
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas</p>
               <h1 className="text-2xl font-bold text-slate-900">Ventas</h1>
             </div>
-            <div className="flex gap-2">
-              <button onClick={exportCSV}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition">
-                Exportar CSV
-              </button>
-              <a href="/admin/finanzas/nueva-venta"
-                className="rounded-lg bg-[#1E3A5F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
-                + Nueva venta
-              </a>
-            </div>
+            <a href="/admin" className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition shrink-0">
+              Volver a Administración
+            </a>
           </div>
-          <FinanzasNav />
+          <div className="flex items-center gap-2 flex-wrap">
+            <FinanzasNav />
+            {session?.email === OWNER_EMAIL && (
+              <div className="flex gap-2 ml-auto">
+                <button onClick={exportCSV} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition">
+                  Exportar CSV
+                </button>
+                <a href="/admin/finanzas/nueva-venta" className="rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
+                  + Nueva venta
+                </a>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Filters */}
@@ -501,13 +524,13 @@ export default function VentasPage() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => setEditingVenta(v)}
+                              onClick={() => session?.email === OWNER_EMAIL ? setEditingVenta(v) : setShowNoAccess(true)}
                               className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition"
                             >
                               Editar
                             </button>
                             <button
-                              onClick={() => setDeleteConfirm(v.id ?? null)}
+                              onClick={() => session?.email === OWNER_EMAIL ? setDeleteConfirm(v.id ?? null) : setShowNoAccess(true)}
                               className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-rose-400 hover:text-rose-600 transition"
                             >
                               Eliminar

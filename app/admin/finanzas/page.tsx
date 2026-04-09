@@ -22,21 +22,11 @@ function FinanzasNav({ active }: { active: string }) {
   return (
     <div className="flex gap-2 flex-wrap items-center">
       {links.map((l) => (
-        <a
-          key={l.href}
-          href={l.href}
-          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-            active === l.href
-              ? 'bg-[#1E3A5F] text-white'
-              : 'border border-slate-200 text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F]'
-          }`}
-        >
+        <a key={l.href} href={l.href}
+          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${active === l.href ? 'bg-[#1E3A5F] text-white' : 'border border-slate-200 text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F]'}`}>
           {l.label}
         </a>
       ))}
-      <a href="/admin" className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition">
-        ← Admin
-      </a>
     </div>
   );
 }
@@ -114,20 +104,20 @@ export default function FinanzasDashboard() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
 
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas</p>
               <h1 className="text-2xl font-bold text-slate-900">Dashboard Financiero</h1>
             </div>
-            <a
-              href="/admin/finanzas/nueva-venta"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition shadow-sm"
-            >
-              + Registrar nueva venta
+            <a href="/admin" className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition shrink-0">
+              Volver a Administración
             </a>
           </div>
-          <div className="mt-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <FinanzasNav active="/admin/finanzas" />
+            <a href="/admin/finanzas/nueva-venta" className="ml-auto inline-flex items-center gap-1 rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
+              + Nueva venta
+            </a>
           </div>
         </header>
 

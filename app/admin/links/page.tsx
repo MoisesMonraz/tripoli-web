@@ -149,6 +149,8 @@ function SortableRow({
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function AdminLinksPage() {
+  const [session, setSession]     = useState<any>(null);
+  const [isChecking, setIsChecking] = useState(true);
   const [links, setLinks]         = useState<LinkItem[]>([]);
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
@@ -156,6 +158,16 @@ export default function AdminLinksPage() {
   const [showForm, setShowForm]   = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm]           = useState<FormState>(EMPTY_FORM);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/status');
+        if (!res.ok) { setSession(null); } else { setSession(await res.json()); }
+      } catch { setSession(null); }
+      finally { setIsChecking(false); }
+    })();
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -291,6 +303,17 @@ export default function AdminLinksPage() {
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
+
+  if (isChecking) return <main className="min-h-screen bg-white px-6 py-16"><p className="text-sm text-slate-500">Verificando sesión...</p></main>;
+  if (!session?.ok) return <main className="min-h-screen bg-white px-6 py-16"><p className="text-sm text-slate-500">Acceso no autorizado. <a href="/admin" className="text-[#1E3A5F] underline">Volver</a></p></main>;
+  if (session.email !== 'monrazescoto@gmail.com') return (
+    <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 py-16">
+      <div className="max-w-md text-center">
+        <p className="text-lg font-semibold text-slate-700 mb-6">Lo sentimos, actualmente no tienes autorización para acceder a esta sección.</p>
+        <a href="/admin" className="rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">Regresar</a>
+      </div>
+    </main>
+  );
 
   const PreviewIcon = getIcon(form.icon);
 

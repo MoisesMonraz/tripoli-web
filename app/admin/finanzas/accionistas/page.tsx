@@ -34,7 +34,6 @@ function FinanzasNav() {
           {l.label}
         </a>
       ))}
-      <a href="/admin" className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition">← Admin</a>
     </div>
   );
 }
@@ -169,9 +168,14 @@ export default function AccionistasPage() {
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl flex flex-col gap-6">
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas</p>
-            <h1 className="text-2xl font-bold text-slate-900">Accionistas</h1>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas</p>
+              <h1 className="text-2xl font-bold text-slate-900">Accionistas</h1>
+            </div>
+            <a href="/admin" className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition shrink-0">
+              Volver a Administración
+            </a>
           </div>
           <FinanzasNav />
         </header>
