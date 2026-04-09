@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getVentas, seedAccionistas } from '../../../../lib/actions/finanzas-actions';
-import { ACCIONISTAS_SEED, formatMXN, formatDate } from '../../../../lib/finanzas';
+import {
+  ACCIONISTAS_SEED,
+  EQUITY_THRESHOLDS,
+  getAccionistaTier,
+  getNextEquityThreshold,
+  getEffectivePercentages,
+  formatMXN,
+  formatDate,
+} from '../../../../lib/finanzas';
 import type { Venta } from '../../../../types/finanzas';
 
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -29,6 +37,23 @@ function FinanzasNav() {
       <a href="/admin" className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition">← Admin</a>
     </div>
   );
+}
+
+/** Acumula ganancias por rol (prestador+contacto+coordinador) de un conjunto de ventas. */
+function computeRolTotals(ventas: Venta[]): Record<string, number> {
+  const totals: Record<string, number> = {};
+  for (const v of ventas) {
+    const d = v.distribucion;
+    if (!d) continue;
+    const add = (nombre: string | undefined, monto: number) => {
+      if (!nombre) return;
+      totals[nombre] = (totals[nombre] ?? 0) + monto;
+    };
+    add(d.prestador?.nombre, d.prestador?.monto ?? 0);
+    add(d.contacto?.nombre, d.contacto?.monto ?? 0);
+    add(d.coordinador?.nombre, d.coordinador?.monto ?? 0);
+  }
+  return totals;
 }
 
 export default function AccionistasPage() {
@@ -62,6 +87,12 @@ export default function AccionistasPage() {
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
   useEffect(() => { if (session?.ok) fetchData(); }, [session, fetchData]);
 
+  // Mes actual en formato 'YYYY-MM'
+  const currentMonthStr = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }, []);
+
   const availableMonths = useMemo(() => {
     const months = new Set<string>();
     ventas.forEach(v => {
@@ -73,12 +104,22 @@ export default function AccionistasPage() {
 
   const ventasFiltradas = useMemo(() => {
     if (selectedMonth === 'all') return ventas;
-    return ventas.filter(v => {
-      const d = new Date(v.fechaEmision + 'T00:00:00');
-      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      return m === selectedMonth;
-    });
+    return ventas.filter(v => v.fechaEmision.substring(0, 7) === selectedMonth);
   }, [ventas, selectedMonth]);
+
+  // Ganancias por rol acumuladas ANTES del mes actual (para calcular tiers vigentes)
+  const priorMonthRolTotals = useMemo(() =>
+    computeRolTotals(ventas.filter(v => v.fechaEmision.substring(0, 7) < currentMonthStr)),
+    [ventas, currentMonthStr]
+  );
+
+  // Ganancias por rol acumuladas en TODO el histórico (para ver si subirán de tier el próximo mes)
+  const allTimeRolTotals = useMemo(() => computeRolTotals(ventas), [ventas]);
+
+  // Porcentajes efectivos actuales (basados en ganancias pre-mes-actual)
+  const effectivePctsNow = useMemo(() => getEffectivePercentages(priorMonthRolTotals), [priorMonthRolTotals]);
+  // Porcentajes que aplicarán el próximo mes (basados en todo el histórico incluyendo mes actual)
+  const effectivePctsNext = useMemo(() => getEffectivePercentages(allTimeRolTotals), [allTimeRolTotals]);
 
   if (isChecking) {
     return <main className="min-h-screen bg-white px-6 py-16"><p className="text-sm text-slate-500">Verificando sesión...</p></main>;
@@ -104,24 +145,24 @@ export default function AccionistasPage() {
       const share = v.distribucion.accionistas.find((a) => a.nombre === nombre);
       return s + (share?.monto ?? 0);
     }, 0);
-    const ventasPrestador = ventasFiltradas.filter((v) => v.distribucion?.prestador?.nombre === nombre);
-    const totalPrestador = ventasPrestador.reduce((s, v) => s + v.distribucion.prestador.monto, 0);
-    const ventasContacto = ventasFiltradas.filter((v) => v.distribucion?.contacto?.nombre === nombre);
-    const totalContacto = ventasContacto.reduce((s, v) => s + v.distribucion.contacto.monto, 0);
-    const ventasCoordinador = ventasFiltradas.filter((v) => v.distribucion?.coordinador?.nombre === nombre);
-    const totalCoordinador = ventasCoordinador.reduce((s, v) => s + v.distribucion.coordinador.monto, 0);
+    const totalPrestador = ventasFiltradas.filter(v => v.distribucion?.prestador?.nombre === nombre).reduce((s, v) => s + v.distribucion.prestador.monto, 0);
+    const totalContacto = ventasFiltradas.filter(v => v.distribucion?.contacto?.nombre === nombre).reduce((s, v) => s + v.distribucion.contacto.monto, 0);
+    const totalCoordinador = ventasFiltradas.filter(v => v.distribucion?.coordinador?.nombre === nombre).reduce((s, v) => s + v.distribucion.coordinador.monto, 0);
     const totalCombinado = totalAccionista + totalPrestador + totalContacto + totalCoordinador;
     return { ...acc, accionistaVentas, totalAccionista, totalPrestador, totalContacto, totalCoordinador, totalCombinado };
   });
 
-  // Section 2 — histórico completo (sin filtro de mes)
+  // Section 2 — histórico completo con tier dinámico
   const accionistasHistorico = ACCIONISTAS_SEED.map((acc) => {
     const nombre = acc.nombre;
+    const totalRol = allTimeRolTotals[nombre] ?? 0;
     const totalPrestador = ventas.filter(v => v.distribucion?.prestador?.nombre === nombre).reduce((s, v) => s + v.distribucion.prestador.monto, 0);
     const totalContacto = ventas.filter(v => v.distribucion?.contacto?.nombre === nombre).reduce((s, v) => s + v.distribucion.contacto.monto, 0);
     const totalCoordinador = ventas.filter(v => v.distribucion?.coordinador?.nombre === nombre).reduce((s, v) => s + v.distribucion.coordinador.monto, 0);
-    const totalRol = totalPrestador + totalContacto + totalCoordinador;
-    return { ...acc, totalPrestador, totalContacto, totalCoordinador, totalRol };
+    const pctNow = effectivePctsNow[nombre] ?? acc.porcentajeAcciones;
+    const pctNext = effectivePctsNext[nombre] ?? acc.porcentajeAcciones;
+    const nextThreshold = nombre !== 'Moisés Monraz' ? getNextEquityThreshold(totalRol) : null;
+    return { ...acc, totalPrestador, totalContacto, totalCoordinador, totalRol, pctNow, pctNext, nextThreshold };
   });
 
   return (
@@ -157,6 +198,8 @@ export default function AccionistasPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Tarjetas de resumen dentro de la sección */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 p-6 border-b border-slate-100">
                 {[
                   { label: 'Ingresos netos', value: formatMXN(totalNetoFiltrado) },
@@ -170,6 +213,8 @@ export default function AccionistasPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Acordeón por accionista — sin barra, sin rol, sin % */}
               <div className="divide-y divide-slate-200">
                 {accionistasData.map((acc) => {
                   const isExpanded = expandedAccionista === acc.nombre;
@@ -177,21 +222,10 @@ export default function AccionistasPage() {
                     <div key={acc.nombre}>
                       <button type="button" onClick={() => setExpandedAccionista(isExpanded ? null : acc.nombre)}
                         className="w-full text-left px-6 py-4 hover:bg-slate-50/80 transition-colors">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-slate-900 text-sm">{acc.nombre}</span>
-                              <span className="text-xs text-slate-400 bg-slate-100 rounded-full px-2 py-0.5">{acc.rol}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 bg-slate-100 rounded-full h-1.5 max-w-xs">
-                                <div className="h-1.5 bg-[#1E3A5F] rounded-full" style={{ width: `${acc.porcentajeAcciones}%` }} />
-                              </div>
-                              <span className="text-xs text-slate-500">{acc.porcentajeAcciones}% acciones</span>
-                            </div>
-                          </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="font-semibold text-slate-900 text-sm">{acc.nombre}</span>
                           <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-[#1E3A5F]">{formatMXN(acc.totalCombinado)}</p>
+                            <p className="text-base font-bold text-[#1E3A5F]">{formatMXN(acc.totalCombinado)}</p>
                             <p className="text-xs text-slate-400">total combinado</p>
                           </div>
                         </div>
@@ -256,44 +290,73 @@ export default function AccionistasPage() {
               </div>
             </section>
 
-            {/* Sección 2 — Histórico de ganancias por rol (sin filtro de mes) */}
+            {/* Sección 2 — Histórico de ganancias por rol con tiers dinámicos */}
             <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
                 <h2 className="text-sm font-semibold text-slate-800">Ganancias por rol</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Histórico acumulado total</p>
+                <p className="text-xs text-slate-400 mt-0.5">Histórico acumulado total · Los % de accionista se actualizan automáticamente al inicio del mes siguiente</p>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 text-sm text-left">
-                  <thead className="bg-slate-50 text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider">Nombre</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">Rol</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">Contacto</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">Coordinador</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">Total</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-right">Accionista</th>
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                    <tr className="divide-x divide-slate-200">
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider">Nombre</th>
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-center">Rol</th>
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-center">Contacto</th>
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-center">Coordinador</th>
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-center">Total</th>
+                      <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-center">Accionista</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
-                    {accionistasHistorico.map((acc) => (
-                      <tr key={acc.nombre} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-4 py-3 font-medium text-slate-900">{acc.nombre}</td>
-                        <td className="px-4 py-3 text-right text-slate-600">{acc.totalPrestador > 0 ? formatMXN(acc.totalPrestador) : '—'}</td>
-                        <td className="px-4 py-3 text-right text-slate-600">{acc.totalContacto > 0 ? formatMXN(acc.totalContacto) : '—'}</td>
-                        <td className="px-4 py-3 text-right text-slate-600">{acc.totalCoordinador > 0 ? formatMXN(acc.totalCoordinador) : '—'}</td>
-                        <td className="px-4 py-3 text-right font-bold text-[#1E3A5F]">{acc.totalRol > 0 ? formatMXN(acc.totalRol) : '—'}</td>
-                        <td className="px-4 py-3 text-right text-slate-500 text-xs font-medium">{acc.porcentajeAcciones}%</td>
-                      </tr>
-                    ))}
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {accionistasHistorico.map((acc) => {
+                      const levelingUp = acc.pctNext > acc.pctNow;
+                      return (
+                        <tr key={acc.nombre} className="hover:bg-slate-50/60 transition-colors divide-x divide-slate-100">
+                          <td className="px-5 py-3.5">
+                            <span className="font-medium text-slate-900">{acc.nombre}</span>
+                            <span className="ml-2 text-xs text-slate-400 bg-slate-100 rounded-full px-2 py-0.5 align-middle">{acc.rol}</span>
+                          </td>
+                          <td className="px-5 py-3.5 text-center text-slate-600">{acc.totalPrestador > 0 ? formatMXN(acc.totalPrestador) : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-5 py-3.5 text-center text-slate-600">{acc.totalContacto > 0 ? formatMXN(acc.totalContacto) : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-5 py-3.5 text-center text-slate-600">{acc.totalCoordinador > 0 ? formatMXN(acc.totalCoordinador) : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-5 py-3.5 text-center font-bold text-[#1E3A5F]">
+                            {acc.totalRol > 0 ? formatMXN(acc.totalRol) : <span className="text-slate-300 font-normal">—</span>}
+                            {/* Barra de progreso al siguiente tier */}
+                            {acc.nextThreshold && acc.totalRol > 0 && (
+                              <div className="mt-1.5">
+                                <div className="h-1 bg-slate-100 rounded-full w-full">
+                                  <div
+                                    className="h-1 bg-[#1E3A5F]/40 rounded-full transition-all"
+                                    style={{ width: `${Math.min(100, (acc.totalRol / acc.nextThreshold.threshold) * 100)}%` }}
+                                  />
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-0.5 text-left">
+                                  {formatMXN(acc.nextThreshold.threshold - acc.totalRol)} para {acc.nextThreshold.pct}%
+                                </p>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <span className="text-sm font-semibold text-slate-700">{acc.pctNow}%</span>
+                            {levelingUp && (
+                              <span className="ml-1.5 text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-1.5 py-0.5 align-middle whitespace-nowrap">
+                                → {acc.pctNext}% próx. mes
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                   <tfoot className="bg-slate-50 border-t-2 border-slate-200">
-                    <tr>
-                      <td className="px-4 py-3 text-xs font-bold uppercase text-slate-600">Total</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalPrestador, 0))}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalContacto, 0))}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalCoordinador, 0))}</td>
-                      <td className="px-4 py-3 text-right font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalRol, 0))}</td>
-                      <td className="px-4 py-3 text-right text-slate-400">—</td>
+                    <tr className="divide-x divide-slate-200">
+                      <td className="px-5 py-3 text-xs font-bold uppercase text-slate-600">Total</td>
+                      <td className="px-5 py-3 text-center font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalPrestador, 0))}</td>
+                      <td className="px-5 py-3 text-center font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalContacto, 0))}</td>
+                      <td className="px-5 py-3 text-center font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalCoordinador, 0))}</td>
+                      <td className="px-5 py-3 text-center font-bold text-[#1E3A5F]">{formatMXN(accionistasHistorico.reduce((s, a) => s + a.totalRol, 0))}</td>
+                      <td className="px-5 py-3 text-center text-slate-400">—</td>
                     </tr>
                   </tfoot>
                 </table>

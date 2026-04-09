@@ -8,6 +8,7 @@ import {
   calculateDistribution,
   getPrestador,
   getCoordinador,
+  getEffectivePercentages,
   ACCIONISTAS_SEED,
 } from "../finanzas";
 import type { Categoria, Servicio, Venta } from "../../types/finanzas";
@@ -36,6 +37,23 @@ function serializeVenta(id: string, data: admin.firestore.DocumentData): Venta {
     distribucion: data.distribucion ?? null,
     createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
   };
+}
+
+/** Acumula ganancias por rol (prestador+contacto+coordinador) de un conjunto de ventas. */
+function computeRolTotals(ventas: Venta[]): Record<string, number> {
+  const totals: Record<string, number> = {};
+  for (const v of ventas) {
+    const d = v.distribucion;
+    if (!d) continue;
+    const add = (nombre: string | undefined, monto: number) => {
+      if (!nombre) return;
+      totals[nombre] = (totals[nombre] ?? 0) + monto;
+    };
+    add(d.prestador?.nombre, d.prestador?.monto ?? 0);
+    add(d.contacto?.nombre, d.contacto?.monto ?? 0);
+    add(d.coordinador?.nombre, d.coordinador?.monto ?? 0);
+  }
+  return totals;
 }
 
 export async function getVentas(): Promise<{ ok: boolean; ventas?: Venta[]; error?: string }> {
@@ -70,11 +88,22 @@ export async function createVenta(
   if (!db) return { ok: false, error: "Firebase no inicializado" };
 
   try {
+    // Calcular porcentajes efectivos según ganancias por rol acumuladas ANTES del mes de la venta
+    const ventaMonth = input.fechaEmision.substring(0, 7); // 'YYYY-MM'
+    const snap = await db.collection("ventas").get();
+    const existingVentas = snap.docs.map((d) => serializeVenta(d.id, d.data()));
+    const priorVentas = existingVentas.filter(
+      (v) => v.fechaEmision.substring(0, 7) < ventaMonth
+    );
+    const priorRolTotals = computeRolTotals(priorVentas);
+    const effectivePcts = getEffectivePercentages(priorRolTotals);
+
     const dist = calculateDistribution(
       input.montoNeto,
       input.servicio,
       input.categoria,
-      input.contacto
+      input.contacto,
+      effectivePcts
     );
     const data = {
       cliente: input.cliente.trim(),
@@ -107,11 +136,24 @@ export async function updateVenta(
   if (!db) return { ok: false, error: "Firebase no inicializado" };
 
   try {
+    // Porcentajes efectivos: ventas ANTES del mes de la venta, excluyendo la que se edita
+    const ventaMonth = input.fechaEmision.substring(0, 7);
+    const snap = await db.collection("ventas").get();
+    const existingVentas = snap.docs
+      .filter((d) => d.id !== id)
+      .map((d) => serializeVenta(d.id, d.data()));
+    const priorVentas = existingVentas.filter(
+      (v) => v.fechaEmision.substring(0, 7) < ventaMonth
+    );
+    const priorRolTotals = computeRolTotals(priorVentas);
+    const effectivePcts = getEffectivePercentages(priorRolTotals);
+
     const dist = calculateDistribution(
       input.montoNeto,
       input.servicio,
       input.categoria,
-      input.contacto
+      input.contacto,
+      effectivePcts
     );
     const data = {
       cliente: input.cliente.trim(),

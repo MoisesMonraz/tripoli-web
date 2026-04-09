@@ -12,6 +12,55 @@ export const ACCIONISTAS_SEED: Accionista[] = [
   { nombre: 'Coordinador Sector Salud', rol: 'Coordinador', porcentajeAcciones: 2.5 },
 ];
 
+// Umbrales de dilución de acciones para integrantes (excepto Director).
+// Al alcanzar el acumulado de ganancias por rol antes del mes en curso,
+// el porcentaje sube a partir del 1° del siguiente mes natural.
+export const EQUITY_THRESHOLDS: { min: number; pct: number }[] = [
+  { min: 21_100_000, pct: 9 },
+  { min: 11_100_000, pct: 7 },
+  { min: 1_100_000, pct: 5.5 },
+  { min: 100_000, pct: 4 },
+];
+
+/** Devuelve el % de accionista correspondiente al total de ganancias por rol acumulado. */
+export function getAccionistaTier(totalRol: number): number {
+  for (const t of EQUITY_THRESHOLDS) {
+    if (totalRol >= t.min) return t.pct;
+  }
+  return 2.5;
+}
+
+/** Devuelve el siguiente umbral al que aún no ha llegado la persona (o null si ya está en el máximo). */
+export function getNextEquityThreshold(totalRol: number): { threshold: number; pct: number } | null {
+  for (let i = EQUITY_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (totalRol < EQUITY_THRESHOLDS[i].min) {
+      return { threshold: EQUITY_THRESHOLDS[i].min, pct: EQUITY_THRESHOLDS[i].pct };
+    }
+  }
+  return null;
+}
+
+/**
+ * Dado un mapa de ganancias por rol acumuladas ANTES del mes en curso (por nombre),
+ * calcula el porcentaje efectivo de accionista para cada persona.
+ * Moisés parte de 80% y pierde (tier - 2.5)% por cada integrante que sube de nivel.
+ */
+export function getEffectivePercentages(
+  priorRolTotals: Record<string, number>
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  let moisesBase = 80;
+  for (const acc of ACCIONISTAS_SEED) {
+    if (acc.nombre === 'Moisés Monraz') continue;
+    const total = priorRolTotals[acc.nombre] ?? 0;
+    const tier = getAccionistaTier(total);
+    result[acc.nombre] = tier;
+    moisesBase -= tier - 2.5;
+  }
+  result['Moisés Monraz'] = Math.round(moisesBase * 100) / 100;
+  return result;
+}
+
 export const SERVICIOS: Servicio[] = [
   'Editorial',
   'Analitica',
@@ -81,11 +130,17 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/**
+ * Calcula la distribución de una venta.
+ * @param effectivePcts  Porcentajes vigentes por nombre (calculados según ganancias previas al mes).
+ *                       Si se omite, usa los porcentajes base de ACCIONISTAS_SEED.
+ */
 export function calculateDistribution(
   montoNeto: number,
   servicio: Servicio,
   categoria: Categoria,
-  contacto: string
+  contacto: string,
+  effectivePcts?: Record<string, number>
 ): Distribucion {
   const prestadorNombre = getPrestador(servicio);
   const coordinadorNombre = getCoordinador(categoria);
@@ -96,11 +151,14 @@ export function calculateDistribution(
   const inversionTM = round2(montoNeto * 0.05);
   const coordinadorMonto = round2(montoNeto * 0.025);
 
-  const accionistas = ACCIONISTAS_SEED.map((a) => ({
-    nombre: a.nombre,
-    porcentaje: a.porcentajeAcciones,
-    monto: round2(pool * (a.porcentajeAcciones / 100)),
-  }));
+  const accionistas = ACCIONISTAS_SEED.map((a) => {
+    const pct = effectivePcts?.[a.nombre] ?? a.porcentajeAcciones;
+    return {
+      nombre: a.nombre,
+      porcentaje: pct,
+      monto: round2(pool * (pct / 100)),
+    };
+  });
 
   const iva = round2(montoNeto * 0.16);
   const totalConIva = round2(montoNeto + iva);
