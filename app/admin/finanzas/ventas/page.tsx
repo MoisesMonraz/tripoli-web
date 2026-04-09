@@ -426,14 +426,9 @@ export default function VentasPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <FinanzasNav />
             {session?.email === OWNER_EMAIL && (
-              <div className="flex gap-2 ml-auto">
-                <button onClick={exportCSV} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
-                  Exportar CSV
-                </button>
-                <a href="/admin/finanzas/nueva-venta" className="rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
-                  + Nueva venta
-                </a>
-              </div>
+              <button onClick={exportCSV} className="ml-auto rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
+                Exportar CSV
+              </button>
             )}
           </div>
         </header>
