@@ -3,7 +3,7 @@
 const content = {
   ES: [
     "I. IDENTIDAD Y DOMICILIO DEL RESPONSABLE",
-    "TRIPOLI MEDIA (en adelante \"El Responsable\"), con domicilio para oír y recibir notificaciones en Av. Juan Palomar y Arias 1180, C.P. 45110, Zapopan, Jalisco, es el responsable del uso y protección de sus datos personales, y al respecto le informa lo siguiente:",
+    "TRIPOLI MEDIA (en adelante \"El Responsable\"), con domicilio para oír y recibir notificaciones en Av de Las Rosas 585-Int. 2, Chapalita Sur, 45040 Zapopan, Jalisco, es el responsable del uso y protección de sus datos personales, y al respecto le informa lo siguiente:",
     "II. FINALIDADES DEL TRATAMIENTO",
     "Los datos personales que recabamos de usted, los utilizaremos para las siguientes finalidades que son necesarias para el servicio que solicita:",
     "- Verificar su identidad y permitir el registro de su cuenta de usuario.",
@@ -21,7 +21,7 @@ const content = {
     "Le informamos que en nuestra página de Internet utilizamos cookies, web beacons y otras tecnologías a través de las cuales es posible monitorear su comportamiento como usuario de Internet, para brindarle un mejor servicio y experiencia de usuario al navegar en nuestra página.",
     "VI. CAMBIOS AL AVISO DE PRIVACIDAD",
     "El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales; de nuestras propias necesidades por los productos o servicios que ofrecemos; de nuestras prácticas de privacidad; de cambios en nuestro modelo de negocio, o por otras causas. Nos comprometemos a mantenerlo informado sobre los cambios que pueda sufrir el presente aviso de privacidad a través de nuestro sitio web: tripoli.media.",
-    "Última actualización: Febrero 2026.",
+    "Última actualización: Abril 2026.",
   ],
 };
 

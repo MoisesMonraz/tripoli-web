@@ -3,7 +3,7 @@
 const content = {
   ES: [
     "1. ACEPTACIÓN DE LOS TÉRMINOS",
-    "Al ingresar y utilizar este portal de Internet, cuyo nombre de dominio es tripoli.media, propiedad de TRIPOLI MEDIA, con domicilio en Av. Juan Palomar y Arias 1180, C.P. 45110, Zapopan, Jalisco, el usuario está aceptando los Términos y Condiciones de Uso contenidos en este convenio y declara expresamente su aceptación utilizando para tal efecto medios electrónicos, en términos de lo dispuesto por el artículo 1803 del Código Civil Federal.",
+    "Al ingresar y utilizar este portal de Internet, cuyo nombre de dominio es tripoli.media, propiedad de TRIPOLI MEDIA, con domicilio en Av de Las Rosas 585-Int. 2, Chapalita Sur, 45040 Zapopan, Jalisco, el usuario está aceptando los Términos y Condiciones de Uso contenidos en este convenio y declara expresamente su aceptación utilizando para tal efecto medios electrónicos, en términos de lo dispuesto por el artículo 1803 del Código Civil Federal.",
     "2. USO DEL SITIO Y CUENTAS DE USUARIO",
     "El usuario se compromete a utilizar el contenido del sitio de forma lícita y sin fines contrarios a la moral o al orden público. TRIPOLI MEDIA se reserva el derecho de retirar el acceso o cancelar la cuenta de cualquier usuario que realice comentarios ofensivos, spam, o intente vulnerar la seguridad del sitio.",
     "3. PROPIEDAD INTELECTUAL (DERECHOS DE AUTOR)",
@@ -17,7 +17,7 @@ const content = {
     "Este convenio estará sujeto y será interpretado de acuerdo con las leyes federales vigentes en México. En caso de controversia, las partes aceptan someterse a la jurisdicción de los tribunales competentes de la ciudad de Zapopan, Jalisco, renunciando a cualquier otro fuero que pudiera corresponderles por razón de sus domicilios presentes o futuros.",
     "7. CONTACTO",
     "Para cualquier duda, aclaración o reclamación relacionada con los servicios o el uso del sitio web, el usuario puede contactar a TRIPOLI MEDIA a través del correo electrónico: contacto@tripoli.media.",
-    "Última actualización: Febrero 2026.",
+    "Última actualización: Abril 2026.",
   ],
 };
 

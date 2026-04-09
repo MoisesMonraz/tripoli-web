@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import logoSrc from "../Imagenes/Logos/Tripoli Media Logo Sin Fondo.png";
 import facebookSrc from "../Imagenes/Logos/Facebook.png";
-import xSrc from "../Imagenes/Logos/X azul.png";
-import xDarkSrc from "../Imagenes/Logos/X azul.png";
+import instagramSrc from "../Imagenes/Logos/Instagram.png";
 import linkedinSrc from "../Imagenes/Logos/LinkedIn.png";
 import whatsappSrc from "../Imagenes/Logos/WhatsApp.png";
 
@@ -55,8 +54,8 @@ const UserIcon = ({ isDark = false, className = "" }) => {
 
 const socials = [
   { name: "Facebook", href: "https://www.facebook.com/TripoliMediaMX", src: facebookSrc, alt: "Facebook" },
+  { name: "Instagram", href: "https://www.instagram.com/tripoli.media/", src: instagramSrc, alt: "Instagram" },
   { name: "LinkedIn", href: "https://www.linkedin.com/company/tripoli-media", src: linkedinSrc, alt: "LinkedIn" },
-  { name: "X", href: "https://x.com/TripoliMedia", src: xSrc, darkSrc: xDarkSrc, alt: "X" },
   {
     name: "Email",
     href: "https://mail.google.com/mail/?view=cm&fs=1&to=contacto@tripoli.media",
