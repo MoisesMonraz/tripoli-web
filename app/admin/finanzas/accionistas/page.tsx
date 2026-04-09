@@ -247,40 +247,9 @@ export default function AccionistasPage() {
                             ))}
                           </div>
 
-                          {acc.accionistaVentas.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Participación como accionista</p>
-                              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                                <table className="min-w-full text-xs">
-                                  <thead className="bg-slate-100 text-slate-500">
-                                    <tr>
-                                      <th className="px-3 py-2 text-left font-semibold">Fecha</th>
-                                      <th className="px-3 py-2 text-left font-semibold">Cliente</th>
-                                      <th className="px-3 py-2 text-right font-semibold">Monto neto</th>
-                                      <th className="px-3 py-2 text-right font-semibold">Accionista</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-200 bg-white">
-                                    {acc.accionistaVentas.map((v) => {
-                                      const share = v.distribucion.accionistas.find((a) => a.nombre === acc.nombre);
-                                      return (
-                                        <tr key={v.id}>
-                                          <td className="px-3 py-2 text-slate-600">{formatDate(v.fechaEmision)}</td>
-                                          <td className="px-3 py-2 font-medium text-slate-900">{v.cliente}</td>
-                                          <td className="px-3 py-2 text-right text-slate-600">{formatMXN(v.montoNeto)}</td>
-                                          <td className="px-3 py-2 text-right font-semibold text-[#1E3A5F]">{formatMXN(share?.monto ?? 0)}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="mt-3">
+                          <div className="mt-4">
                             <a href={`/admin/finanzas/coordinadores/${encodeURIComponent(acc.nombre)}`}
-                              className="text-xs text-[#1E3A5F] hover:underline">Ver detalle completo por rol →</a>
+                              className="text-base font-bold text-[#1E3A5F] hover:underline">Ver detalle completo por rol →</a>
                           </div>
                         </div>
                       )}

@@ -1,9 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { getVentas } from '../../../../../lib/actions/finanzas-actions';
 import { ACCIONISTAS_SEED, CATEGORIA_LABELS, SERVICIO_LABELS, formatMXN, formatDate } from '../../../../../lib/finanzas';
 import type { Venta } from '../../../../../types/finanzas';
+
+const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+function formatMonthLabel(monthStr: string) {
+  const [year, month] = monthStr.split('-');
+  return `${MONTH_NAMES[parseInt(month) - 1]} ${year}`;
+}
 
 function FinanzasNav() {
   return (
@@ -24,12 +32,15 @@ function FinanzasNav() {
   );
 }
 
-export default function CoordinadorPage({ params }: { params: { nombre: string } }) {
-  const nombre = decodeURIComponent(params.nombre);
+export default function CoordinadorPage() {
+  const rawParams = useParams();
+  const nombre = decodeURIComponent(rawParams.nombre as string);
+
   const [isChecking, setIsChecking] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
   const fetchStatus = useCallback(async () => {
     setIsChecking(true);
@@ -53,6 +64,33 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
   useEffect(() => { if (session?.ok) fetchVentas(); }, [session, fetchVentas]);
 
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    ventas.forEach(v => {
+      const d = new Date(v.fechaEmision + 'T00:00:00');
+      months.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    });
+    return Array.from(months).sort().reverse();
+  }, [ventas]);
+
+  // Todas las ventas en las que participa esta persona (cualquier rol)
+  const ventasRelacionadasAll = useMemo(() => ventas.filter((v) => {
+    const d = v.distribucion;
+    if (!d) return false;
+    return (
+      d.prestador?.nombre === nombre ||
+      d.contacto?.nombre === nombre ||
+      d.coordinador?.nombre === nombre ||
+      d.accionistas?.some((a) => a.nombre === nombre)
+    );
+  }), [ventas, nombre]);
+
+  // Filtradas por mes seleccionado
+  const ventasRelacionadas = useMemo(() => {
+    if (selectedMonth === 'all') return ventasRelacionadasAll;
+    return ventasRelacionadasAll.filter(v => v.fechaEmision.substring(0, 7) === selectedMonth);
+  }, [ventasRelacionadasAll, selectedMonth]);
+
   if (isChecking) {
     return <main className="min-h-screen bg-white px-6 py-16"><p className="text-sm text-slate-500">Verificando sesión...</p></main>;
   }
@@ -65,17 +103,6 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
   }
 
   const accionista = ACCIONISTAS_SEED.find((a) => a.nombre === nombre);
-
-  const ventasRelacionadas = ventas.filter((v) => {
-    const d = v.distribucion;
-    if (!d) return false;
-    return (
-      d.prestador?.nombre === nombre ||
-      d.contacto?.nombre === nombre ||
-      d.coordinador?.nombre === nombre ||
-      d.accionistas?.some((a) => a.nombre === nombre)
-    );
-  });
 
   const totalPrestador = ventasRelacionadas.reduce((s, v) => s + (v.distribucion.prestador?.nombre === nombre ? v.distribucion.prestador.monto : 0), 0);
   const totalContacto = ventasRelacionadas.reduce((s, v) => s + (v.distribucion.contacto?.nombre === nombre ? v.distribucion.contacto.monto : 0), 0);
@@ -98,6 +125,7 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
           <FinanzasNav />
         </header>
 
+        {/* Tarjetas de resumen */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {[
             { label: 'Ventas relacionadas', value: ventasRelacionadas.length.toString() },
@@ -125,11 +153,30 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
           <div className="py-12 text-center text-sm text-slate-500">Cargando datos...</div>
         ) : (
           <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-800">Detalle de ventas ({ventasRelacionadas.length})</h2>
+            <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-sm font-semibold text-slate-800">
+                Detalle de ventas ({ventasRelacionadas.length}
+                {selectedMonth !== 'all' && ` · ${formatMonthLabel(selectedMonth)}`})
+              </h2>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider whitespace-nowrap">Período:</span>
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+                >
+                  <option value="all">Todos los meses</option>
+                  {availableMonths.map(m => (
+                    <option key={m} value={m}>{formatMonthLabel(m)}</option>
+                  ))}
+                </select>
+              </div>
             </div>
+
             {ventasRelacionadas.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-500">No hay ventas relacionadas con {nombre}.</div>
+              <div className="py-12 text-center text-sm text-slate-500">
+                No hay ventas relacionadas con {nombre}{selectedMonth !== 'all' ? ` en ${formatMonthLabel(selectedMonth)}` : ''}.
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-sm text-left">
