@@ -82,7 +82,6 @@ export default function FinanzasDashboard() {
   const totalNeto = ventas.reduce((s, v) => s + v.montoNeto, 0);
   const totalIva = ventas.reduce((s, v) => s + v.iva, 0);
   const totalConIva = ventas.reduce((s, v) => s + v.montoTotal, 0);
-  const totalInversion = ventas.reduce((s, v) => s + (v.distribucion?.inversionTM ?? 0), 0);
 
   const catMax = Math.max(
     1,
@@ -113,25 +112,19 @@ export default function FinanzasDashboard() {
               Volver a Administración
             </a>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <FinanzasNav active="/admin/finanzas" />
-            <a href="/admin/finanzas/nueva-venta" className="ml-auto inline-flex items-center gap-1 rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
-              + Nueva venta
-            </a>
-          </div>
+          <FinanzasNav active="/admin/finanzas" />
         </header>
 
         {loading ? (
           <div className="text-sm text-slate-500 text-center py-12">Cargando datos...</div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {[
                 { label: 'Total ventas', value: totalVentas.toString() },
                 { label: 'Ingresos netos', value: formatMXN(totalNeto) },
                 { label: 'IVA generado', value: formatMXN(totalIva) },
                 { label: 'Total con IVA', value: formatMXN(totalConIva) },
-                { label: 'Inversión acumulada TM', value: formatMXN(totalInversion) },
               ].map((card) => (
                 <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <p className="text-xs text-slate-500 mb-1">{card.label}</p>

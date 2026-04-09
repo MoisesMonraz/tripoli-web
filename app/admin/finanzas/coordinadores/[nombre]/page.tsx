@@ -23,7 +23,7 @@ function FinanzasNav() {
         { href: '/admin/finanzas/accionistas', label: 'Accionistas' },
       ].map((l) => (
         <a key={l.href} href={l.href}
-          className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
+          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${l.href === '/admin/finanzas/accionistas' ? 'bg-[#1E3A5F] text-white' : 'border border-slate-200 text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F]'}`}>
           {l.label}
         </a>
       ))}
@@ -232,8 +232,7 @@ export default function CoordinadorPage() {
         )}
 
         <div className="flex gap-3">
-          <a href="/admin/finanzas/accionistas" className="text-sm text-[#1E3A5F] hover:underline">← Volver a accionistas</a>
-          <a href="/admin/finanzas" className="text-sm text-slate-400 hover:text-slate-600">Dashboard</a>
+          <a href="/admin/finanzas/accionistas" className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">← Volver a accionistas</a>
         </div>
       </div>
     </main>

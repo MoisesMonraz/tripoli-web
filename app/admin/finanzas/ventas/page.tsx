@@ -357,23 +357,23 @@ export default function VentasPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl flex flex-col gap-6">
-
-        {/* No-access modal */}
-        {showNoAccess && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNoAccess(false)} />
-            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
-              <p className="text-base font-semibold text-slate-700 mb-5">
-                Lo sentimos, actualmente no tienes autorización para acceder a esta sección.
-              </p>
-              <button onClick={() => setShowNoAccess(false)}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
-                Regresar
-              </button>
-            </div>
+      {/* No-access modal */}
+      {showNoAccess && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowNoAccess(false)} />
+          <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <p className="text-base font-semibold text-slate-700 mb-5">
+              Lo sentimos, actualmente no tienes autorización para acceder a esta sección.
+            </p>
+            <button onClick={() => setShowNoAccess(false)}
+              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
+              Regresar
+            </button>
           </div>
-        )}
+        </div>
+      )}
+
+      <div className="mx-auto max-w-7xl flex flex-col gap-6">
 
         {/* Edit modal */}
         {editingVenta && (
@@ -427,7 +427,7 @@ export default function VentasPage() {
             <FinanzasNav />
             {session?.email === OWNER_EMAIL && (
               <div className="flex gap-2 ml-auto">
-                <button onClick={exportCSV} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition">
+                <button onClick={exportCSV} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
                   Exportar CSV
                 </button>
                 <a href="/admin/finanzas/nueva-venta" className="rounded-lg bg-[#1E3A5F] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
