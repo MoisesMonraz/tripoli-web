@@ -135,46 +135,40 @@ export default function AccionistasPage() {
           <FinanzasNav />
         </header>
 
-        {/* Selector de mes + tarjetas de resumen */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Período seleccionado</p>
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
-          >
-            <option value="all">Todos los meses</option>
-            {availableMonths.map(m => (
-              <option key={m} value={m}>{formatMonthLabel(m)}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            { label: 'Ingresos netos', value: formatMXN(totalNetoFiltrado) },
-            { label: 'Pool accionistas (10%)', value: formatMXN(totalPoolFiltrado) },
-            { label: 'Inversión TM (5%)', value: formatMXN(totalInversionTM) },
-            { label: 'Impuestos / IVA (16%)', value: formatMXN(totalIVA) },
-          ].map((c) => (
-            <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs text-slate-500 mb-1">{c.label}</p>
-              <p className="text-xl font-bold text-[#1E3A5F]">{c.value}</p>
-            </div>
-          ))}
-        </div>
-
         {loading ? (
           <div className="py-12 text-center text-sm text-slate-500">Cargando datos...</div>
         ) : (
           <>
             {/* Sección 1 — Distribución de ingresos por ventas de servicios */}
             <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
+              <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
                 <h2 className="text-sm font-semibold text-slate-800">Distribución de ingresos por ventas de servicios</h2>
-                {selectedMonth !== 'all' && (
-                  <p className="text-xs text-[#1E3A5F] mt-0.5">{formatMonthLabel(selectedMonth)}</p>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-slate-500 font-medium uppercase tracking-wider whitespace-nowrap">Período seleccionado:</span>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+                  >
+                    <option value="all">Todos los meses</option>
+                    {availableMonths.map(m => (
+                      <option key={m} value={m}>{formatMonthLabel(m)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 p-6 border-b border-slate-100">
+                {[
+                  { label: 'Ingresos netos', value: formatMXN(totalNetoFiltrado) },
+                  { label: 'Pool accionistas (10%)', value: formatMXN(totalPoolFiltrado) },
+                  { label: 'Inversión TM (5%)', value: formatMXN(totalInversionTM) },
+                  { label: 'Impuestos / IVA (16%)', value: formatMXN(totalIVA) },
+                ].map((c) => (
+                  <div key={c.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs text-slate-500 mb-1">{c.label}</p>
+                    <p className="text-lg font-bold text-[#1E3A5F]">{c.value}</p>
+                  </div>
+                ))}
               </div>
               <div className="divide-y divide-slate-200">
                 {accionistasData.map((acc) => {
