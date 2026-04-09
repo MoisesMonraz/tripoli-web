@@ -1,32 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '../../../../../lib/firebase/client';
-import {
-  ACCIONISTAS_SEED,
-  CATEGORIA_LABELS,
-  SERVICIO_LABELS,
-  formatMXN,
-  formatDate,
-} from '../../../../../lib/finanzas';
+import { getVentas } from '../../../../../lib/actions/finanzas-actions';
+import { ACCIONISTAS_SEED, CATEGORIA_LABELS, SERVICIO_LABELS, formatMXN, formatDate } from '../../../../../lib/finanzas';
 import type { Venta } from '../../../../../types/finanzas';
 
 function FinanzasNav() {
-  const links = [
-    { href: '/admin/finanzas', label: 'Dashboard' },
-    { href: '/admin/finanzas/nueva-venta', label: 'Nueva Venta' },
-    { href: '/admin/finanzas/ventas', label: 'Ventas' },
-    { href: '/admin/finanzas/accionistas', label: 'Accionistas' },
-  ];
   return (
     <div className="flex gap-2 flex-wrap items-center">
-      {links.map((l) => (
-        <a
-          key={l.href}
-          href={l.href}
-          className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition"
-        >
+      {[
+        { href: '/admin/finanzas', label: 'Dashboard' },
+        { href: '/admin/finanzas/nueva-venta', label: 'Nueva Venta' },
+        { href: '/admin/finanzas/ventas', label: 'Ventas' },
+        { href: '/admin/finanzas/accionistas', label: 'Accionistas' },
+      ].map((l) => (
+        <a key={l.href} href={l.href}
+          className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-[#1E3A5F] hover:text-[#1E3A5F] transition">
           {l.label}
         </a>
       ))}
@@ -53,12 +42,10 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
   }, []);
 
   const fetchVentas = useCallback(async () => {
-    if (!db) return;
     setLoading(true);
     try {
-      const q = query(collection(db, 'ventas'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      setVentas(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Venta)));
+      const result = await getVentas();
+      if (result.ok && result.ventas) setVentas(result.ventas);
     } catch { /* no-op */ }
     finally { setLoading(false); }
   }, []);
@@ -78,9 +65,7 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
   }
 
   const accionista = ACCIONISTAS_SEED.find((a) => a.nombre === nombre);
-  const rolLabel = accionista?.rol ?? 'Colaborador';
 
-  // Ventas where this person appears in any role
   const ventasRelacionadas = ventas.filter((v) => {
     const d = v.distribucion;
     if (!d) return false;
@@ -92,16 +77,9 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
     );
   });
 
-  // Role totals
-  const totalPrestador = ventasRelacionadas.reduce((s, v) => {
-    return s + (v.distribucion.prestador?.nombre === nombre ? v.distribucion.prestador.monto : 0);
-  }, 0);
-  const totalContacto = ventasRelacionadas.reduce((s, v) => {
-    return s + (v.distribucion.contacto?.nombre === nombre ? v.distribucion.contacto.monto : 0);
-  }, 0);
-  const totalCoordinador = ventasRelacionadas.reduce((s, v) => {
-    return s + (v.distribucion.coordinador?.nombre === nombre ? v.distribucion.coordinador.monto : 0);
-  }, 0);
+  const totalPrestador = ventasRelacionadas.reduce((s, v) => s + (v.distribucion.prestador?.nombre === nombre ? v.distribucion.prestador.monto : 0), 0);
+  const totalContacto = ventasRelacionadas.reduce((s, v) => s + (v.distribucion.contacto?.nombre === nombre ? v.distribucion.contacto.monto : 0), 0);
+  const totalCoordinador = ventasRelacionadas.reduce((s, v) => s + (v.distribucion.coordinador?.nombre === nombre ? v.distribucion.coordinador.monto : 0), 0);
   const totalAccionista = ventasRelacionadas.reduce((s, v) => {
     const share = v.distribucion.accionistas?.find((a) => a.nombre === nombre);
     return s + (share?.monto ?? 0);
@@ -111,17 +89,15 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl flex flex-col gap-6">
-
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas / Coordinadores</p>
             <h1 className="text-2xl font-bold text-slate-900">{nombre}</h1>
-            <p className="text-sm text-slate-500 mt-0.5">{rolLabel}</p>
+            {accionista && <p className="text-sm text-slate-500 mt-0.5">{accionista.rol}</p>}
           </div>
           <FinanzasNav />
         </header>
 
-        {/* Summary cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {[
             { label: 'Ventas relacionadas', value: ventasRelacionadas.length.toString() },
@@ -142,9 +118,7 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
             <p className="text-sm font-semibold text-slate-700">Total combinado</p>
             <p className="text-2xl font-bold text-[#1E3A5F]">{formatMXN(totalCombinado)}</p>
           </div>
-          {accionista && (
-            <p className="text-xs text-slate-400 mt-1">{accionista.porcentajeAcciones}% de acciones en Tripoli Media</p>
-          )}
+          {accionista && <p className="text-xs text-slate-400 mt-1">{accionista.porcentajeAcciones}% de acciones en Tripoli Media</p>}
         </div>
 
         {loading ? (
@@ -152,14 +126,10 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
         ) : (
           <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-800">
-                Detalle de ventas ({ventasRelacionadas.length})
-              </h2>
+              <h2 className="text-sm font-semibold text-slate-800">Detalle de ventas ({ventasRelacionadas.length})</h2>
             </div>
             {ventasRelacionadas.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-500">
-                No hay ventas relacionadas con {nombre}.
-              </div>
+              <div className="py-12 text-center text-sm text-slate-500">No hay ventas relacionadas con {nombre}.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-sm text-left">
@@ -184,31 +154,19 @@ export default function CoordinadorPage({ params }: { params: { nombre: string }
                           <td className="px-3 py-3 font-medium text-slate-900 max-w-[120px] truncate">{v.cliente}</td>
                           <td className="px-3 py-3 text-slate-600 whitespace-nowrap">{CATEGORIA_LABELS[v.categoria]}</td>
                           <td className="px-3 py-3 text-slate-600 whitespace-nowrap">{SERVICIO_LABELS[v.servicio]}</td>
-                          <td className="px-3 py-3 text-slate-800 font-medium whitespace-nowrap">{formatMXN(v.montoNeto)}</td>
-                          <td className="px-3 py-3 text-right whitespace-nowrap">
-                            {esPrestador > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esPrestador)}</span> : <span className="text-slate-300">—</span>}
-                          </td>
-                          <td className="px-3 py-3 text-right whitespace-nowrap">
-                            {esContacto > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esContacto)}</span> : <span className="text-slate-300">—</span>}
-                          </td>
-                          <td className="px-3 py-3 text-right whitespace-nowrap">
-                            {esCoordinador > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esCoordinador)}</span> : <span className="text-slate-300">—</span>}
-                          </td>
-                          <td className="px-3 py-3 text-right whitespace-nowrap">
-                            {esAccionista > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esAccionista)}</span> : <span className="text-slate-300">—</span>}
-                          </td>
-                          <td className="px-3 py-3 text-right whitespace-nowrap font-bold text-[#1E3A5F]">
-                            {formatMXN(ventaTotal)}
-                          </td>
+                          <td className="px-3 py-3 font-medium text-slate-800 whitespace-nowrap">{formatMXN(v.montoNeto)}</td>
+                          <td className="px-3 py-3 text-right whitespace-nowrap">{esPrestador > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esPrestador)}</span> : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-3 py-3 text-right whitespace-nowrap">{esContacto > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esContacto)}</span> : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-3 py-3 text-right whitespace-nowrap">{esCoordinador > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esCoordinador)}</span> : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-3 py-3 text-right whitespace-nowrap">{esAccionista > 0 ? <span className="font-medium text-[#1E3A5F]">{formatMXN(esAccionista)}</span> : <span className="text-slate-300">—</span>}</td>
+                          <td className="px-3 py-3 text-right font-bold text-[#1E3A5F] whitespace-nowrap">{formatMXN(ventaTotal)}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                   <tfoot className="bg-slate-50 border-t-2 border-slate-200">
                     <tr>
-                      <td className="px-3 py-3 text-xs font-bold uppercase text-slate-600" colSpan={5}>
-                        Totales
-                      </td>
+                      <td className="px-3 py-3 text-xs font-bold uppercase text-slate-600" colSpan={5}>Totales</td>
                       <td className="px-3 py-3 text-right font-bold text-[#1E3A5F]">{totalPrestador > 0 ? formatMXN(totalPrestador) : '—'}</td>
                       <td className="px-3 py-3 text-right font-bold text-[#1E3A5F]">{totalContacto > 0 ? formatMXN(totalContacto) : '—'}</td>
                       <td className="px-3 py-3 text-right font-bold text-[#1E3A5F]">{totalCoordinador > 0 ? formatMXN(totalCoordinador) : '—'}</td>

@@ -115,9 +115,9 @@ export default async function RootLayout({ children }) {
         <FavoritesProvider>
           <OrganizationJsonLd />
           <ScrollToTop />
-          {!standalone && <Header />}
+          {!standalone && !isAdmin && <Header />}
           {children}
-          {!standalone && <Footer />}
+          {!standalone && !isAdmin && <Footer />}
           <AccessGateModal />
           {!standalone && !isAdmin && <AIChatWidget />}
         </FavoritesProvider>

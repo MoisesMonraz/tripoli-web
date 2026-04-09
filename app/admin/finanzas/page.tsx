@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '../../../lib/firebase/client';
+import { getVentas } from '../../../lib/actions/finanzas-actions';
 import {
   CATEGORIAS,
   CATEGORIA_LABELS,
@@ -35,10 +34,7 @@ function FinanzasNav({ active }: { active: string }) {
           {l.label}
         </a>
       ))}
-      <a
-        href="/admin"
-        className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition"
-      >
+      <a href="/admin" className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition">
         ← Admin
       </a>
     </div>
@@ -62,13 +58,10 @@ export default function FinanzasDashboard() {
   }, []);
 
   const fetchVentas = useCallback(async () => {
-    if (!db) return;
     setLoading(true);
     try {
-      const q = query(collection(db, 'ventas'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Venta));
-      setVentas(data);
+      const result = await getVentas();
+      if (result.ok && result.ventas) setVentas(result.ventas);
     } catch { /* no-op */ }
     finally { setLoading(false); }
   }, []);
@@ -120,7 +113,6 @@ export default function FinanzasDashboard() {
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
 
-        {/* Header */}
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -143,14 +135,13 @@ export default function FinanzasDashboard() {
           <div className="text-sm text-slate-500 text-center py-12">Cargando datos...</div>
         ) : (
           <>
-            {/* Summary cards */}
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
               {[
-                { label: 'Total ventas', value: totalVentas.toString(), raw: false },
-                { label: 'Ingresos netos', value: formatMXN(totalNeto), raw: true },
-                { label: 'IVA generado', value: formatMXN(totalIva), raw: true },
-                { label: 'Total con IVA', value: formatMXN(totalConIva), raw: true },
-                { label: 'Inversión acumulada TM', value: formatMXN(totalInversion), raw: true },
+                { label: 'Total ventas', value: totalVentas.toString() },
+                { label: 'Ingresos netos', value: formatMXN(totalNeto) },
+                { label: 'IVA generado', value: formatMXN(totalIva) },
+                { label: 'Total con IVA', value: formatMXN(totalConIva) },
+                { label: 'Inversión acumulada TM', value: formatMXN(totalInversion) },
               ].map((card) => (
                 <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <p className="text-xs text-slate-500 mb-1">{card.label}</p>
@@ -160,7 +151,6 @@ export default function FinanzasDashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Category breakdown */}
               <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
                   <h2 className="text-sm font-semibold text-slate-800">Por Categoría</h2>
@@ -179,10 +169,7 @@ export default function FinanzasDashboard() {
                           </span>
                         </div>
                         <div className="h-2 bg-slate-100 rounded-full">
-                          <div
-                            className="h-2 bg-[#1E3A5F] rounded-full transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
+                          <div className="h-2 bg-[#1E3A5F] rounded-full transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -190,7 +177,6 @@ export default function FinanzasDashboard() {
                 </div>
               </section>
 
-              {/* Service breakdown */}
               <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
                   <h2 className="text-sm font-semibold text-slate-800">Por Servicio</h2>
@@ -209,10 +195,7 @@ export default function FinanzasDashboard() {
                           </span>
                         </div>
                         <div className="h-2 bg-slate-100 rounded-full">
-                          <div
-                            className="h-2 bg-[#1E3A5F] rounded-full transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
+                          <div className="h-2 bg-[#1E3A5F] rounded-full transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -221,21 +204,15 @@ export default function FinanzasDashboard() {
               </section>
             </div>
 
-            {/* Last 5 sales */}
             <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-800">Últimas ventas</h2>
-                <a href="/admin/finanzas/ventas" className="text-xs text-[#1E3A5F] hover:underline">
-                  Ver todas →
-                </a>
+                <a href="/admin/finanzas/ventas" className="text-xs text-[#1E3A5F] hover:underline">Ver todas →</a>
               </div>
               {last5.length === 0 ? (
                 <div className="py-12 text-center text-sm text-slate-500">
-                  No hay ventas registradas aún.
-                  <br />
-                  <a href="/admin/finanzas/nueva-venta" className="text-[#1E3A5F] hover:underline mt-1 inline-block">
-                    Registrar primera venta
-                  </a>
+                  No hay ventas registradas aún.{' '}
+                  <a href="/admin/finanzas/nueva-venta" className="text-[#1E3A5F] hover:underline">Registrar primera venta</a>
                 </div>
               ) : (
                 <div className="overflow-x-auto">

@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../lib/firebase/client';
+import { createVenta } from '../../../../lib/actions/finanzas-actions';
 import {
   CATEGORIAS,
   CATEGORIA_LABELS,
@@ -43,7 +42,7 @@ function FinanzasNav() {
   );
 }
 
-function today() {
+function todayStr() {
   return new Date().toISOString().split('T')[0];
 }
 
@@ -61,7 +60,7 @@ export default function NuevaVentaPage() {
   const [session, setSession] = useState<any>(null);
   const [form, setForm] = useState<FormState>({
     cliente: '',
-    fechaEmision: today(),
+    fechaEmision: todayStr(),
     servicio: '',
     categoria: '',
     contacto: '',
@@ -70,7 +69,8 @@ export default function NuevaVentaPage() {
   const [showAccionistas, setShowAccionistas] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [savedVenta, setSavedVenta] = useState<any>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<Distribucion | null>(null);
 
   const fetchStatus = useCallback(async () => {
     setIsChecking(true);
@@ -101,19 +101,18 @@ export default function NuevaVentaPage() {
     add(distribution.coordinador.nombre, distribution.coordinador.monto);
     distribution.accionistas.forEach((a) => add(a.nombre, a.monto));
   }
-  const multiRole = Object.entries(personSubtotals).filter(([, total]) => {
-    if (!distribution) return false;
-    const roles = [
-      distribution.prestador.nombre,
-      distribution.contacto.nombre,
-      distribution.coordinador.nombre,
-    ];
-    return roles.filter((r) => r === Object.entries(personSubtotals).find(([k]) => k === Object.keys(personSubtotals)[0])?.[0]).length > 1;
-  });
+
+  const hasMultiRole = distribution
+    ? Object.entries(personSubtotals).some(([n]) => {
+        const roles = [distribution.prestador.nombre, distribution.contacto.nombre, distribution.coordinador.nombre];
+        const inRoles = roles.filter((r) => r === n).length;
+        const inAccionistas = distribution.accionistas.some((a) => a.nombre === n);
+        return inRoles > 1 || (inRoles >= 1 && inAccionistas);
+      })
+    : false;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db) { setError('Firebase no inicializado.'); return; }
     if (!form.servicio || !form.categoria || !form.contacto || montoNeto <= 0) {
       setError('Completa todos los campos correctamente.');
       return;
@@ -121,24 +120,21 @@ export default function NuevaVentaPage() {
     setError('');
     setSubmitting(true);
     try {
-      const dist = calculateDistribution(montoNeto, form.servicio as Servicio, form.categoria as Categoria, form.contacto);
-      const ventaData = {
-        cliente: form.cliente.trim(),
+      const result = await createVenta({
+        cliente: form.cliente,
         fechaEmision: form.fechaEmision,
-        servicio: form.servicio,
-        categoria: form.categoria,
+        servicio: form.servicio as Servicio,
+        categoria: form.categoria as Categoria,
         contacto: form.contacto,
         montoNeto,
-        iva: dist.iva,
-        montoTotal: dist.totalConIva,
-        prestadorServicio: getPrestador(form.servicio as Servicio),
-        coordinadorCategoria: getCoordinador(form.categoria as Categoria),
-        distribucion: dist,
-        createdAt: serverTimestamp(),
-      };
-      const ref = await addDoc(collection(db, 'ventas'), ventaData);
-      setSavedVenta({ id: ref.id, ...ventaData });
-    } catch (err) {
+      });
+      if (!result.ok) {
+        setError(result.error ?? 'Error al guardar. Intenta de nuevo.');
+        return;
+      }
+      setSavedId(result.id ?? null);
+      setSavedSnapshot(distribution);
+    } catch {
       setError('Error al guardar. Intenta de nuevo.');
     } finally {
       setSubmitting(false);
@@ -146,8 +142,9 @@ export default function NuevaVentaPage() {
   };
 
   const handleReset = () => {
-    setSavedVenta(null);
-    setForm({ cliente: '', fechaEmision: today(), servicio: '', categoria: '', contacto: '', montoNeto: '' });
+    setSavedId(null);
+    setSavedSnapshot(null);
+    setForm({ cliente: '', fechaEmision: todayStr(), servicio: '', categoria: '', contacto: '', montoNeto: '' });
   };
 
   if (isChecking) {
@@ -161,15 +158,8 @@ export default function NuevaVentaPage() {
     );
   }
 
-  if (savedVenta) {
-    const d: Distribucion = savedVenta.distribucion;
-    const sub: Record<string, number> = {};
-    const add2 = (n: string, m: number) => { sub[n] = (sub[n] || 0) + m; };
-    add2(d.prestador.nombre, d.prestador.monto);
-    add2(d.contacto.nombre, d.contacto.monto);
-    add2(d.coordinador.nombre, d.coordinador.monto);
-    d.accionistas.forEach((a) => add2(a.nombre, a.monto));
-
+  if (savedId && savedSnapshot) {
+    const d = savedSnapshot;
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl flex flex-col gap-6">
@@ -182,7 +172,7 @@ export default function NuevaVentaPage() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-slate-900">Venta registrada exitosamente</h1>
-                <p className="text-sm text-slate-500">{savedVenta.cliente} — {savedVenta.fechaEmision}</p>
+                <p className="text-sm text-slate-500">{form.cliente} — {form.fechaEmision}</p>
               </div>
             </div>
           </header>
@@ -215,79 +205,26 @@ export default function NuevaVentaPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    <tr>
-                      <td className="py-2 text-slate-600">Prestador del Servicio</td>
-                      <td className="py-2 font-medium">{d.prestador.nombre}</td>
-                      <td className="py-2 text-right text-slate-500">70%</td>
-                      <td className="py-2 text-right font-semibold">{formatMXN(d.prestador.monto)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-slate-600">Contacto</td>
-                      <td className="py-2 font-medium">{d.contacto.nombre}</td>
-                      <td className="py-2 text-right text-slate-500">12.5%</td>
-                      <td className="py-2 text-right font-semibold">{formatMXN(d.contacto.monto)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-slate-600">Accionistas TM</td>
-                      <td className="py-2 text-slate-500 text-xs">9 accionistas</td>
-                      <td className="py-2 text-right text-slate-500">10%</td>
-                      <td className="py-2 text-right font-semibold">{formatMXN(d.accionistas.reduce((s, a) => s + a.monto, 0))}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-slate-600">Inversión TM</td>
-                      <td className="py-2 text-slate-500">Tripoli Media</td>
-                      <td className="py-2 text-right text-slate-500">5%</td>
-                      <td className="py-2 text-right font-semibold">{formatMXN(d.inversionTM)}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 text-slate-600">Coordinador de Sección</td>
-                      <td className="py-2 font-medium">{d.coordinador.nombre}</td>
-                      <td className="py-2 text-right text-slate-500">2.5%</td>
-                      <td className="py-2 text-right font-semibold">{formatMXN(d.coordinador.monto)}</td>
-                    </tr>
-                    <tr className="border-t-2 border-slate-200 font-bold">
-                      <td className="pt-3">TOTAL</td>
-                      <td></td>
-                      <td className="pt-3 text-right">100%</td>
-                      <td className="pt-3 text-right text-[#1E3A5F]">{formatMXN(d.subtotalNeto)}</td>
-                    </tr>
+                    <tr><td className="py-2 text-slate-600">Prestador del Servicio</td><td className="py-2 font-medium">{d.prestador.nombre}</td><td className="py-2 text-right text-slate-500">70%</td><td className="py-2 text-right font-semibold">{formatMXN(d.prestador.monto)}</td></tr>
+                    <tr><td className="py-2 text-slate-600">Contacto</td><td className="py-2 font-medium">{d.contacto.nombre}</td><td className="py-2 text-right text-slate-500">12.5%</td><td className="py-2 text-right font-semibold">{formatMXN(d.contacto.monto)}</td></tr>
+                    <tr><td className="py-2 text-slate-600">Accionistas TM</td><td className="py-2 text-slate-500 text-xs">9 accionistas</td><td className="py-2 text-right text-slate-500">10%</td><td className="py-2 text-right font-semibold">{formatMXN(d.accionistas.reduce((s, a) => s + a.monto, 0))}</td></tr>
+                    <tr><td className="py-2 text-slate-600">Inversión TM</td><td className="py-2 text-slate-500">Tripoli Media</td><td className="py-2 text-right text-slate-500">5%</td><td className="py-2 text-right font-semibold">{formatMXN(d.inversionTM)}</td></tr>
+                    <tr><td className="py-2 text-slate-600">Coordinador de Sección</td><td className="py-2 font-medium">{d.coordinador.nombre}</td><td className="py-2 text-right text-slate-500">2.5%</td><td className="py-2 text-right font-semibold">{formatMXN(d.coordinador.monto)}</td></tr>
+                    <tr className="border-t-2 border-slate-200 font-bold"><td className="pt-3">TOTAL</td><td></td><td className="pt-3 text-right">100%</td><td className="pt-3 text-right text-[#1E3A5F]">{formatMXN(d.subtotalNeto)}</td></tr>
                   </tbody>
                 </table>
               </div>
-              {Object.entries(sub).filter(([n]) => {
-                const roles = [d.prestador.nombre, d.contacto.nombre, d.coordinador.nombre];
-                return roles.filter((r) => r === n).length > 1 || (roles.includes(n) && d.accionistas.some((a) => a.nombre === n));
-              }).length > 0 && (
-                <div className="border-t border-slate-200 pt-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Subtotales por persona</p>
-                  {Object.entries(sub).map(([nombre, total]) => (
-                    <div key={nombre} className="flex justify-between text-sm py-1">
-                      <span className="text-slate-700">{nombre}</span>
-                      <span className="font-semibold text-[#1E3A5F]">{formatMXN(total)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </section>
 
-          <div className="flex gap-3">
-            <button
-              onClick={handleReset}
-              className="rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition"
-            >
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={handleReset} className="rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
               Registrar otra venta
             </button>
-            <a
-              href="/admin/finanzas/ventas"
-              className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition"
-            >
+            <a href="/admin/finanzas/ventas" className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               Ver todas las ventas
             </a>
-            <a
-              href="/admin/finanzas"
-              className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition"
-            >
+            <a href="/admin/finanzas" className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
               Dashboard
             </a>
           </div>
@@ -299,7 +236,6 @@ export default function NuevaVentaPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl flex flex-col gap-6">
-
         <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-semibold mb-1">Finanzas</p>
@@ -309,7 +245,6 @@ export default function NuevaVentaPage() {
         </header>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Form */}
           <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
               <h2 className="text-sm font-semibold text-slate-800">Datos de la venta</h2>
@@ -317,111 +252,62 @@ export default function NuevaVentaPage() {
             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Cliente *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.cliente}
-                  onChange={(e) => setForm((f) => ({ ...f, cliente: e.target.value }))}
+                <input type="text" required value={form.cliente} onChange={(e) => setForm((f) => ({ ...f, cliente: e.target.value }))}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                  placeholder="Nombre del cliente"
-                />
+                  placeholder="Nombre del cliente" />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de emisión *</label>
-                <input
-                  type="date"
-                  required
-                  value={form.fechaEmision}
-                  onChange={(e) => setForm((f) => ({ ...f, fechaEmision: e.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                />
+                <input type="date" required value={form.fechaEmision} onChange={(e) => setForm((f) => ({ ...f, fechaEmision: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent" />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Servicio *</label>
-                <select
-                  required
-                  value={form.servicio}
-                  onChange={(e) => setForm((f) => ({ ...f, servicio: e.target.value as Servicio }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                >
+                <select required value={form.servicio} onChange={(e) => setForm((f) => ({ ...f, servicio: e.target.value as Servicio }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent">
                   <option value="">Selecciona un servicio</option>
-                  {SERVICIOS.map((s) => (
-                    <option key={s} value={s}>{SERVICIO_LABELS[s]}</option>
-                  ))}
+                  {SERVICIOS.map((s) => <option key={s} value={s}>{SERVICIO_LABELS[s]}</option>)}
                 </select>
-                {prestador && (
-                  <p className="mt-1.5 text-xs text-slate-500">
-                    Prestador: <span className="font-semibold text-slate-700">{prestador}</span>
-                  </p>
-                )}
+                {prestador && <p className="mt-1.5 text-xs text-slate-500">Prestador: <span className="font-semibold text-slate-700">{prestador}</span></p>}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Categoría *</label>
-                <select
-                  required
-                  value={form.categoria}
-                  onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as Categoria }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                >
+                <select required value={form.categoria} onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as Categoria }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent">
                   <option value="">Selecciona una categoría</option>
-                  {CATEGORIAS.map((c) => (
-                    <option key={c} value={c}>{CATEGORIA_LABELS[c]}</option>
-                  ))}
+                  {CATEGORIAS.map((c) => <option key={c} value={c}>{CATEGORIA_LABELS[c]}</option>)}
                 </select>
-                {coordinador && (
-                  <p className="mt-1.5 text-xs text-slate-500">
-                    Coordinador: <span className="font-semibold text-slate-700">{coordinador}</span>
-                  </p>
-                )}
+                {coordinador && <p className="mt-1.5 text-xs text-slate-500">Coordinador: <span className="font-semibold text-slate-700">{coordinador}</span></p>}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Contacto *</label>
-                <select
-                  required
-                  value={form.contacto}
-                  onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                >
+                <select required value={form.contacto} onChange={(e) => setForm((f) => ({ ...f, contacto: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent">
                   <option value="">Selecciona un contacto</option>
-                  {CONTACTOS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  {CONTACTOS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Monto neto (sin IVA) *</label>
-                <input
-                  type="number"
-                  required
-                  min={1}
-                  step="0.01"
-                  value={form.montoNeto}
-                  onChange={(e) => setForm((f) => ({ ...f, montoNeto: e.target.value }))}
+                <input type="number" required min={1} step="0.01" value={form.montoNeto} onChange={(e) => setForm((f) => ({ ...f, montoNeto: e.target.value }))}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:border-transparent"
-                  placeholder="10000"
-                />
+                  placeholder="10000" />
               </div>
 
-              {error && (
-                <p className="text-sm font-semibold text-rose-600 bg-rose-50 p-3 rounded-lg border border-rose-100">{error}</p>
-              )}
+              {error && <p className="text-sm font-semibold text-rose-600 bg-rose-50 p-3 rounded-lg border border-rose-100">{error}</p>}
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition disabled:opacity-60 disabled:cursor-not-allowed"
-              >
+              <button type="submit" disabled={submitting}
+                className="w-full rounded-lg bg-[#1E3A5F] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#162d4a] transition disabled:opacity-60 disabled:cursor-not-allowed">
                 {submitting ? 'Registrando...' : 'Registrar venta'}
               </button>
             </form>
           </section>
 
-          {/* Live preview */}
           <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-slate-200 bg-slate-50/50 px-6 py-4">
               <h2 className="text-sm font-semibold text-slate-800">Vista previa de distribución</h2>
@@ -433,113 +319,56 @@ export default function NuevaVentaPage() {
             ) : (
               <div className="p-6">
                 <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Monto neto</span>
-                    <span className="font-semibold">{formatMXN(distribution.subtotalNeto)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">IVA 16%</span>
-                    <span className="font-medium">{formatMXN(distribution.iva)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-bold border-t border-slate-200 pt-2">
-                    <span>Total con IVA</span>
-                    <span className="text-[#1E3A5F]">{formatMXN(distribution.totalConIva)}</span>
-                  </div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">Monto neto</span><span className="font-semibold">{formatMXN(distribution.subtotalNeto)}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">IVA 16%</span><span className="font-medium">{formatMXN(distribution.iva)}</span></div>
+                  <div className="flex justify-between text-sm font-bold border-t border-slate-200 pt-2"><span>Total con IVA</span><span className="text-[#1E3A5F]">{formatMXN(distribution.totalConIva)}</span></div>
                 </div>
 
                 <div className="border-t border-slate-200 pt-4 overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
-                        <th className="pb-2">Concepto</th>
-                        <th className="pb-2">Destinatario</th>
-                        <th className="pb-2 text-right">%</th>
-                        <th className="pb-2 text-right">Monto</th>
-                      </tr>
-                    </thead>
+                  <table className="w-full text-xs">
+                    <thead><tr className="text-left text-slate-500 border-b border-slate-100">
+                      <th className="pb-2">Concepto</th><th className="pb-2">Destinatario</th><th className="pb-2 text-right">%</th><th className="pb-2 text-right">Monto</th>
+                    </tr></thead>
                     <tbody className="divide-y divide-slate-100">
+                      <tr><td className="py-2 text-slate-600">Prestador</td><td className="py-2 font-medium">{distribution.prestador.nombre}</td><td className="py-2 text-right text-slate-400">70%</td><td className="py-2 text-right font-semibold">{formatMXN(distribution.prestador.monto)}</td></tr>
+                      <tr><td className="py-2 text-slate-600">Contacto</td><td className="py-2 font-medium">{distribution.contacto.nombre}</td><td className="py-2 text-right text-slate-400">12.5%</td><td className="py-2 text-right font-semibold">{formatMXN(distribution.contacto.monto)}</td></tr>
                       <tr>
-                        <td className="py-2 text-slate-600 text-xs">Prestador del Servicio</td>
-                        <td className="py-2 font-medium text-xs">{distribution.prestador.nombre}</td>
-                        <td className="py-2 text-right text-slate-500 text-xs">70%</td>
-                        <td className="py-2 text-right font-semibold text-xs">{formatMXN(distribution.prestador.monto)}</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-slate-600 text-xs">Contacto</td>
-                        <td className="py-2 font-medium text-xs">{distribution.contacto.nombre}</td>
-                        <td className="py-2 text-right text-slate-500 text-xs">12.5%</td>
-                        <td className="py-2 text-right font-semibold text-xs">{formatMXN(distribution.contacto.monto)}</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs">
-                          <button
-                            type="button"
-                            onClick={() => setShowAccionistas((v) => !v)}
-                            className="text-slate-600 hover:text-[#1E3A5F] flex items-center gap-1"
-                          >
-                            Accionistas TM
-                            <span className="text-[10px]">{showAccionistas ? '▲' : '▼'}</span>
+                        <td className="py-2">
+                          <button type="button" onClick={() => setShowAccionistas((v) => !v)} className="text-slate-600 hover:text-[#1E3A5F] flex items-center gap-1">
+                            Accionistas TM <span className="text-[9px]">{showAccionistas ? '▲' : '▼'}</span>
                           </button>
                         </td>
-                        <td className="py-2 text-xs text-slate-400">9 accionistas</td>
-                        <td className="py-2 text-right text-slate-500 text-xs">10%</td>
-                        <td className="py-2 text-right font-semibold text-xs">
-                          {formatMXN(distribution.accionistas.reduce((s, a) => s + a.monto, 0))}
-                        </td>
+                        <td className="py-2 text-slate-400">9 accionistas</td>
+                        <td className="py-2 text-right text-slate-400">10%</td>
+                        <td className="py-2 text-right font-semibold">{formatMXN(distribution.accionistas.reduce((s, a) => s + a.monto, 0))}</td>
                       </tr>
-                      {showAccionistas &&
-                        distribution.accionistas.map((a) => (
-                          <tr key={a.nombre} className="bg-slate-50/70">
-                            <td className="py-1.5 pl-4 text-xs text-slate-500">{a.nombre}</td>
-                            <td></td>
-                            <td className="py-1.5 text-right text-xs text-slate-400">{a.porcentaje.toFixed(2)}%</td>
-                            <td className="py-1.5 text-right text-xs text-slate-600">{formatMXN(a.monto)}</td>
-                          </tr>
-                        ))}
-                      <tr>
-                        <td className="py-2 text-slate-600 text-xs">Inversión TM</td>
-                        <td className="py-2 text-xs text-slate-400">Tripoli Media</td>
-                        <td className="py-2 text-right text-slate-500 text-xs">5%</td>
-                        <td className="py-2 text-right font-semibold text-xs">{formatMXN(distribution.inversionTM)}</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-slate-600 text-xs">Coordinador de Sección</td>
-                        <td className="py-2 font-medium text-xs">{distribution.coordinador.nombre}</td>
-                        <td className="py-2 text-right text-slate-500 text-xs">2.5%</td>
-                        <td className="py-2 text-right font-semibold text-xs">{formatMXN(distribution.coordinador.monto)}</td>
-                      </tr>
+                      {showAccionistas && distribution.accionistas.map((a) => (
+                        <tr key={a.nombre} className="bg-slate-50/70">
+                          <td className="py-1.5 pl-4 text-slate-500">{a.nombre}</td><td></td>
+                          <td className="py-1.5 text-right text-slate-400">{a.porcentaje.toFixed(2)}%</td>
+                          <td className="py-1.5 text-right text-slate-600">{formatMXN(a.monto)}</td>
+                        </tr>
+                      ))}
+                      <tr><td className="py-2 text-slate-600">Inversión TM</td><td className="py-2 text-slate-400">Tripoli Media</td><td className="py-2 text-right text-slate-400">5%</td><td className="py-2 text-right font-semibold">{formatMXN(distribution.inversionTM)}</td></tr>
+                      <tr><td className="py-2 text-slate-600">Coordinador</td><td className="py-2 font-medium">{distribution.coordinador.nombre}</td><td className="py-2 text-right text-slate-400">2.5%</td><td className="py-2 text-right font-semibold">{formatMXN(distribution.coordinador.monto)}</td></tr>
                       <tr className="border-t-2 border-slate-200 font-bold">
-                        <td className="pt-2 text-xs">TOTAL</td>
-                        <td></td>
-                        <td className="pt-2 text-right text-xs">100%</td>
-                        <td className="pt-2 text-right text-[#1E3A5F] text-xs">{formatMXN(distribution.subtotalNeto)}</td>
+                        <td className="pt-2">TOTAL</td><td></td><td className="pt-2 text-right">100%</td><td className="pt-2 text-right text-[#1E3A5F]">{formatMXN(distribution.subtotalNeto)}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                {/* Per-person subtotals */}
-                {(() => {
-                  const entries = Object.entries(personSubtotals);
-                  const hasMulti = entries.some(([n]) => {
-                    const roles = [distribution.prestador.nombre, distribution.contacto.nombre, distribution.coordinador.nombre];
-                    const inRoles = roles.filter((r) => r === n).length;
-                    const inAccionistas = distribution.accionistas.some((a) => a.nombre === n);
-                    return inRoles > 1 || (inRoles >= 1 && inAccionistas);
-                  });
-                  if (!hasMulti) return null;
-                  return (
-                    <div className="border-t border-slate-200 pt-4 mt-2">
-                      <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Subtotales combinados</p>
-                      {entries.map(([nombre, total]) => (
-                        <div key={nombre} className="flex justify-between text-xs py-1">
-                          <span className="text-slate-700">{nombre}</span>
-                          <span className="font-semibold text-[#1E3A5F]">{formatMXN(total)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
+                {hasMultiRole && (
+                  <div className="border-t border-slate-200 pt-4 mt-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Subtotales combinados</p>
+                    {Object.entries(personSubtotals).map(([nombre, total]) => (
+                      <div key={nombre} className="flex justify-between text-xs py-1">
+                        <span className="text-slate-700">{nombre}</span>
+                        <span className="font-semibold text-[#1E3A5F]">{formatMXN(total)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </section>
