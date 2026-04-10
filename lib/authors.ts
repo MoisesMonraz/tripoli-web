@@ -22,9 +22,9 @@ export const specialAuthors: Author[] = [
     {
         slug: "moises-monraz-escoto",
         name: "Moisés Monraz Escoto",
-        role: "Director General",
-        bio: "Director General de Tripoli Media.",
-        photoUrl: "/authors/moises-monraz.jpg",
+        role: "Director de Tripoli Media",
+        bio: "Licenciado en Ciencias de la Comunicación por el ITESO, especializado en crear narrativas y estructuras comunicativas, así como servicios de analítica de datos y administrativos. Con experiencia en industrias de cadenas de suministro, entretenimiento y tecnología. Director del ecosistema de servicios Tripoli Media.",
+        photoUrl: "/authors/moises-monraz.png",
     },
     {
         slug: "juan-ignacio-armenta",

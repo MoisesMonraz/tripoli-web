@@ -82,7 +82,7 @@ export default async function AuthorPage({
     if (!author) notFound();
 
     // Merge with specialAuthor data if available
-    const specialAuthor = getAuthorBySlug(effectiveSlug);
+    const specialAuthor = getAuthorBySlug(effectiveSlug) ?? getAuthorBySlug(authorSlug);
     const role = specialAuthor?.role || author.role;
     const bio = specialAuthor?.bio || author.bio;
 
