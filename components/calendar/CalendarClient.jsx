@@ -114,8 +114,8 @@ export default function CalendarClient({ articles = [] }) {
       <div className="flex flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-slate-200/70 bg-white/90 p-3 sm:p-6 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80 dark:shadow-black/30 w-full">
 
         {/* Header: title left, nav buttons aligned to end of calendar column */}
-        <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-0 mb-4 sm:mb-6">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-0 mb-2 sm:mb-3">
+          <div className="flex items-center justify-between pr-3 sm:pr-4">
             <div>
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Calendario editorial</p>
               <h1 className="text-lg sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">{monthLabel}</h1>
