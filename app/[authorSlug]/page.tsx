@@ -156,7 +156,7 @@ export default async function AuthorPage({
                     {/* Photo — separate card */}
                     <div className="relative mx-auto md:mx-0 w-[110px] md:w-[172.5px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
-                            src={author.photoUrl}
+                            src={specialAuthor?.photoUrl || author.photoUrl}
                             alt={`Foto de ${displayName}`}
                             fill
                             className="object-cover object-top"
