@@ -129,8 +129,8 @@ export default async function AuthorPage({
         brandColor = "#e6007e";
         brandGradient = "linear-gradient(90deg, #e6007e, #f29fc5, #f9d3e6)";
     } else if (isMoises) {
-        brandColor = "#8fabb6";
-        brandGradient = "linear-gradient(90deg, #8fabb6, #cad4da, #e5e9ed)";
+        brandColor = "#009fe3";
+        brandGradient = "linear-gradient(90deg, #009fe3, #c9e8fb, #009fe3)";
     } else if (isIgnacio) {
         brandColor = "#009a93";
         brandGradient = "linear-gradient(90deg, #009a93, #009a93, #cbe7e5)";
