@@ -154,12 +154,12 @@ export default async function AuthorPage({
             <div className="max-w-[70rem] mx-auto w-full px-4 sm:px-[12px] md:px-4">
                 <div className="flex flex-col md:flex-row items-stretch gap-4">
                     {/* Photo — separate card */}
-                    <div className="relative mx-auto md:mx-0 w-[110px] md:w-[172.5px] aspect-[3/4] flex-shrink-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
+                    <div className="relative mx-auto md:mx-0 w-[110px] md:w-[172.5px] aspect-[4/5] flex-shrink-0 overflow-hidden rounded-none border border-slate-200/60 bg-slate-200 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-800">
                         <Image
                             src={specialAuthor?.photoUrl || author.photoUrl}
                             alt={`Foto de ${displayName}`}
                             fill
-                            className="object-cover object-top"
+                            className="object-cover object-center"
                             sizes="(max-width: 768px) 110px, 172.5px"
                         />
                         {/* Initials fallback — behind photo */}
@@ -173,7 +173,7 @@ export default async function AuthorPage({
                     </div>
 
                     {/* Info — separate card */}
-                    <div className="flex flex-1 flex-col justify-center p-3 py-2.5 md:py-3 md:pl-6 md:pr-3 overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
+                    <div className="flex flex-1 flex-col justify-center p-3 py-2.5 md:py-3 md:pl-6 md:pr-3 overflow-hidden rounded-none border border-slate-200/60 bg-white/80 shadow-md shadow-slate-900/5 dark:border-slate-800/70 dark:bg-slate-900/70">
                         <h1 className="text-lg md:text-2xl font-bold md:font-semibold text-center md:text-left text-slate-900 dark:text-slate-100 leading-tight md:leading-snug">
                             {displayName}
                         </h1>
