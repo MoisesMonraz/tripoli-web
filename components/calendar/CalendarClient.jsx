@@ -113,31 +113,36 @@ export default function CalendarClient({ articles = [] }) {
     <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-8 py-6 sm:py-10">
       <div className="flex flex-col gap-4 sm:gap-6 rounded-2xl sm:rounded-3xl border border-slate-200/70 bg-white/90 p-3 sm:p-6 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/80 dark:shadow-black/30 w-full">
 
+        {/* Header: title left, nav buttons aligned to end of calendar column */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-0 mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Calendario editorial</p>
+              <h1 className="text-lg sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">{monthLabel}</h1>
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                onClick={handlePrev}
+                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
+                aria-label="Mes anterior"
+              >
+                ‹
+              </button>
+              <button
+                onClick={handleNext}
+                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
+                aria-label="Mes siguiente"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+          <div className="hidden lg:block" />
+        </div>
+
         <div className="flex flex-col lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-4 sm:gap-6">
           {/* Calendar grid */}
           <section className="w-full rounded-xl sm:rounded-2xl border border-slate-200/70 bg-white/70 p-3 sm:p-4 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/70">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Calendario editorial</p>
-                <h1 className="text-lg sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">{monthLabel}</h1>
-              </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <button
-                  onClick={handlePrev}
-                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
-                  aria-label="Mes anterior"
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-base sm:text-lg text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:text-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[#33ceff] dark:hover:text-[#33ceff]"
-                  aria-label="Mes siguiente"
-                >
-                  ›
-                </button>
-              </div>
-            </div>
 
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
               {weekdayLabels.map((label, idx) => (
