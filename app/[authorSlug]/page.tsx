@@ -181,7 +181,7 @@ export default async function AuthorPage({
                             {role}
                         </p>
                         {bio && (
-                            <p className="mt-2.5 md:mt-1 text-[11.9px] md:text-[15.6px] text-left md:text-left text-slate-600 dark:text-slate-400 leading-[1.65] md:leading-relaxed w-full md:max-w-[90%] mx-auto md:mx-0">
+                            <p className="mt-2.5 md:mt-1 text-[11.9px] md:text-[15.6px] text-left md:text-left text-slate-600 dark:text-slate-400 leading-[1.24] md:leading-[1.22] w-full md:max-w-[90%] mx-auto md:mx-0">
                                 {bio}
                             </p>
                         )}
