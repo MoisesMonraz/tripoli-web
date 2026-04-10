@@ -30,8 +30,8 @@ export const specialAuthors: Author[] = [
         slug: "juan-ignacio-armenta",
         name: "Juan Ignacio Armenta",
         role: "Coordinador Servicios Contables",
-        bio: "Especialista en contabilidad y gestión financiera.",
-        photoUrl: "/authors/juan-ignacio-armenta.jpg",
+        bio: "Licenciado en Contaduría y Gobierno Corporativo, especializado en estructura financiera, cumplimiento fiscal y generación de información estratégica. Actualmente colabora en EisnerAmper en la elaboración de estados financieros bajo estándares internacionales y en la gestión operativa y seguimiento financiero de clientes.",
+        photoUrl: "/authors/juan-ignacio-armenta.png",
     },
     {
         slug: "ricardo-nunez-esparza",
