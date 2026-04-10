@@ -55,11 +55,11 @@ export const specialAuthors: Author[] = [
         photoUrl: "/authors/manuela-piza.jpg",
     },
     {
-        slug: "izcoatl-sanchez",
+        slug: "izcoatl-sanchez-patino",
         name: "Izcóatl Sánchez",
         role: "Coordinador Industria TI",
-        bio: "Especialista en tecnología de la información y transformación digital.",
-        photoUrl: "/authors/izcoatl-sanchez.jpg",
+        bio: "Especialista en transformación digital con enfoque en ejecución, adopción y resultados de negocio. Actualmente consultor en London Consulting Group, liderando proyectos de analítica, ciberseguridad, automatización e inteligencia artificial.",
+        photoUrl: "/authors/izcoatl-sanchez.png",
     },
     {
         slug: "pablo-diaz-del-castillo",
