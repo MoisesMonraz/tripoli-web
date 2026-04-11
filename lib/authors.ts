@@ -37,8 +37,8 @@ export const specialAuthors: Author[] = [
         slug: "ricardo-nunez-esparza",
         name: "Ricardo Núñez Esparza",
         role: "Coordinador Servicios Audiovisuales",
-        bio: "Especialista en producción audiovisual y contenido multimedia.",
-        photoUrl: "/authors/ricardo-nunez.jpg",
+        bio: "Licenciado en Comunicación Audiovisual, especializado en producción y dirección audiovisual, dirección creativa y ejecución de proyectos. Director de Noema Estudio.",
+        photoUrl: "/authors/ricardo-nunez.png",
     },
     {
         slug: "camila-aceves",
