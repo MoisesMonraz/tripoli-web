@@ -83,6 +83,83 @@ const ArticleImage = ({ src, alt, caption, priority = false }) => {
 };
 
 /**
+ * ImageCarousel component — renders a multi-image carousel (image4 field)
+ */
+const ImageCarousel = ({ images }) => {
+  const [current, setCurrent] = React.useState(0);
+  if (!images?.length) return null;
+  if (images.length === 1) {
+    return (
+      <ArticleImage
+        src={images[0].url}
+        alt={images[0].caption || "Imagen del artículo"}
+        caption={images[0].caption}
+      />
+    );
+  }
+  const prev = () => setCurrent((i) => (i === 0 ? images.length - 1 : i - 1));
+  const next = () => setCurrent((i) => (i === images.length - 1 ? 0 : i + 1));
+  return (
+    <figure className="mx-auto mt-4 max-w-3xl px-5 sm:px-6 md:mt-5 lg:px-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-500 ${idx === current ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          >
+            <Image
+              src={img.url}
+              alt={img.caption || `Imagen ${idx + 1}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+              quality={85}
+            />
+          </div>
+        ))}
+        {/* Prev button */}
+        <button
+          onClick={prev}
+          aria-label="Imagen anterior"
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        {/* Next button */}
+        <button
+          onClick={next}
+          aria-label="Siguiente imagen"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
+        {/* Counter */}
+        <span className="absolute bottom-2 right-3 z-10 rounded-full bg-black/40 px-2 py-0.5 font-sans text-[10px] text-white">
+          {current + 1} / {images.length}
+        </span>
+      </div>
+      {/* Dots */}
+      <div className="mt-3 flex justify-center gap-1.5">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrent(idx)}
+            aria-label={`Ir a imagen ${idx + 1}`}
+            className={`h-1.5 rounded-full transition-all ${idx === current ? "w-4 bg-slate-600 dark:bg-slate-300" : "w-1.5 bg-slate-300 dark:bg-slate-600"}`}
+          />
+        ))}
+      </div>
+      {/* Caption for current image */}
+      {images[current]?.caption && (
+        <figcaption className="mt-2 w-full text-center font-sans text-sm max-md:text-[10.5px] leading-snug text-slate-500 dark:text-slate-400">
+          {images[current].caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+};
+
+/**
  * ContentBlock component
  */
 const ContentBlock = ({ content, className = "" }) => {
@@ -259,6 +336,9 @@ export default function ArticlePageClient({
                 caption={article.image3Caption}
               />
               <ContentBlock content={article.cierre} className="article-body--no-dropcap" />
+              {article.image4?.length > 0 && (
+                <ImageCarousel images={article.image4} />
+              )}
               {article.fuentes && (
                 <div className="mx-auto mt-8 max-w-3xl px-5 sm:px-6 md:mt-12 lg:px-0">
                   <div className="border-t border-slate-200 pt-6 dark:border-slate-800">
