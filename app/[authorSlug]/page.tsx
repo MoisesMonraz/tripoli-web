@@ -11,10 +11,13 @@ import { getAuthorBySlug } from "@/lib/authors";
 // ─── Static paths ─────────────────────────────────────────────────────────────
 export async function generateStaticParams() {
     const slugs = await getAllAuthorSlugs();
-    // Filter out the old slug and add the new one
-    const filteredSlugs = slugs.filter(s => s !== "moises-monraz");
+    // Filter out old slugs and add the new ones
+    const filteredSlugs = slugs.filter(s => s !== "moises-monraz" && s !== "izcoatl-sanchez-patino");
     if (!filteredSlugs.includes("moises-monraz-escoto")) {
         filteredSlugs.push("moises-monraz-escoto");
+    }
+    if (!filteredSlugs.includes("gonzalo-sanchez-patino")) {
+        filteredSlugs.push("gonzalo-sanchez-patino");
     }
     return filteredSlugs.map((slug: string) => ({ authorSlug: slug }));
 }
@@ -27,8 +30,11 @@ export async function generateMetadata({
 }) {
     const { authorSlug } = await params;
 
-    // Slug aliasing: moises-monraz-escoto -> moises-monraz
-    const effectiveSlug = authorSlug === "moises-monraz-escoto" ? "moises-monraz" : authorSlug;
+    // Slug aliasing: new slug -> Contentful slug
+    const effectiveSlug =
+        authorSlug === "moises-monraz-escoto" ? "moises-monraz" :
+        authorSlug === "gonzalo-sanchez-patino" ? "izcoatl-sanchez-patino" :
+        authorSlug;
 
     const author = await getAuthorBySlugFromContentful(effectiveSlug);
     if (!author) return {};
@@ -37,6 +43,9 @@ export async function generateMetadata({
     let name = author.name;
     if (author.name === "Moisés Monraz" || authorSlug === "moises-monraz-escoto") {
         name = "Moisés Monraz Escoto";
+    }
+    if (authorSlug === "gonzalo-sanchez-patino") {
+        name = "Gonzalo Sánchez Patiño";
     }
 
     return {
@@ -71,12 +80,15 @@ export default async function AuthorPage({
 }) {
     const { authorSlug } = await params;
 
-    // Explicitly 404 the old slug
+    // Explicitly 404 old slugs
     if (authorSlug === "moises-monraz") notFound();
+    if (authorSlug === "izcoatl-sanchez-patino") notFound();
 
-    // Slug aliasing: moises-monraz-escoto -> moises-monraz
-    // (In case Contentful still uses the old slug)
-    const effectiveSlug = authorSlug === "moises-monraz-escoto" ? "moises-monraz" : authorSlug;
+    // Slug aliasing: new slug -> Contentful slug
+    const effectiveSlug =
+        authorSlug === "moises-monraz-escoto" ? "moises-monraz" :
+        authorSlug === "gonzalo-sanchez-patino" ? "izcoatl-sanchez-patino" :
+        authorSlug;
 
     const author = await getAuthorBySlugFromContentful(effectiveSlug);
     if (!author) notFound();
@@ -95,11 +107,14 @@ export default async function AuthorPage({
     if (author.name === "Moisés Monraz" || authorSlug === "moises-monraz-escoto") {
         displayName = "Moisés Monraz Escoto";
     }
+    if (authorSlug === "gonzalo-sanchez-patino") {
+        displayName = "Gonzalo Sánchez Patiño";
+    }
 
     // Theme colors based on author/department
     const isCamila = authorSlug === "camila-aceves";
     const isManuela = authorSlug === "manuela-piza-hernandez";
-    const isIzco = authorSlug === "izcoatl-sanchez-patino";
+    const isIzco = authorSlug === "gonzalo-sanchez-patino";
     const isPablo = authorSlug === "pablo-diaz-del-castillo";
     const isEmiliano = authorSlug === "emiliano-mendez-alonso";
     const isSofia = authorSlug === "sofia-pelayo" || authorSlug === "sofia-pelayo-romo";

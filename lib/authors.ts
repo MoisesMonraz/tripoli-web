@@ -55,9 +55,9 @@ export const specialAuthors: Author[] = [
         photoUrl: "/authors/manuela-piza.jpg",
     },
     {
-        slug: "izcoatl-sanchez-patino",
-        name: "Izcóatl Sánchez",
-        role: "Coordinador Industria TI",
+        slug: "gonzalo-sanchez-patino",
+        name: "Gonzalo Sánchez Patiño",
+        role: "Coordinador de Aceleración Digital en Tripoli",
         bio: "Especialista en transformación digital con enfoque en ejecución, adopción y resultados de negocio. Actualmente consultor en London Consulting Group, liderando proyectos de analítica, ciberseguridad, automatización e inteligencia artificial.",
         photoUrl: "/authors/izcoatl-sanchez.png",
     },
@@ -99,8 +99,22 @@ export function isSpecialAuthor(slug: string): boolean {
  * Returns null for "Tripoli Publishing House" and other default authors.
  */
 export function getAuthorSlugByName(name: string): string | null {
+    if (!name) return null;
+    const lowerName = name.toLowerCase().trim();
+    
+    // Alias for Moisés Monraz (standardizing to the full slug)
+    if (lowerName === "moises monraz" || lowerName === "moisés monraz") {
+        return "moises-monraz-escoto";
+    }
+
+    // Alias for Gonzalo Sánchez Patiño (formerly Izcóatl Sánchez)
+    if (lowerName === "izcoatl sanchez" || lowerName === "izcóatl sánchez" ||
+        lowerName === "izcoatl sanchez patino" || lowerName === "izcóatl sánchez patiño") {
+        return "gonzalo-sanchez-patino";
+    }
+
     const found = specialAuthors.find(
-        (a) => a.name.toLowerCase() === name.toLowerCase()
+        (a) => a.name.toLowerCase() === lowerName
     );
     return found ? found.slug : null;
 }
