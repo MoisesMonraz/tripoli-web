@@ -378,15 +378,16 @@ export default function Header() {
         </svg>
       </Link>
 
-      {/* AI Chat icon — mobile only */}
+      {/* AI Chat icon — mobile only, visible only when sticky header is active */}
       <button
         type="button"
         aria-label="Abrir asistente de Tripoli Media"
         onClick={() => window.dispatchEvent(new CustomEvent("tripoli:toggle-chat"))}
-        className="md:hidden flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-[#33ceff] dark:focus-visible:outline-[#33ceff]"
+        className={`${isStickyVisible ? "flex" : "hidden"} md:hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 shadow-sm transition hover:-translate-y-0.5 hover:border-[#009fe3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009fe3] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-[#009fe3] dark:focus-visible:outline-[#009fe3]`}
       >
         <svg
-          className="h-[20px] w-[20px] text-[#00BFFF] dark:text-white transition-colors"
+          className="h-[20px] w-[20px]"
+          style={{ color: '#009fe3', fill: '#009fe3' }}
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"

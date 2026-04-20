@@ -356,6 +356,7 @@ export default function AIChatWidget() {
   // 1. Context & State
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [isMobileScrolled, setIsMobileScrolled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const {
     isEnabled: isCaptchaEnabled,
@@ -388,6 +389,17 @@ export default function AIChatWidget() {
   };
 
   const welcomeMessage = <>¡Hola! Soy Tripoli tu asistente virtual.<br />Te ayudaré a encontrar, de forma detallada, la información que necesitas.</>;
+
+  // Track scroll on mobile to swap floating button ↔ header icon
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerWidth < 768) {
+        setIsMobileScrolled(window.scrollY > 80);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // 4. Effects (Auto-scroll)
   useEffect(() => {
@@ -586,7 +598,7 @@ export default function AIChatWidget() {
           setIsOpen((prev) => !prev);
         }}
         style={{ top: `${fabTop}px`, bottom: "auto" }}
-        className={`fixed right-2 sm:right-6 z-40 hidden md:flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg transition-all duration-300 hover:bg-sky-600 ${isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
+        className={`fixed right-2 sm:right-6 z-40 ${isMobileScrolled ? "hidden" : "flex"} md:flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-500 shadow-lg transition-all duration-300 hover:bg-sky-600 ${isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
           }`}
         aria-label={strings.ariaOpen}
       >
