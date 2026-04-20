@@ -396,6 +396,16 @@ export default function AIChatWidget() {
     }
   }, [messages, isOpen, isLoading]);
 
+  // Listen for header trigger on mobile
+  useEffect(() => {
+    const handleOpenFromHeader = () => {
+      closeWelcome();
+      setIsOpen((prev) => !prev);
+    };
+    window.addEventListener("tripoli:toggle-chat", handleOpenFromHeader);
+    return () => window.removeEventListener("tripoli:toggle-chat", handleOpenFromHeader);
+  }, [closeWelcome]);
+
   // 5. Handlers
   const handleSend = () => {
     if (input.trim() && !isLoading) {
@@ -538,7 +548,7 @@ export default function AIChatWidget() {
       </div>
 
       {/* Tooltip de Bienvenida */}
-      <div className="fixed right-2 sm:right-4 z-40 h-11 sm:h-12" style={{ top: fabTop }}>
+      <div className="hidden md:block fixed right-2 sm:right-4 z-40 h-11 sm:h-12" style={{ top: fabTop }}>
         {showWelcome && !isOpen && (
           <div className="pointer-events-none absolute right-full top-1/2 mr-2 sm:mr-3 -translate-x-[48px] sm:-translate-x-[62px] -translate-y-1/2">
             <div
@@ -576,7 +586,7 @@ export default function AIChatWidget() {
           setIsOpen((prev) => !prev);
         }}
         style={{ top: `${fabTop}px`, bottom: "auto" }}
-        className={`fixed right-2 sm:right-6 z-40 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg transition-all duration-300 hover:bg-sky-600 ${isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
+        className={`fixed right-2 sm:right-6 z-40 hidden md:flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg transition-all duration-300 hover:bg-sky-600 ${isOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"
           }`}
         aria-label={strings.ariaOpen}
       >
