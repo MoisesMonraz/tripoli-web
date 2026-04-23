@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
   generateSimulation, fmtNum, fmtPct, fmtTime,
@@ -12,238 +12,353 @@ import {
 import { useRouter } from 'next/navigation';
 
 const OWNER_EMAIL = 'monrazescoto@gmail.com';
-const COLORS = ['#1E3A5F','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6'];
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// GA4 color palette
+const GA_BLUE = '#1a73e8';
+const GA_GREEN = '#34a853';
+const GA_RED = '#ea4335';
+const GA_YELLOW = '#fbbc04';
+const GA_TEXT = '#202124';
+const GA_SUB = '#5f6368';
+const GA_BORDER = '#e0e0e0';
+const GA_BG = '#f8f9fa';
+const GA_BLUE_SOFT = '#e8f0fe';
 
-function SummaryCard({ label, value, change }: { label: string; value: string; change: number }) {
-  const up = change >= 0;
+const CHANNEL_COLORS = [GA_BLUE, GA_GREEN, GA_YELLOW, GA_RED, '#9c27b0'];
+
+type Tab = 'resumen' | 'adquisicion' | 'engagement' | 'demografia';
+
+// ─── Trend badge ───────────────────────────────────────────────────────────────
+function Trend({ value }: { value: number }) {
+  const up = value >= 0;
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{label}</p>
-      <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
-      <p className={`text-xs mt-1 font-semibold ${up ? 'text-emerald-600' : 'text-red-500'}`}>
-        {up ? '↑' : '↓'} {Math.abs(change).toFixed(1)}% vs período anterior
-      </p>
+    <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${up ? 'text-[#34a853] bg-[#e6f4ea]' : 'text-[#ea4335] bg-[#fce8e6]'}`}>
+      {up ? '▲' : '▼'} {Math.abs(value).toFixed(1)}%
+    </span>
+  );
+}
+
+// ─── KPI Card with sparkline ───────────────────────────────────────────────────
+function KpiCard({ label, value, change, sparkData, dataKey, color = GA_BLUE }: {
+  label: string; value: string; change: number;
+  sparkData: any[]; dataKey: string; color?: string;
+}) {
+  const uid = `spark-${dataKey}-${label.replace(/\s/g, '')}`;
+  return (
+    <div className="bg-white rounded-lg border border-[#e0e0e0] p-5 flex flex-col gap-2 hover:shadow-sm transition-shadow">
+      <p className="text-[13px] text-[#5f6368] leading-tight">{label}</p>
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <p className="text-[28px] font-normal text-[#202124] leading-none">{value}</p>
+        <Trend value={change} />
+      </div>
+      <div className="mt-1">
+        <ResponsiveContainer width="100%" height={44}>
+          <AreaChart data={sparkData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={1.5} fill={`url(#${uid})`} dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
 
-function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+// ─── Tab button ───────────────────────────────────────────────────────────────
+function TabBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <div className="bg-slate-50 rounded-xl border border-slate-200 p-5">
-      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{label}</p>
-      <p className="text-3xl font-bold text-[#1E3A5F] mt-2">{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+    <button type="button" onClick={onClick}
+      className={`px-4 py-3 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+        active
+          ? 'text-[#1a73e8] border-[#1a73e8]'
+          : 'text-[#5f6368] border-transparent hover:text-[#202124] hover:border-[#dadce0]'
+      }`}>
+      {label}
+    </button>
+  );
+}
+
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-lg border border-[#e0e0e0] p-6">
+      <h2 className="text-[14px] font-medium text-[#202124] mb-4">{title}</h2>
+      {children}
     </div>
   );
 }
 
-function timeColor(sec: number) {
-  if (sec >= 180) return 'text-emerald-600';
-  if (sec >= 90) return 'text-amber-500';
-  return 'text-red-500';
-}
+// ─── Custom tooltip ───────────────────────────────────────────────────────────
+const gaTooltip = {
+  contentStyle: { borderRadius: 8, border: `1px solid ${GA_BORDER}`, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 12, color: GA_TEXT },
+};
 
-function Dashboard1({ data, period }: { data: SimulationResult; period: Period }) {
-  const interval = period === '90d' ? 8 : period === '30d' ? 4 : 0;
+// ─── Tab: Resumen ─────────────────────────────────────────────────────────────
+function TabResumen({ data, period }: { data: SimulationResult; period: Period }) {
   const { summary, timeSeries } = data;
+  const interval = period === '90d' ? 8 : period === '30d' ? 4 : 0;
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-base font-bold text-[#1E3A5F] mb-5 uppercase tracking-wide">1. Visitas en el tiempo</h2>
-      <ResponsiveContainer width="100%" height={280}>
-        <LineChart data={timeSeries} margin={{ top:5, right:20, left:0, bottom:5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="label" tick={{ fontSize:10 }} interval={interval} />
-          <YAxis tick={{ fontSize:10 }} tickFormatter={v => fmtNum(v)} />
-          <Tooltip formatter={(v: number) => fmtNum(v)} />
-          <Legend />
-          <Line type="monotone" dataKey="sessions" stroke="#1E3A5F" name="Sesiones totales" dot={false} strokeWidth={2} />
-          <Line type="monotone" dataKey="uniqueUsers" stroke="#3B82F6" name="Usuarios únicos" dot={false} strokeWidth={2} />
-        </LineChart>
-      </ResponsiveContainer>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <SummaryCard label="Total sesiones" value={fmtNum(summary.totalSessions)} change={summary.vsLastPeriod.sessions} />
-        <SummaryCard label="Usuarios únicos" value={fmtNum(summary.uniqueUsers)} change={summary.vsLastPeriod.users} />
-        <SummaryCard label="Páginas vistas" value={fmtNum(summary.pageViews)} change={summary.vsLastPeriod.pageViews} />
-        <SummaryCard label="Sesiones nuevas" value={fmtNum(summary.newSessions)} change={summary.vsLastPeriod.newSessions} />
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard label="Usuarios" value={fmtNum(summary.uniqueUsers)} change={summary.vsLastPeriod.users} sparkData={timeSeries} dataKey="uniqueUsers" color={GA_BLUE} />
+        <KpiCard label="Sesiones" value={fmtNum(summary.totalSessions)} change={summary.vsLastPeriod.sessions} sparkData={timeSeries} dataKey="sessions" color={GA_GREEN} />
+        <KpiCard label="Páginas vistas" value={fmtNum(summary.pageViews)} change={summary.vsLastPeriod.pageViews} sparkData={timeSeries} dataKey="sessions" color={GA_YELLOW} />
+        <KpiCard label="Sesiones nuevas" value={fmtNum(summary.newSessions)} change={summary.vsLastPeriod.newSessions} sparkData={timeSeries} dataKey="uniqueUsers" color={GA_RED} />
       </div>
-    </section>
-  );
-}
 
-function Dashboard2({ data, showAll, setShowAll }: { data: SimulationResult; showAll: boolean; setShowAll: (v: boolean) => void }) {
-  const rows = showAll ? data.urlStats : data.urlStats.slice(0, 15);
-  return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-base font-bold text-[#1E3A5F] mb-5 uppercase tracking-wide">2. Páginas más visitadas</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead>
-            <tr className="border-b border-slate-200">
-              {['URL','Visitas','% total','T. promedio','Rebote'].map(h => (
-                <th key={h} className={`py-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest ${h==='URL'?'text-left pr-4':'text-right px-3'}`}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
-                <td className="py-2.5 pr-4 font-mono text-[11px] text-slate-600 max-w-[260px] truncate">{row.url}</td>
-                <td className="py-2.5 px-3 text-right font-semibold text-slate-900">{fmtNum(row.visits)}</td>
-                <td className="py-2.5 px-3 text-right text-slate-500">{fmtPct(row.pct)}</td>
-                <td className={`py-2.5 px-3 text-right font-medium ${timeColor(row.avgTimeSeconds)}`}>{row.avgTime}</td>
-                <td className="py-2.5 pl-3 text-right text-slate-500">{fmtPct(row.bounce)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {data.urlStats.length > 15 && (
-        <button type="button" onClick={() => setShowAll(!showAll)}
-          className="mt-4 text-sm text-[#1E3A5F] hover:underline font-medium">
-          {showAll ? 'Ver menos ↑' : `Ver todas (${data.urlStats.length}) ↓`}
-        </button>
-      )}
-      <div className="mt-4 flex gap-4 text-xs text-slate-500">
-        <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-emerald-500" /> T. promedio {'>'} 3:00</span>
-        <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-400" /> 1:30 – 3:00</span>
-        <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-red-400" /> {'<'} 1:30</span>
-      </div>
-    </section>
-  );
-}
-
-function Dashboard3({ data, view, setView }: { data: SimulationResult; view: 'cities'|'countries'; setView: (v:'cities'|'countries')=>void }) {
-  const chartData = view === 'countries'
-    ? data.countries.map(c => ({ name: c.country, pct: parseFloat(c.pct.toFixed(1)) }))
-    : data.cities.map(c => ({ name: c.city, pct: parseFloat(c.pct.toFixed(1)) }));
-  return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-        <h2 className="text-base font-bold text-[#1E3A5F] uppercase tracking-wide">3. Distribución geográfica</h2>
-        <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
-          {(['cities','countries'] as const).map(v => (
-            <button key={v} type="button" onClick={() => setView(v)}
-              className={`px-4 py-1.5 font-medium transition ${view===v ? 'bg-[#1E3A5F] text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-              {v === 'cities' ? 'Por ciudad' : 'Por país'}
-            </button>
-          ))}
+      <SectionCard title="Usuarios y sesiones en el tiempo">
+        <ResponsiveContainer width="100%" height={264}>
+          <AreaChart data={timeSeries} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+            <defs>
+              <linearGradient id="gSessions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={GA_BLUE} stopOpacity={0.18} />
+                <stop offset="95%" stopColor={GA_BLUE} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={GA_GREEN} stopOpacity={0.18} />
+                <stop offset="95%" stopColor={GA_GREEN} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: GA_SUB }} interval={interval} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: GA_SUB }} tickFormatter={v => fmtNum(v)} axisLine={false} tickLine={false} width={52} />
+            <Tooltip {...gaTooltip} formatter={(v: number) => fmtNum(v)} />
+            <Area type="monotone" dataKey="sessions" stroke={GA_BLUE} strokeWidth={2} fill="url(#gSessions)" name="Sesiones" dot={false} />
+            <Area type="monotone" dataKey="uniqueUsers" stroke={GA_GREEN} strokeWidth={2} fill="url(#gUsers)" name="Usuarios" dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="flex gap-5 mt-2 justify-end">
+          <span className="flex items-center gap-1.5 text-[11px] text-[#5f6368]">
+            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_BLUE }} /> Sesiones
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-[#5f6368]">
+            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_GREEN }} /> Usuarios
+          </span>
         </div>
-      </div>
-      <ResponsiveContainer width="100%" height={view==='countries' ? 110 : 460}>
-        <BarChart data={chartData} layout="vertical" margin={{ top:0, right:40, left:0, bottom:0 }}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-          <XAxis type="number" tick={{ fontSize:10 }} tickFormatter={v => `${v}%`} />
-          <YAxis type="category" dataKey="name" width={165} tick={{ fontSize:11 }} />
-          <Tooltip formatter={(v: number) => `${v}%`} />
-          <Bar dataKey="pct" name="% de visitas" fill="#1E3A5F" radius={[0,4,4,0]} maxBarSize={36} />
-        </BarChart>
-      </ResponsiveContainer>
-      {view === 'cities' && (
-        <div className="mt-4 bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <p className="text-sm text-[#1E3A5F] font-medium">
-            💡 El 65% del tráfico mexicano proviene de las 3 principales áreas metropolitanas del país.
-          </p>
-        </div>
-      )}
-    </section>
+      </SectionCard>
+    </div>
   );
 }
 
-function Dashboard4({ data }: { data: SimulationResult }) {
-  const { engagement } = data;
-  const chartData = engagement.sectionTimes.map((s, i) => ({ name: s.section, segundos: s.avgSeconds, color: COLORS[i] }));
-  return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-base font-bold text-[#1E3A5F] mb-5 uppercase tracking-wide">4. Engagement y comportamiento</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <MetricCard label="Tiempo promedio en página" value={engagement.avgTime} sub="min:seg" />
-        <MetricCard label="Tasa de rebote" value={fmtPct(engagement.bounceRate)} />
-        <MetricCard label="Páginas por sesión" value={engagement.pagesPerSession.toFixed(1)} />
-        <MetricCard label="Conversión a contacto" value={fmtPct(engagement.conversionRate)} />
-      </div>
-      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Tiempo promedio por sección</h3>
-      <ResponsiveContainer width="100%" height={210}>
-        <BarChart data={chartData} margin={{ top:0, right:20, left:0, bottom:0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="name" tick={{ fontSize:10 }} />
-          <YAxis tick={{ fontSize:10 }} tickFormatter={v => fmtTime(v)} />
-          <Tooltip formatter={(v: number) => fmtTime(v)} />
-          <Bar dataKey="segundos" name="Tiempo promedio" radius={[4,4,0,0]}>
-            {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <div className="mt-6 space-y-2.5">
-        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Insights</h3>
-        {engagement.insights.map((txt, i) => (
-          <div key={i} className="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <span className="text-[#1E3A5F] font-bold text-sm shrink-0 mt-0.5">→</span>
-            <p className="text-sm text-slate-700">{txt}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Dashboard5({ data }: { data: SimulationResult }) {
+// ─── Tab: Adquisición ─────────────────────────────────────────────────────────
+function TabAdquisicion({ data }: { data: SimulationResult }) {
   const { trafficSources } = data;
+  const maxSessions = Math.max(...trafficSources.rows.map(r => r.sessions));
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-base font-bold text-[#1E3A5F] mb-5 uppercase tracking-wide">5. Fuentes de tráfico</h2>
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-        <div className="w-full lg:w-64 shrink-0 flex justify-center">
-          <ResponsiveContainer width={260} height={260}>
-            <PieChart>
-              <Pie data={trafficSources.donut} cx="50%" cy="50%" innerRadius={72} outerRadius={115} dataKey="value" labelLine={false}
-                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                  const RADIAN = Math.PI / 180;
-                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                  return <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="bold">{`${(percent * 100).toFixed(0)}%`}</text>;
-                }}>
-                {trafficSources.donut.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-              <Tooltip formatter={(v: number) => `${v}%`} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* Donut */}
+        <div className="lg:col-span-2 bg-white rounded-lg border border-[#e0e0e0] p-6">
+          <h2 className="text-[14px] font-medium text-[#202124] mb-3">Sesiones por canal</h2>
+          <div className="flex justify-center">
+            <ResponsiveContainer width={230} height={200}>
+              <PieChart>
+                <Pie data={trafficSources.donut} cx="50%" cy="50%" innerRadius={60} outerRadius={98}
+                  dataKey="value" labelLine={false}
+                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                    const R = Math.PI / 180;
+                    const r = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const x = cx + r * Math.cos(-midAngle * R);
+                    const y = cy + r * Math.sin(-midAngle * R);
+                    return percent > 0.05 ? (
+                      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="600">
+                        {`${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    ) : null;
+                  }}>
+                  {trafficSources.donut.map((_, i) => <Cell key={i} fill={CHANNEL_COLORS[i % CHANNEL_COLORS.length]} />)}
+                </Pie>
+                <Tooltip formatter={(v: number) => `${v}%`} {...gaTooltip} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-col gap-2 mt-1">
+            {trafficSources.donut.map((d, i) => (
+              <div key={i} className="flex items-center justify-between text-[13px]">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-sm inline-block shrink-0" style={{ backgroundColor: CHANNEL_COLORS[i % CHANNEL_COLORS.length] }} />
+                  <span className="text-[#202124]">{d.name}</span>
+                </span>
+                <span className="text-[#5f6368] font-medium">{d.value}%</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex-1 w-full overflow-x-auto">
-          <table className="w-full text-sm min-w-[520px]">
+
+        {/* Table */}
+        <div className="lg:col-span-3 bg-white rounded-lg border border-[#e0e0e0] p-6">
+          <h2 className="text-[14px] font-medium text-[#202124] mb-3">Fuente / Canal</h2>
+          <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-slate-200">
-                {['Fuente','Sesiones','%','T. promedio','Rebote'].map(h => (
-                  <th key={h} className={`py-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest ${h==='Fuente'?'text-left pr-4':'text-right px-3'}`}>{h}</th>
+              <tr className="border-b border-[#e0e0e0]">
+                {['Fuente', 'Sesiones', 'T. prom.', 'Rebote'].map(h => (
+                  <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'Fuente' ? 'text-left' : 'text-right'}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {trafficSources.rows.map((row, i) => (
-                <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-2.5 pr-4">
-                    <span className="font-medium text-slate-900">{row.source}</span>
-                    <span className="ml-2 text-[10px] text-slate-400 bg-slate-100 rounded px-1.5 py-0.5">{row.group}</span>
+                <tr key={i} className="border-b border-[#f1f3f4] hover:bg-[#f8f9fa] transition-colors">
+                  <td className="py-2.5">
+                    <span className="text-[#1a73e8] font-medium">{row.source}</span>
+                    <span className="ml-1.5 text-[10px] text-[#5f6368] bg-[#f1f3f4] rounded px-1.5 py-0.5">{row.group}</span>
                   </td>
-                  <td className="py-2.5 px-3 text-right font-semibold text-slate-900">{fmtNum(row.sessions)}</td>
-                  <td className="py-2.5 px-3 text-right text-slate-500">{fmtPct(row.pct)}</td>
-                  <td className="py-2.5 px-3 text-right text-slate-500">{row.avgTime}</td>
-                  <td className="py-2.5 pl-3 text-right text-slate-500">{fmtPct(row.bounce)}</td>
+                  <td className="py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <div className="w-16 h-1.5 bg-[#e8f0fe] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#1a73e8] rounded-full transition-all" style={{ width: `${(row.sessions / maxSessions) * 100}%` }} />
+                      </div>
+                      <span className="text-[#202124] font-medium w-14 text-right">{fmtNum(row.sessions)}</span>
+                    </div>
+                  </td>
+                  <td className="py-2.5 text-right text-[#5f6368]">{row.avgTime}</td>
+                  <td className="py-2.5 text-right text-[#5f6368]">{fmtPct(row.bounce)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+// ─── Tab: Engagement ──────────────────────────────────────────────────────────
+function TabEngagement({ data }: { data: SimulationResult }) {
+  const { engagement, urlStats } = data;
+  const maxVisits = Math.max(...urlStats.map(u => u.visits));
+  const rows = urlStats.slice(0, 10);
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Tiempo de interacción prom.', value: engagement.avgTime },
+          { label: 'Tasa de rebote', value: fmtPct(engagement.bounceRate) },
+          { label: 'Páginas por sesión', value: engagement.pagesPerSession.toFixed(1) },
+          { label: 'Conversión a contacto', value: fmtPct(engagement.conversionRate) },
+        ].map((m, i) => (
+          <div key={i} className="bg-white rounded-lg border border-[#e0e0e0] p-5 hover:shadow-sm transition-shadow">
+            <p className="text-[12px] text-[#5f6368] leading-snug">{m.label}</p>
+            <p className="text-[28px] font-normal text-[#202124] mt-2 leading-none">{m.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <SectionCard title="Páginas y pantallas">
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr className="border-b border-[#e0e0e0]">
+              {['Página', 'Vistas', 'T. promedio', 'Rebote'].map(h => (
+                <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'Página' ? 'text-left' : 'text-right'}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i} className="border-b border-[#f1f3f4] hover:bg-[#f8f9fa] transition-colors">
+                <td className="py-2.5 max-w-[320px]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-20 h-1.5 bg-[#e8f0fe] rounded-full overflow-hidden shrink-0">
+                      <div className="h-full bg-[#1a73e8] rounded-full" style={{ width: `${(row.visits / maxVisits) * 100}%` }} />
+                    </div>
+                    <span className="font-mono text-[11px] text-[#5f6368] truncate">{row.url}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 text-right font-medium text-[#202124]">{fmtNum(row.visits)}</td>
+                <td className={`py-2.5 text-right font-medium ${row.avgTimeSeconds >= 180 ? 'text-[#34a853]' : row.avgTimeSeconds >= 90 ? 'text-[#fbbc04]' : 'text-[#ea4335]'}`}>{row.avgTime}</td>
+                <td className="py-2.5 text-right text-[#5f6368]">{fmtPct(row.bounce)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="flex gap-4 mt-3 text-[11px] text-[#5f6368]">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full inline-block bg-[#34a853]" /> &gt; 3:00</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full inline-block bg-[#fbbc04]" /> 1:30–3:00</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full inline-block bg-[#ea4335]" /> &lt; 1:30</span>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Tiempo promedio por sección">
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={engagement.sectionTimes.map(s => ({ name: s.section, seg: s.avgSeconds }))} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f4" />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: GA_SUB }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: GA_SUB }} tickFormatter={v => fmtTime(v)} axisLine={false} tickLine={false} width={44} />
+            <Tooltip {...gaTooltip} formatter={(v: number) => fmtTime(v)} />
+            <Bar dataKey="seg" name="Tiempo promedio" radius={[4, 4, 0, 0]}>
+              {engagement.sectionTimes.map((_, i) => <Cell key={i} fill={CHANNEL_COLORS[i % CHANNEL_COLORS.length]} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </SectionCard>
+
+      <SectionCard title="Conclusiones">
+        <div className="flex flex-col gap-2.5">
+          {engagement.insights.map((txt, i) => (
+            <div key={i} className="flex items-start gap-3 bg-[#e8f0fe] rounded-lg p-3.5">
+              <span className="text-[#1a73e8] font-bold shrink-0 text-[14px]">ℹ</span>
+              <p className="text-[13px] text-[#202124]">{txt}</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
+
+// ─── Tab: Demografía ──────────────────────────────────────────────────────────
+function TabDemografia({ data }: { data: SimulationResult }) {
+  const { cities, countries } = data;
+  const maxCountry = Math.max(...countries.map(c => c.visits));
+  return (
+    <div className="flex flex-col gap-5">
+      <SectionCard title="Usuarios por país">
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr className="border-b border-[#e0e0e0]">
+              {['País', 'Visitas', '% del total'].map(h => (
+                <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'País' ? 'text-left' : 'text-right'}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {countries.map((row, i) => (
+              <tr key={i} className="border-b border-[#f1f3f4] hover:bg-[#f8f9fa] transition-colors">
+                <td className="py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 h-1.5 bg-[#e8f0fe] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#1a73e8] rounded-full" style={{ width: `${(row.visits / maxCountry) * 100}%` }} />
+                    </div>
+                    <span className="text-[#202124]">{row.country}</span>
+                  </div>
+                </td>
+                <td className="py-3 text-right font-medium text-[#202124]">{fmtNum(row.visits)}</td>
+                <td className="py-3 text-right text-[#5f6368]">{fmtPct(row.pct)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </SectionCard>
+
+      <SectionCard title="Usuarios por ciudad">
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={cities.slice(0, 12).map(c => ({ name: c.city, pct: parseFloat(c.pct.toFixed(1)) }))} layout="vertical" margin={{ top: 0, right: 50, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f3f4" />
+            <XAxis type="number" tick={{ fontSize: 11, fill: GA_SUB }} tickFormatter={v => `${v}%`} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="name" width={162} tick={{ fontSize: 11, fill: GA_SUB }} axisLine={false} tickLine={false} />
+            <Tooltip {...gaTooltip} formatter={(v: number) => `${v}%`} />
+            <Bar dataKey="pct" name="% visitas" fill={GA_BLUE} radius={[0, 4, 4, 0]} maxBarSize={18} />
+          </BarChart>
+        </ResponsiveContainer>
+      </SectionCard>
+    </div>
   );
 }
 
 // ─── Main Page ──────────────────────────────────────────────────────────────────
-
 export default function AnalyticsPage() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
@@ -251,8 +366,7 @@ export default function AnalyticsPage() {
   const [visits, setVisits] = useState(10000);
   const [period, setPeriod] = useState<Period>('30d');
   const [simData, setSimData] = useState<SimulationResult | null>(null);
-  const [geoView, setGeoView] = useState<'cities'|'countries'>('cities');
-  const [showAllUrls, setShowAllUrls] = useState(false);
+  const [tab, setTab] = useState<Tab>('resumen');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -275,37 +389,28 @@ export default function AnalyticsPage() {
 
   const handleGenerate = () => {
     setSimData(generateSimulation({ totalVisits: Math.max(100, visits), period }));
-    setShowAllUrls(false);
+    setTab('resumen');
   };
 
   const handleExport = () => {
     if (!simData) return;
     const { summary, engagement, trafficSources, urlStats, config } = simData;
-    const PERIOD_LABEL: Record<Period, string> = { '7d':'Últimos 7 días','30d':'Últimos 30 días','90d':'Últimos 90 días','12m':'Últimos 12 meses' };
+    const PERIOD_LABEL: Record<Period, string> = { '7d': 'Últimos 7 días', '30d': 'Últimos 30 días', '90d': 'Últimos 90 días', '12m': 'Últimos 12 meses' };
     const lines = [
       'REPORTE ANALYTICS — TRIPOLI MEDIA',
       `Período: ${PERIOD_LABEL[config.period]}`,
       `Generado: ${new Date().toLocaleString('es-MX')}`,
-      '',
-      '=== RESUMEN ===',
-      `Sesiones totales: ${fmtNum(summary.totalSessions)}`,
-      `Usuarios únicos: ${fmtNum(summary.uniqueUsers)}`,
-      `Páginas vistas: ${fmtNum(summary.pageViews)}`,
-      `Sesiones nuevas: ${fmtNum(summary.newSessions)}`,
-      '',
-      '=== ENGAGEMENT ===',
-      `Tiempo promedio en página: ${engagement.avgTime}`,
-      `Tasa de rebote: ${fmtPct(engagement.bounceRate)}`,
-      `Páginas por sesión: ${engagement.pagesPerSession.toFixed(1)}`,
-      `Tasa de conversión: ${fmtPct(engagement.conversionRate)}`,
-      '',
-      '=== FUENTES DE TRÁFICO ===',
+      '', '=== RESUMEN ===',
+      `Sesiones: ${fmtNum(summary.totalSessions)}`, `Usuarios: ${fmtNum(summary.uniqueUsers)}`,
+      `Páginas vistas: ${fmtNum(summary.pageViews)}`, `Sesiones nuevas: ${fmtNum(summary.newSessions)}`,
+      '', '=== ENGAGEMENT ===',
+      `Tiempo promedio: ${engagement.avgTime}`, `Tasa de rebote: ${fmtPct(engagement.bounceRate)}`,
+      `Páginas/sesión: ${engagement.pagesPerSession.toFixed(1)}`, `Conversión: ${fmtPct(engagement.conversionRate)}`,
+      '', '=== FUENTES ===',
       ...trafficSources.rows.map(r => `${r.source}: ${fmtNum(r.sessions)} sesiones (${fmtPct(r.pct)})`),
-      '',
-      '=== PÁGINAS MÁS VISITADAS ===',
+      '', '=== PÁGINAS TOP ===',
       ...urlStats.slice(0, 10).map(u => `${u.url}: ${fmtNum(u.visits)} visitas (${fmtPct(u.pct)})`),
-      '',
-      '=== INSIGHTS ===',
+      '', '=== INSIGHTS ===',
       ...engagement.insights,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
@@ -316,69 +421,102 @@ export default function AnalyticsPage() {
   };
 
   if (isChecking) {
-    return <main className="min-h-screen bg-slate-50 flex items-center justify-center"><p className="text-slate-400 text-sm">Verificando sesión...</p></main>;
+    return (
+      <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+        <p className="text-[#5f6368] text-[13px]">Verificando sesión...</p>
+      </main>
+    );
   }
   if (!session?.ok || session?.email !== OWNER_EMAIL) return null;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl flex flex-col gap-6">
+    <main className="min-h-screen bg-[#f8f9fa]">
 
-        {/* Header */}
-        <header className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <a href="/admin" className="text-xs text-[#1E3A5F] hover:underline mb-3 block">← Volver al panel</a>
-          <h1 className="text-2xl font-bold text-[#1E3A5F]">Analytics — Tripoli Media</h1>
-          <p className="text-sm text-slate-400 mt-1">Simulación de métricas del sitio</p>
+      {/* Top navigation bar */}
+      <div className="bg-white border-b border-[#e0e0e0] px-6 py-0 flex items-center justify-between h-[48px]">
+        <div className="flex items-center gap-2 h-full">
+          <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">
+            ← Admin
+          </a>
+          <span className="text-[#e0e0e0] mx-1">/</span>
+          <span className="text-[13px] text-[#202124]">Analytics</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-[#5f6368] border border-[#dadce0] rounded-full px-3 py-1 bg-[#f8f9fa]">
+            tripoli.media
+          </span>
+          {simData && (
+            <button type="button" onClick={handleExport}
+              className="text-[13px] text-[#1a73e8] font-medium hover:bg-[#e8f0fe] px-3 py-1 rounded transition-colors">
+              ↓ Exportar
+            </button>
+          )}
+        </div>
+      </div>
 
-          {/* Config panel */}
-          <div className="mt-6 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Configurar simulación</p>
-            <div className="flex flex-wrap gap-4 items-end">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-600">Visitas totales</label>
-                <input type="number" min="100" value={visits}
-                  onChange={e => setVisits(Math.max(100, parseInt(e.target.value) || 100))}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-600">Período</label>
-                <select value={period} onChange={e => setPeriod(e.target.value as Period)}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]">
-                  <option value="7d">Últimos 7 días</option>
-                  <option value="30d">Últimos 30 días</option>
-                  <option value="90d">Últimos 90 días</option>
-                  <option value="12m">Últimos 12 meses</option>
-                </select>
-              </div>
-              <button type="button" onClick={handleGenerate}
-                className="rounded-lg bg-[#1E3A5F] px-5 py-2 text-sm font-semibold text-white hover:bg-[#162d4a] transition">
-                Generar simulación
-              </button>
-            </div>
+      {/* Property + config header */}
+      <div className="bg-white border-b border-[#e0e0e0] px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-end gap-4 justify-between">
+          <div>
+            <p className="text-[11px] text-[#5f6368] mb-0.5 uppercase tracking-wide">Simulación de métricas</p>
+            <h1 className="text-[22px] font-normal text-[#202124]">Resumen del informe</h1>
           </div>
-        </header>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 border border-[#dadce0] rounded px-3 py-1.5 bg-white focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8]">
+              <span className="text-[11px] text-[#5f6368] whitespace-nowrap">Visitas:</span>
+              <input type="number" min="100" value={visits}
+                onChange={e => setVisits(Math.max(100, parseInt(e.target.value) || 100))}
+                className="w-20 text-[13px] text-[#202124] focus:outline-none ml-1" />
+            </div>
+            <select value={period} onChange={e => setPeriod(e.target.value as Period)}
+              className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] bg-white focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]">
+              <option value="7d">Últimos 7 días</option>
+              <option value="30d">Últimos 30 días</option>
+              <option value="90d">Últimos 90 días</option>
+              <option value="12m">Últimos 12 meses</option>
+            </select>
+            <button type="button" onClick={handleGenerate}
+              className="bg-[#1a73e8] text-white text-[13px] font-medium px-5 py-1.5 rounded hover:bg-[#1765cc] transition-colors shadow-sm">
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
 
-        {/* Dashboards */}
+      {/* Tab bar */}
+      {simData && (
+        <div className="bg-white border-b border-[#e0e0e0] px-6">
+          <div className="max-w-7xl mx-auto flex overflow-x-auto">
+            {([
+              ['resumen', 'Resumen'],
+              ['adquisicion', 'Adquisición'],
+              ['engagement', 'Engagement'],
+              ['demografia', 'Demografía'],
+            ] as [Tab, string][]).map(([t, label]) => (
+              <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Page content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {!simData && (
+          <div className="bg-white rounded-lg border border-[#e0e0e0] p-16 text-center">
+            <p className="text-[15px] text-[#5f6368]">
+              Configura los parámetros y haz clic en{' '}
+              <strong className="text-[#1a73e8] font-medium">Aplicar</strong>{' '}
+              para generar el informe.
+            </p>
+          </div>
+        )}
         {simData && mounted && (
           <>
-            <Dashboard1 data={simData} period={period} />
-            <Dashboard2 data={simData} showAll={showAllUrls} setShowAll={setShowAllUrls} />
-            <Dashboard3 data={simData} view={geoView} setView={setGeoView} />
-            <Dashboard4 data={simData} />
-            <Dashboard5 data={simData} />
-            <div className="flex justify-end pb-4">
-              <button type="button" onClick={handleExport}
-                className="rounded-lg border border-[#1E3A5F] px-5 py-2.5 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
-                ↓ Exportar reporte (.txt)
-              </button>
-            </div>
+            {tab === 'resumen' && <TabResumen data={simData} period={period} />}
+            {tab === 'adquisicion' && <TabAdquisicion data={simData} />}
+            {tab === 'engagement' && <TabEngagement data={simData} />}
+            {tab === 'demografia' && <TabDemografia data={simData} />}
           </>
-        )}
-
-        {!simData && (
-          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-400">
-            <p className="text-lg font-medium">Configura los parámetros y haz clic en <strong className="text-[#1E3A5F]">Generar simulación</strong></p>
-          </div>
         )}
       </div>
     </main>
