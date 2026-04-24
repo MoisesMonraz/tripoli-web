@@ -1,6 +1,9 @@
-export type Period = '7d' | '30d' | '90d' | '12m';
-
-export interface SimConfig { totalVisits: number; period: Period; }
+export interface SimConfig {
+  totalVisits: number;
+  dateFrom: string; // YYYY-MM-DD
+  dateTo: string;   // YYYY-MM-DD
+  accumulatedUsers?: number;
+}
 export interface TimePoint { label: string; sessions: number; uniqueUsers: number; }
 export interface UrlStat { url: string; visits: number; pct: number; avgTime: string; avgTimeSeconds: number; bounce: number; }
 export interface CityStat { city: string; visits: number; pct: number; }
@@ -27,6 +30,14 @@ export interface SimulationResult {
   };
 }
 
+// --- Site maturity constants ---
+export const SITE_CREATED = new Date('2025-12-01');
+export const ARTICLE_PUBLISH_DATES = [
+  { month: '2026-02', articleDays: 15 },
+  { month: '2026-03', articleDays: 1 },
+  { month: '2026-04', articleDays: 4 },
+];
+
 // --- Helpers ---
 function r(min: number, max: number) { return min + Math.random() * (max - min); }
 
@@ -44,31 +55,71 @@ function distribute(total: number, weights: number[]): number[] {
   return result;
 }
 
+// --- Maturity model ---
+function calculateMaturityFactor(endDate: string): number {
+  const endMonth = endDate.slice(0, 7);
+  const articlesPublished = ARTICLE_PUBLISH_DATES
+    .filter(e => e.month <= endMonth)
+    .reduce((sum, e) => sum + e.articleDays, 0);
+  return Math.min(articlesPublished / 50, 0.85);
+}
+
+function calculateNewUsers(
+  uniqueUsers: number,
+  dateFrom: string,
+  dateTo: string,
+  accumulatedUsers: number
+): number {
+  const maturityFactor = calculateMaturityFactor(dateTo);
+  const returningUsersFactor = accumulatedUsers > 0
+    ? accumulatedUsers / (accumulatedUsers + uniqueUsers * 3)
+    : 0;
+  const newUsersRate = (1 - maturityFactor) * (1 - returningUsersFactor);
+  const clamped = Math.max(0.60, Math.min(0.97, newUsersRate));
+  return Math.round(uniqueUsers * clamped);
+}
+
 // --- Time Series ---
 export function generateTimeSeries(config: SimConfig): TimePoint[] {
-  const { totalVisits, period } = config;
-  const today = new Date();
+  const { totalVisits, dateFrom, dateTo } = config;
+  const start = new Date(dateFrom + 'T00:00:00Z');
+  const end = new Date(dateTo + 'T00:00:00Z');
+  const totalDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-  if (period === '12m') {
+  if (totalDays > 90) {
     const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const SEASON =  [0.80,0.85,0.95,1.00,1.05,0.90,0.85,0.90,1.05,1.10,1.00,0.95];
-    const items = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(today.getFullYear(), today.getMonth() - (11 - i), 1);
-      return { label: `${MONTHS[d.getMonth()]} '${d.getFullYear().toString().slice(2)}`, weight: SEASON[d.getMonth()] * r(0.88, 1.12) };
-    });
-    const sessions = distribute(totalVisits, items.map(m => m.weight));
-    return items.map((m, i) => ({ label: m.label, sessions: sessions[i], uniqueUsers: Math.round(sessions[i] * r(0.72, 0.85)) }));
+    const SEASON  = [0.80,0.85,0.95,1.00,1.05,0.90,0.85,0.90,1.05,1.10,1.00,0.95];
+    const months: { label: string; weight: number }[] = [];
+    const cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+    const endMo = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 1));
+    while (cur.getTime() <= endMo.getTime()) {
+      const m = cur.getUTCMonth();
+      months.push({ label: `${MONTHS[m]} '${cur.getUTCFullYear().toString().slice(2)}`, weight: SEASON[m] * r(0.88, 1.12) });
+      cur.setUTCMonth(cur.getUTCMonth() + 1);
+    }
+    const sessions = distribute(totalVisits, months.map(m => m.weight));
+    return months.map((m, i) => ({ label: m.label, sessions: sessions[i], uniqueUsers: Math.round(sessions[i] * r(0.68, 0.76)) }));
   }
 
-  const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
   const DAY = ['D','L','M','X','J','V','S'];
-  const dates = Array.from({ length: days }, (_, i) => { const d = new Date(today); d.setDate(d.getDate() - (days - 1 - i)); return d; });
-  const weights = dates.map(d => { const we = d.getDay()===0||d.getDay()===6; return (we ? 0.25/2 : 0.75/5) * r(we ? 0.8 : 0.85, we ? 1.2 : 1.15); });
+  const dates: Date[] = [];
+  const cur = new Date(start);
+  while (cur.getTime() <= end.getTime()) {
+    dates.push(new Date(cur));
+    cur.setUTCDate(cur.getUTCDate() + 1);
+  }
+  const weights = dates.map(d => {
+    const dow = d.getUTCDay();
+    const isWe = dow === 0 || dow === 6;
+    return (isWe ? 0.25 / 2 : 0.75 / 5) * r(isWe ? 0.8 : 0.85, isWe ? 1.2 : 1.15);
+  });
   const sessions = distribute(totalVisits, weights);
   return dates.map((d, i) => ({
-    label: period === '7d' ? `${DAY[d.getDay()]} ${d.getDate()}` : `${d.getDate()}/${d.getMonth()+1}`,
+    label: totalDays <= 14
+      ? `${DAY[d.getUTCDay()]} ${d.getUTCDate()}`
+      : `${d.getUTCDate()}/${d.getUTCMonth() + 1}`,
     sessions: sessions[i],
-    uniqueUsers: Math.round(sessions[i] * r(0.72, 0.85)),
+    uniqueUsers: Math.round(sessions[i] * r(0.68, 0.76)),
   }));
 }
 
@@ -181,19 +232,32 @@ export function generateTrafficSources(totalVisits: number): SimulationResult['t
 }
 
 // --- Summary ---
-export function generateSummary(totalVisits: number): SimulationResult['summary'] {
-  const vsChange = () => r(-25, 25);
+export function generateSummary(
+  totalVisits: number,
+  dateFrom: string,
+  dateTo: string,
+  accumulatedUsers: number
+): SimulationResult['summary'] {
+  const uniqueUsers = Math.round(totalVisits * r(0.68, 0.76));
+  const pageViews = Math.round(totalVisits * r(2.1, 3.4));
+  const newSessions = calculateNewUsers(uniqueUsers, dateFrom, dateTo, accumulatedUsers);
   return {
     totalSessions: totalVisits,
-    uniqueUsers: Math.round(totalVisits * r(0.72,0.85)),
-    pageViews: Math.round(totalVisits * r(2.1,3.4)),
-    newSessions: Math.round(totalVisits * r(0.55,0.70)),
-    vsLastPeriod: { sessions:vsChange(), users:vsChange(), pageViews:vsChange(), newSessions:vsChange() },
+    uniqueUsers,
+    pageViews,
+    newSessions,
+    vsLastPeriod: {
+      sessions: r(8, 24),
+      users: r(6, 18),
+      pageViews: r(10, 28),
+      newSessions: r(5, 15),
+    },
   };
 }
 
 // --- Main ---
 export function generateSimulation(config: SimConfig): SimulationResult {
+  const accumulatedUsers = config.accumulatedUsers ?? 0;
   return {
     config,
     timeSeries: generateTimeSeries(config),
@@ -201,6 +265,6 @@ export function generateSimulation(config: SimConfig): SimulationResult {
     ...generateGeo(config.totalVisits),
     engagement: generateEngagement(config.totalVisits),
     trafficSources: generateTrafficSources(config.totalVisits),
-    summary: generateSummary(config.totalVisits),
+    summary: generateSummary(config.totalVisits, config.dateFrom, config.dateTo, accumulatedUsers),
   };
 }

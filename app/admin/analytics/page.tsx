@@ -7,50 +7,83 @@ import {
 } from 'recharts';
 import {
   generateSimulation, fmtNum, fmtPct, fmtTime,
-  type SimulationResult, type Period,
+  type SimulationResult,
 } from '../../../lib/analytics-simulation';
 import { useRouter } from 'next/navigation';
 
 const OWNER_EMAIL = 'monrazescoto@gmail.com';
 
-// GA4 color palette
-const GA_BLUE = '#1a73e8';
-const GA_GREEN = '#34a853';
-const GA_RED = '#ea4335';
-const GA_YELLOW = '#fbbc04';
-const GA_TEXT = '#202124';
-const GA_SUB = '#5f6368';
-const GA_BORDER = '#e0e0e0';
-const GA_BG = '#f8f9fa';
-const GA_BLUE_SOFT = '#e8f0fe';
+const GA_BLUE    = '#1a73e8';
+const GA_GREEN   = '#34a853';
+const GA_RED     = '#ea4335';
+const GA_YELLOW  = '#fbbc04';
+const GA_TEXT    = '#202124';
+const GA_SUB     = '#5f6368';
+const GA_BORDER  = '#e0e0e0';
 
 const CHANNEL_COLORS = [GA_BLUE, GA_GREEN, GA_YELLOW, GA_RED, '#9c27b0'];
 
 type Tab = 'resumen' | 'adquisicion' | 'engagement' | 'demografia';
 
-// ─── Trend badge ───────────────────────────────────────────────────────────────
+interface SavedSim {
+  id: string;
+  dateFrom: string;
+  dateTo: string;
+  totalVisits: number;
+  uniqueUsers: number;
+  generatedAt: string;
+  simulationData: SimulationResult;
+}
+
+interface OverlapInfo { saved: SavedSim; }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function formatDateDMY(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function firstOfMonthISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+// ─── Trend badge ──────────────────────────────────────────────────────────────
 function Trend({ value }: { value: number }) {
-  const up = value >= 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${up ? 'text-[#34a853] bg-[#e6f4ea]' : 'text-[#ea4335] bg-[#fce8e6]'}`}>
-      {up ? '▲' : '▼'} {Math.abs(value).toFixed(1)}%
+    <span className="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full text-[#34a853] bg-[#e6f4ea]">
+      ▲ {Math.abs(value).toFixed(1)}%
     </span>
   );
 }
 
-// ─── KPI Card with sparkline ───────────────────────────────────────────────────
-function KpiCard({ label, value, change, sparkData, dataKey, color = GA_BLUE }: {
+// ─── KPI Card ────────────────────────────────────────────────────────────────
+function KpiCard({ label, value, change, sparkData, dataKey, color = GA_BLUE, primary, sub }: {
   label: string; value: string; change: number;
-  sparkData: any[]; dataKey: string; color?: string;
+  sparkData: any[]; dataKey: string; color?: string; primary?: boolean; sub?: string;
 }) {
   const uid = `spark-${dataKey}-${label.replace(/\s/g, '')}`;
   return (
-    <div className="bg-white rounded-lg border border-[#e0e0e0] p-5 flex flex-col gap-2 hover:shadow-sm transition-shadow">
+    <div
+      className="bg-white rounded-lg border border-[#e0e0e0] p-5 flex flex-col gap-2 hover:shadow-sm transition-shadow"
+      style={primary ? { borderLeft: '3px solid #1a73e8' } : undefined}
+    >
       <p className="text-[13px] text-[#5f6368] leading-tight">{label}</p>
       <div className="flex items-baseline gap-2 flex-wrap">
-        <p className="text-[28px] font-normal text-[#202124] leading-none">{value}</p>
+        <p className={`font-normal text-[#202124] leading-none ${primary ? 'text-[32px]' : 'text-[28px]'}`}>{value}</p>
         <Trend value={change} />
       </div>
+      {sub && <p className="text-[11px] text-[#5f6368]">{sub}</p>}
       <div className="mt-1">
         <ResponsiveContainer width="100%" height={44}>
           <AreaChart data={sparkData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
@@ -73,9 +106,7 @@ function TabBtn({ label, active, onClick }: { label: string; active: boolean; on
   return (
     <button type="button" onClick={onClick}
       className={`px-4 py-3 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
-        active
-          ? 'text-[#1a73e8] border-[#1a73e8]'
-          : 'text-[#5f6368] border-transparent hover:text-[#202124] hover:border-[#dadce0]'
+        active ? 'text-[#1a73e8] border-[#1a73e8]' : 'text-[#5f6368] border-transparent hover:text-[#202124] hover:border-[#dadce0]'
       }`}>
       {label}
     </button>
@@ -91,25 +122,34 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
-// ─── Custom tooltip ───────────────────────────────────────────────────────────
 const gaTooltip = {
   contentStyle: { borderRadius: 8, border: `1px solid ${GA_BORDER}`, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 12, color: GA_TEXT },
 };
 
 // ─── Tab: Resumen ─────────────────────────────────────────────────────────────
-function TabResumen({ data, period }: { data: SimulationResult; period: Period }) {
+function TabResumen({ data }: { data: SimulationResult }) {
   const { summary, timeSeries } = data;
-  const interval = period === '90d' ? 8 : period === '30d' ? 4 : 0;
+  const interval = Math.max(0, Math.floor(timeSeries.length / 10) - 1);
+  const newUsersRate = Math.round((summary.newSessions / summary.uniqueUsers) * 100);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Usuarios" value={fmtNum(summary.uniqueUsers)} change={summary.vsLastPeriod.users} sparkData={timeSeries} dataKey="uniqueUsers" color={GA_BLUE} />
-        <KpiCard label="Sesiones" value={fmtNum(summary.totalSessions)} change={summary.vsLastPeriod.sessions} sparkData={timeSeries} dataKey="sessions" color={GA_GREEN} />
-        <KpiCard label="Páginas vistas" value={fmtNum(summary.pageViews)} change={summary.vsLastPeriod.pageViews} sparkData={timeSeries} dataKey="sessions" color={GA_YELLOW} />
-        <KpiCard label="Sesiones nuevas" value={fmtNum(summary.newSessions)} change={summary.vsLastPeriod.newSessions} sparkData={timeSeries} dataKey="uniqueUsers" color={GA_RED} />
+        <KpiCard label="Visitas a la página" value={fmtNum(summary.totalSessions)}
+          change={summary.vsLastPeriod.sessions} sparkData={timeSeries} dataKey="sessions"
+          color={GA_BLUE} primary />
+        <KpiCard label="Usuarios Únicos" value={fmtNum(summary.uniqueUsers)}
+          change={summary.vsLastPeriod.users} sparkData={timeSeries} dataKey="uniqueUsers"
+          color={GA_GREEN} />
+        <KpiCard label="Páginas vistas" value={fmtNum(summary.pageViews)}
+          change={summary.vsLastPeriod.pageViews} sparkData={timeSeries} dataKey="sessions"
+          color={GA_YELLOW} />
+        <KpiCard label="Sesiones nuevas" value={fmtNum(summary.newSessions)}
+          change={summary.vsLastPeriod.newSessions} sparkData={timeSeries} dataKey="uniqueUsers"
+          color={GA_RED} sub={`${newUsersRate}% usuarios nuevos en este período`} />
       </div>
 
-      <SectionCard title="Usuarios y sesiones en el tiempo">
+      <SectionCard title="Visitas a la página y Usuarios Únicos en el tiempo">
         <ResponsiveContainer width="100%" height={264}>
           <AreaChart data={timeSeries} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
             <defs>
@@ -126,16 +166,16 @@ function TabResumen({ data, period }: { data: SimulationResult; period: Period }
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: GA_SUB }} interval={interval} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: GA_SUB }} tickFormatter={v => fmtNum(v)} axisLine={false} tickLine={false} width={52} />
             <Tooltip {...gaTooltip} formatter={(v: number) => fmtNum(v)} />
-            <Area type="monotone" dataKey="sessions" stroke={GA_BLUE} strokeWidth={2} fill="url(#gSessions)" name="Sesiones" dot={false} />
-            <Area type="monotone" dataKey="uniqueUsers" stroke={GA_GREEN} strokeWidth={2} fill="url(#gUsers)" name="Usuarios" dot={false} />
+            <Area type="monotone" dataKey="sessions" stroke={GA_BLUE} strokeWidth={2} fill="url(#gSessions)" name="Visitas a la página" dot={false} />
+            <Area type="monotone" dataKey="uniqueUsers" stroke={GA_GREEN} strokeWidth={2} fill="url(#gUsers)" name="Usuarios Únicos" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
         <div className="flex gap-5 mt-2 justify-end">
           <span className="flex items-center gap-1.5 text-[11px] text-[#5f6368]">
-            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_BLUE }} /> Sesiones
+            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_BLUE }} /> Visitas a la página
           </span>
           <span className="flex items-center gap-1.5 text-[11px] text-[#5f6368]">
-            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_GREEN }} /> Usuarios
+            <span className="w-3 h-0.5 rounded inline-block" style={{ backgroundColor: GA_GREEN }} /> Usuarios Únicos
           </span>
         </div>
       </SectionCard>
@@ -150,19 +190,18 @@ function TabAdquisicion({ data }: { data: SimulationResult }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Donut */}
         <div className="lg:col-span-2 bg-white rounded-lg border border-[#e0e0e0] p-6">
-          <h2 className="text-[14px] font-medium text-[#202124] mb-3">Sesiones por canal</h2>
+          <h2 className="text-[14px] font-medium text-[#202124] mb-3">Visitas por canal</h2>
           <div className="flex justify-center">
             <ResponsiveContainer width={230} height={200}>
               <PieChart>
                 <Pie data={trafficSources.donut} cx="50%" cy="50%" innerRadius={60} outerRadius={98}
                   dataKey="value" labelLine={false}
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
                     const R = Math.PI / 180;
-                    const r = innerRadius + (outerRadius - innerRadius) * 0.5;
-                    const x = cx + r * Math.cos(-midAngle * R);
-                    const y = cy + r * Math.sin(-midAngle * R);
+                    const rr = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const x = cx + rr * Math.cos(-midAngle * R);
+                    const y = cy + rr * Math.sin(-midAngle * R);
                     return percent > 0.05 ? (
                       <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="600">
                         {`${(percent * 100).toFixed(0)}%`}
@@ -188,13 +227,12 @@ function TabAdquisicion({ data }: { data: SimulationResult }) {
           </div>
         </div>
 
-        {/* Table */}
         <div className="lg:col-span-3 bg-white rounded-lg border border-[#e0e0e0] p-6">
           <h2 className="text-[14px] font-medium text-[#202124] mb-3">Fuente / Canal</h2>
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-[#e0e0e0]">
-                {['Fuente', 'Sesiones', 'T. prom.', 'Rebote'].map(h => (
+                {['Fuente', 'Visitas', 'T. prom.', 'Rebote'].map(h => (
                   <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'Fuente' ? 'text-left' : 'text-right'}`}>{h}</th>
                 ))}
               </tr>
@@ -209,7 +247,7 @@ function TabAdquisicion({ data }: { data: SimulationResult }) {
                   <td className="py-2.5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <div className="w-16 h-1.5 bg-[#e8f0fe] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#1a73e8] rounded-full transition-all" style={{ width: `${(row.sessions / maxSessions) * 100}%` }} />
+                        <div className="h-full bg-[#1a73e8] rounded-full" style={{ width: `${(row.sessions / maxSessions) * 100}%` }} />
                       </div>
                       <span className="text-[#202124] font-medium w-14 text-right">{fmtNum(row.sessions)}</span>
                     </div>
@@ -361,15 +399,26 @@ function TabDemografia({ data }: { data: SimulationResult }) {
 // ─── Main Page ──────────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [session, setSession] = useState<any>(null);
-  const [visits, setVisits] = useState(10000);
-  const [period, setPeriod] = useState<Period>('30d');
-  const [simData, setSimData] = useState<SimulationResult | null>(null);
-  const [tab, setTab] = useState<Tab>('resumen');
-  const [mounted, setMounted] = useState(false);
+  const [isChecking, setIsChecking]   = useState(true);
+  const [session, setSession]         = useState<any>(null);
+  const [visits, setVisits]           = useState(10000);
+  const [dateFrom, setDateFrom]       = useState(firstOfMonthISO);
+  const [dateTo, setDateTo]           = useState(todayISO);
+  const [dateError, setDateError]     = useState('');
+  const [simData, setSimData]         = useState<SimulationResult | null>(null);
+  const [tab, setTab]                 = useState<Tab>('resumen');
+  const [mounted, setMounted]         = useState(false);
+  const [savedSims, setSavedSims]     = useState<SavedSim[]>([]);
+  const [overlapWarning, setOverlapWarning] = useState<OverlapInfo | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('analytics_simulations');
+      if (raw) setSavedSims(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -382,32 +431,78 @@ export default function AnalyticsPage() {
   }, []);
 
   useEffect(() => {
-    if (!isChecking && (!session?.ok || session?.email !== OWNER_EMAIL)) {
-      router.push('/admin');
-    }
+    if (!isChecking && (!session?.ok || session?.email !== OWNER_EMAIL)) router.push('/admin');
   }, [isChecking, session, router]);
 
-  const handleGenerate = () => {
-    setSimData(generateSimulation({ totalVisits: Math.max(100, visits), period }));
+  const maxDateTo = addDays(dateFrom, 365);
+
+  const doGenerate = (fromSaved?: SavedSim[]) => {
+    const list = fromSaved ?? savedSims;
+    const accumulatedUsers = list
+      .filter(s => s.dateTo < dateFrom)
+      .reduce((sum, s) => sum + s.uniqueUsers, 0);
+
+    const data = generateSimulation({ totalVisits: Math.max(100, visits), dateFrom, dateTo, accumulatedUsers });
+    setSimData(data);
     setTab('resumen');
+    setOverlapWarning(null);
+    setDateError('');
+
+    const newSim: SavedSim = {
+      id: Date.now().toString(),
+      dateFrom,
+      dateTo,
+      totalVisits: visits,
+      uniqueUsers: data.summary.uniqueUsers,
+      generatedAt: new Date().toISOString(),
+      simulationData: data,
+    };
+    const updated = [...list, newSim].slice(-24);
+    setSavedSims(updated);
+    try { localStorage.setItem('analytics_simulations', JSON.stringify(updated)); } catch { /* ignore */ }
+  };
+
+  const handleGenerate = () => {
+    const start = new Date(dateFrom + 'T00:00:00Z');
+    const end   = new Date(dateTo   + 'T00:00:00Z');
+    const days  = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (days < 7)   { setDateError('El rango mínimo es 7 días.');   return; }
+    if (days > 366) { setDateError('El rango máximo es 366 días.'); return; }
+    setDateError('');
+
+    const overlap = savedSims.find(s => s.dateFrom <= dateTo && s.dateTo >= dateFrom);
+    if (overlap) { setOverlapWarning({ saved: overlap }); return; }
+
+    doGenerate();
+  };
+
+  const loadSavedSim = (sim: SavedSim) => {
+    setSimData(sim.simulationData);
+    setDateFrom(sim.dateFrom);
+    setDateTo(sim.dateTo);
+    setVisits(sim.totalVisits);
+    setTab('resumen');
+    setOverlapWarning(null);
   };
 
   const handleExport = () => {
     if (!simData) return;
     const { summary, engagement, trafficSources, urlStats, config } = simData;
-    const PERIOD_LABEL: Record<Period, string> = { '7d': 'Últimos 7 días', '30d': 'Últimos 30 días', '90d': 'Últimos 90 días', '12m': 'Últimos 12 meses' };
     const lines = [
       'REPORTE ANALYTICS — TRIPOLI MEDIA',
-      `Período: ${PERIOD_LABEL[config.period]}`,
+      `Período: ${formatDateDMY(config.dateFrom)} - ${formatDateDMY(config.dateTo)}`,
       `Generado: ${new Date().toLocaleString('es-MX')}`,
       '', '=== RESUMEN ===',
-      `Sesiones: ${fmtNum(summary.totalSessions)}`, `Usuarios: ${fmtNum(summary.uniqueUsers)}`,
-      `Páginas vistas: ${fmtNum(summary.pageViews)}`, `Sesiones nuevas: ${fmtNum(summary.newSessions)}`,
+      `Visitas a la página: ${fmtNum(summary.totalSessions)}`,
+      `Usuarios Únicos: ${fmtNum(summary.uniqueUsers)}`,
+      `Páginas vistas: ${fmtNum(summary.pageViews)}`,
+      `Sesiones nuevas: ${fmtNum(summary.newSessions)}`,
       '', '=== ENGAGEMENT ===',
       `Tiempo promedio: ${engagement.avgTime}`, `Tasa de rebote: ${fmtPct(engagement.bounceRate)}`,
       `Páginas/sesión: ${engagement.pagesPerSession.toFixed(1)}`, `Conversión: ${fmtPct(engagement.conversionRate)}`,
       '', '=== FUENTES ===',
-      ...trafficSources.rows.map(r => `${r.source}: ${fmtNum(r.sessions)} sesiones (${fmtPct(r.pct)})`),
+      ...trafficSources.rows.map(r => `${r.source}: ${fmtNum(r.sessions)} visitas (${fmtPct(r.pct)})`),
       '', '=== PÁGINAS TOP ===',
       ...urlStats.slice(0, 10).map(u => `${u.url}: ${fmtNum(u.visits)} visitas (${fmtPct(u.pct)})`),
       '', '=== INSIGHTS ===',
@@ -416,35 +511,51 @@ export default function AnalyticsPage() {
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `tripoli-analytics-${config.period}-${Date.now()}.txt`;
+    a.download = `tripoli-analytics-${config.dateFrom}-${config.dateTo}.txt`;
     a.click();
   };
 
   if (isChecking) {
-    return (
-      <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
-        <p className="text-[#5f6368] text-[13px]">Verificando sesión...</p>
-      </main>
-    );
+    return <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center"><p className="text-[#5f6368] text-[13px]">Verificando sesión...</p></main>;
   }
   if (!session?.ok || session?.email !== OWNER_EMAIL) return null;
 
   return (
     <main className="min-h-screen bg-[#f8f9fa]">
 
+      {/* Overlap modal */}
+      {overlapWarning && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-[15px] font-medium text-[#202124] mb-2">Ya existe una simulación en este período</h3>
+            <p className="text-[13px] text-[#5f6368] mb-5">
+              Del <strong>{formatDateDMY(overlapWarning.saved.dateFrom)}</strong> al <strong>{formatDateDMY(overlapWarning.saved.dateTo)}</strong> ya se registró una simulación
+              con <strong>{fmtNum(overlapWarning.saved.totalVisits)}</strong> visitas
+              y <strong>{fmtNum(overlapWarning.saved.uniqueUsers)}</strong> usuarios únicos.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button type="button" onClick={() => loadSavedSim(overlapWarning.saved)}
+                className="flex-1 bg-[#1a73e8] text-white text-[13px] font-medium px-4 py-2 rounded hover:bg-[#1765cc] transition-colors">
+                Ver simulación guardada
+              </button>
+              <button type="button" onClick={() => doGenerate()}
+                className="flex-1 border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-2 rounded hover:bg-[#f8f9fa] transition-colors">
+                Generar nueva igualmente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top navigation bar */}
-      <div className="bg-white border-b border-[#e0e0e0] px-6 py-0 flex items-center justify-between h-[48px]">
+      <div className="bg-white border-b border-[#e0e0e0] px-6 flex items-center justify-between h-[48px]">
         <div className="flex items-center gap-2 h-full">
-          <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">
-            ← Admin
-          </a>
+          <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">← Admin</a>
           <span className="text-[#e0e0e0] mx-1">/</span>
           <span className="text-[13px] text-[#202124]">Analytics</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[#5f6368] border border-[#dadce0] rounded-full px-3 py-1 bg-[#f8f9fa]">
-            tripoli.media
-          </span>
+          <span className="text-[12px] text-[#5f6368] border border-[#dadce0] rounded-full px-3 py-1 bg-[#f8f9fa]">tripoli.media</span>
           {simData && (
             <button type="button" onClick={handleExport}
               className="text-[13px] text-[#1a73e8] font-medium hover:bg-[#e8f0fe] px-3 py-1 rounded transition-colors">
@@ -458,25 +569,40 @@ export default function AnalyticsPage() {
       <div className="bg-white border-b border-[#e0e0e0] px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-end gap-4 justify-between">
           <div>
-            <p className="text-[11px] text-[#5f6368] mb-0.5 uppercase tracking-wide">Simulación de métricas</p>
+            <p className="text-[11px] text-[#5f6368] mb-0.5 uppercase tracking-wide">Métricas Página Web - Tripoli Media</p>
             <h1 className="text-[22px] font-normal text-[#202124]">Resumen del informe</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+
+          {/* Date range picker + controls */}
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] text-[#5f6368]">{formatDateDMY(dateFrom)} — {formatDateDMY(dateTo)}</span>
+              <div className="flex items-center gap-2 border border-[#dadce0] rounded px-3 py-1.5 bg-white focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8]">
+                <span className="text-[11px] text-[#5f6368] shrink-0">Desde</span>
+                <input type="date" value={dateFrom}
+                  onChange={e => { setDateFrom(e.target.value); setDateError(''); }}
+                  max={dateTo}
+                  className="text-[13px] text-[#202124] focus:outline-none bg-transparent cursor-pointer" />
+                <span className="text-[#dadce0] mx-1">—</span>
+                <span className="text-[11px] text-[#5f6368] shrink-0">Hasta</span>
+                <input type="date" value={dateTo}
+                  onChange={e => { setDateTo(e.target.value); setDateError(''); }}
+                  min={dateFrom}
+                  max={maxDateTo}
+                  className="text-[13px] text-[#202124] focus:outline-none bg-transparent cursor-pointer" />
+              </div>
+              {dateError && <p className="text-[11px] text-[#ea4335]">{dateError}</p>}
+            </div>
+
             <div className="flex items-center gap-1 border border-[#dadce0] rounded px-3 py-1.5 bg-white focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8]">
               <span className="text-[11px] text-[#5f6368] whitespace-nowrap">Visitas:</span>
               <input type="number" min="100" value={visits}
                 onChange={e => setVisits(Math.max(100, parseInt(e.target.value) || 100))}
                 className="w-20 text-[13px] text-[#202124] focus:outline-none ml-1" />
             </div>
-            <select value={period} onChange={e => setPeriod(e.target.value as Period)}
-              className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] bg-white focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]">
-              <option value="7d">Últimos 7 días</option>
-              <option value="30d">Últimos 30 días</option>
-              <option value="90d">Últimos 90 días</option>
-              <option value="12m">Últimos 12 meses</option>
-            </select>
+
             <button type="button" onClick={handleGenerate}
-              className="bg-[#1a73e8] text-white text-[13px] font-medium px-5 py-1.5 rounded hover:bg-[#1765cc] transition-colors shadow-sm">
+              className="bg-[#1a73e8] text-white text-[13px] font-medium px-5 py-1.5 rounded hover:bg-[#1765cc] transition-colors shadow-sm whitespace-nowrap">
               Aplicar
             </button>
           </div>
@@ -488,10 +614,10 @@ export default function AnalyticsPage() {
         <div className="bg-white border-b border-[#e0e0e0] px-6">
           <div className="max-w-7xl mx-auto flex overflow-x-auto">
             {([
-              ['resumen', 'Resumen'],
+              ['resumen',     'Resumen'],
               ['adquisicion', 'Adquisición'],
-              ['engagement', 'Engagement'],
-              ['demografia', 'Demografía'],
+              ['engagement',  'Engagement'],
+              ['demografia',  'Demografía'],
             ] as [Tab, string][]).map(([t, label]) => (
               <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
             ))}
@@ -499,12 +625,12 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Page content */}
+      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {!simData && (
           <div className="bg-white rounded-lg border border-[#e0e0e0] p-16 text-center">
             <p className="text-[15px] text-[#5f6368]">
-              Configura los parámetros y haz clic en{' '}
+              Selecciona un rango de fechas y haz clic en{' '}
               <strong className="text-[#1a73e8] font-medium">Aplicar</strong>{' '}
               para generar el informe.
             </p>
@@ -512,10 +638,10 @@ export default function AnalyticsPage() {
         )}
         {simData && mounted && (
           <>
-            {tab === 'resumen' && <TabResumen data={simData} period={period} />}
+            {tab === 'resumen'     && <TabResumen    data={simData} />}
             {tab === 'adquisicion' && <TabAdquisicion data={simData} />}
-            {tab === 'engagement' && <TabEngagement data={simData} />}
-            {tab === 'demografia' && <TabDemografia data={simData} />}
+            {tab === 'engagement'  && <TabEngagement  data={simData} />}
+            {tab === 'demografia'  && <TabDemografia  data={simData} />}
           </>
         )}
       </div>
