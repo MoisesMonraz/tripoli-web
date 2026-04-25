@@ -3,6 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import RevistasSection from "../../../components/revistas/RevistasSection";
 import bannerSaludHero from "../../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.png";
 
 export default function SaludClient({ fabricantesData, institucionesData, especialistasData }) {
@@ -117,6 +118,8 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={especialistasSlides} aspectRatioOverride={0.25} />
       </section>
+
+      <RevistasSection categoria="sector-salud" />
 
       <style>{`
         @property --subcat-grad-pos {

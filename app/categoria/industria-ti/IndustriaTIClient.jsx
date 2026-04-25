@@ -3,6 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import RevistasSection from "../../../components/revistas/RevistasSection";
 import bannerIndustriaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Industria T.I..png";
 
 export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData }) {
@@ -122,6 +123,8 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={canalesSlides} aspectRatioOverride={0.25} />
       </section>
+
+      <RevistasSection categoria="industria-ti" />
 
       <style>{`
         @property --subcat-grad-pos {

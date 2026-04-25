@@ -158,6 +158,9 @@ export default function AdminPage() {
                   <a href="/admin/analytics" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
                     Analytics
                   </a>
+                  <a href="/admin/revistas" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
+                    Revistas
+                  </a>
                   <a href="/admin/directorio" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
                     Directorio
                   </a>

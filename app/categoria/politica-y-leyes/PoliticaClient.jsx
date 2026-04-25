@@ -3,6 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import RevistasSection from "../../../components/revistas/RevistasSection";
 import bannerPoliticaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Politica y Leyes.png";
 
 export default function PoliticaClient({ organismosData, administracionData, juridicosData }) {
@@ -116,6 +117,8 @@ export default function PoliticaClient({ organismosData, administracionData, jur
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={juridicosSlides} aspectRatioOverride={0.25} />
       </section>
+
+      <RevistasSection categoria="politica-y-leyes" />
 
       <style>{`
         @property --subcat-grad-pos {

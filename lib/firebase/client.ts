@@ -4,6 +4,7 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 import type { Analytics } from "firebase/analytics";
 import type { FirebaseApp } from "firebase/app";
 
@@ -27,6 +28,7 @@ const isFirebaseConfigured = Boolean(
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
+let storage: FirebaseStorage | undefined;
 let analytics: Analytics | undefined;
 let firebaseClientReady = false;
 
@@ -35,6 +37,7 @@ if (typeof window !== "undefined" && isFirebaseConfigured) {
     app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     firebaseClientReady = true;
   } catch (error) {
     console.error("Failed to initialize Firebase client:", error);
@@ -57,4 +60,4 @@ const initAnalytics = () => {
   return analytics;
 };
 
-export { app, auth, db, analytics, initAnalytics, isFirebaseConfigured, firebaseClientReady };
+export { app, auth, db, storage, analytics, initAnalytics, isFirebaseConfigured, firebaseClientReady };

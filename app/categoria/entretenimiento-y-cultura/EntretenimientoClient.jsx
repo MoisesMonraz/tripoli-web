@@ -3,6 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import RevistasSection from "../../../components/revistas/RevistasSection";
 import bannerEntretenimientoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Entretenimiento y Cultura.png";
 import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Productoras-de-Contenido.png";
 import bannerPromotores from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Promotores-Culturales.png";
@@ -139,6 +140,8 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={festivalesSlides} />
       </section>
+
+      <RevistasSection categoria="entretenimiento-y-cultura" />
 
       <style>{`
         @property --subcat-grad-pos {

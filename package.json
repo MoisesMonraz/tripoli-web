@@ -28,6 +28,7 @@
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "otplib": "^12.0.1",
+    "page-flip": "^2.0.7",
     "pdf-parse": "^1.1.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
