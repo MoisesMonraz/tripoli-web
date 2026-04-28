@@ -72,7 +72,7 @@ export const specialAuthors: Author[] = [
         slug: "emiliano-mendez-alonso",
         name: "Emiliano Méndez Alonso",
         role: "Coordinador Política y Leyes",
-        bio: "Abogado patronal especializado en derecho corporativo y relaciones laborales individuales y colectivas. Conductor del programa Legalmente Hablado y asociado en el despacho Barbosa & Huerga.",
+        bio: "Abogado patronal especializado en derecho corporativo y relaciones laborales individuales y colectivas. Conductor del programa Legalmente Hablado y asociado en el despacho Barbosa & Huerga. Recientemente nombrado Comisionado Laboral en la CONCAMIN.",
         photoUrl: "/authors/emiliano-mendez-alonso.png",
     },
     {
