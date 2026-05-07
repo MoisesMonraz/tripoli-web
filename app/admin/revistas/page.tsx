@@ -192,7 +192,7 @@ export default function AdminRevistasPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-slate-500 hidden md:table-cell">
-                        {r.totalPaginas || r.paginas?.length || '—'}
+                        {r.totalPaginas || '—'}
                       </td>
                       <td className="px-4 py-3 text-slate-500 hidden md:table-cell">
                         {formatDate(r.fechaPublicacion)}

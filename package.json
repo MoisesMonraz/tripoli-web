@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/patch-proxy-from-env.js"
+    "postinstall": "node scripts/patch-proxy-from-env.js && node -e \"try{require('fs').copyFileSync('node_modules/pdfjs-dist/build/pdf.worker.min.js','public/pdf.worker.min.js')}catch(e){console.warn('pdf worker copy skipped:',e.message)}\""
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.1.6",
@@ -28,8 +28,8 @@
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "otplib": "^12.0.1",
-    "page-flip": "^2.0.7",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^3.11.174",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "19.2.0",

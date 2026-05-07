@@ -9,9 +9,12 @@ function docToRevista(doc: FirebaseFirestore.DocumentSnapshot): Revista {
     slug: d.slug ?? '',
     titulo: d.titulo ?? '',
     descripcion: d.descripcion ?? '',
+    autor: d.autor ?? '',
+    subcategoria: d.subcategoria ?? undefined,
+    previewURL: d.previewURL ?? d.portadaURL ?? '',
     portadaURL: d.portadaURL ?? '',
+    pdfURL: d.pdfURL ?? '',
     categorias: d.categorias ?? [],
-    paginas: (d.paginas ?? []).sort((a: any, b: any) => a.orden - b.orden),
     marcas: d.marcas ?? [],
     fechaPublicacion: d.fechaPublicacion ?? '',
     estado: d.estado ?? 'borrador',
@@ -55,13 +58,23 @@ export async function getRevista(slug: string): Promise<Revista | null> {
   }
 }
 
-export async function getAllRevistasForSearch(): Promise<Pick<Revista, 'id' | 'slug' | 'titulo' | 'descripcion' | 'marcas' | 'portadaURL'>[]> {
+export async function getAllRevistasForSearch(): Promise<
+  Pick<Revista, 'id' | 'slug' | 'titulo' | 'descripcion' | 'marcas' | 'previewURL' | 'portadaURL'>[]
+> {
   if (!db) return [];
   try {
     const snap = await db.collection('revistas').where('estado', '==', 'publicada').get();
     return snap.docs.map(doc => {
       const d = doc.data();
-      return { id: doc.id, slug: d.slug, titulo: d.titulo, descripcion: d.descripcion, marcas: d.marcas ?? [], portadaURL: d.portadaURL };
+      return {
+        id: doc.id,
+        slug: d.slug,
+        titulo: d.titulo,
+        descripcion: d.descripcion,
+        marcas: d.marcas ?? [],
+        previewURL: d.previewURL ?? d.portadaURL ?? '',
+        portadaURL: d.portadaURL ?? '',
+      };
     });
   } catch {
     return [];

@@ -21,9 +21,9 @@ export default function RevistaCard({ revista, compact = false }: Props) {
       <div className={`relative overflow-hidden rounded-xl shadow-md transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-xl bg-slate-800 ${compact ? 'w-44' : 'w-full'}`}>
         {/* Cover image — 3:4 portrait ratio */}
         <div className="relative w-full" style={{ paddingBottom: '133.33%' }}>
-          {revista.portadaURL ? (
+          {(revista.previewURL || revista.portadaURL) ? (
             <Image
-              src={revista.portadaURL}
+              src={revista.previewURL || revista.portadaURL!}
               alt={revista.titulo}
               fill
               className="object-cover"

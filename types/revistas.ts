@@ -1,9 +1,3 @@
-export interface PageItem {
-  orden: number;
-  imageURL: string;
-  descripcionAlt: string;
-}
-
 export type CategoriaSlug =
   | 'consumo-y-retail'
   | 'entretenimiento-y-cultura'
@@ -19,18 +13,21 @@ export interface Revista {
   slug: string;
   titulo: string;
   descripcion: string;
-  portadaURL: string;
+  autor: string;
+  subcategoria?: string;
+  /** 600×600 square image used in cards and category pages */
+  previewURL: string;
+  /** Deprecated — kept for existing documents without previewURL */
+  portadaURL?: string;
+  pdfURL: string;
   categorias: CategoriaSlug[];
-  paginas: PageItem[];
   marcas: string[];
-  fechaPublicacion: string; // YYYY-MM-DD
+  fechaPublicacion: string;
   estado: EstadoRevista;
   totalPaginas: number;
   createdAt: any;
   updatedAt: any;
 }
-
-export type RevistaDraft = Omit<Revista, 'id' | 'createdAt' | 'updatedAt'>;
 
 export const CATEGORIA_LABELS: Record<CategoriaSlug, string> = {
   'consumo-y-retail': 'Consumo y Retail',

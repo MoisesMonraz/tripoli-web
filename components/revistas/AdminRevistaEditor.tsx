@@ -2,26 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import {
-  collection, doc, addDoc, updateDoc, serverTimestamp,
-} from 'firebase/firestore';
-import {
-  ref, uploadBytesResumable, getDownloadURL, deleteObject,
-} from 'firebase/storage';
+import { collection, doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase/client';
-import type { Revista, PageItem, CategoriaSlug } from '../../types/revistas';
+import type { Revista, CategoriaSlug } from '../../types/revistas';
 import { CATEGORIA_LABELS, ALL_CATEGORIAS } from '../../types/revistas';
-import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext, useSortable, arrayMove, rectSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
-/* ---------- helpers ---------- */
-
+/* ── helpers ── */
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -36,190 +23,168 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/* ---------- sortable page item ---------- */
-
-interface SortablePageProps {
-  id: string;
-  page: PageItem;
-  idx: number;
-  onRemove: (orden: number) => void;
-}
-
-function SortablePage({ id, page, idx, onRemove }: SortablePageProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`relative group rounded-lg overflow-hidden border-2 ${isDragging ? 'border-[#1E3A5F] shadow-xl z-10' : 'border-transparent'}`}
-    >
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute inset-0 cursor-grab active:cursor-grabbing z-10"
-      />
-      <div className="relative w-full" style={{ paddingBottom: '133.33%' }}>
-        <img src={page.imageURL} alt={page.descripcionAlt || `Página ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" />
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1 flex items-center justify-between">
-        <span className="text-white text-[10px]">Pág. {idx + 1}</span>
-        <button
-          onClick={() => onRemove(page.orden)}
-          className="text-rose-400 hover:text-rose-200 text-[10px] z-20 relative"
-          type="button"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- upload progress item ---------- */
-
-interface UploadItem {
-  file: File;
-  progress: number;
-  url?: string;
-  error?: string;
-  id: string;
-}
-
-/* ---------- main editor ---------- */
-
-interface Props {
-  existing?: Revista;
-}
-
-const STEPS = ['Información', 'Portada', 'Páginas', 'Confirmar'] as const;
-type Step = 0 | 1 | 2 | 3;
+/* ── component ── */
+interface Props { existing?: Revista }
 
 export default function AdminRevistaEditor({ existing }: Props) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>(0);
+
+  // Pre-allocate Firestore doc ID so storage paths are known before saving
+  const docIdRef = useRef<string>(
+    existing?.id ?? (db ? doc(collection(db, 'revistas')).id : crypto.randomUUID())
+  );
+  const docId = docIdRef.current;
+
+  /* ── form state ── */
+  const [titulo, setTitulo] = useState(existing?.titulo ?? '');
+  const [slug, setSlug] = useState(existing?.slug ?? '');
+  const [slugManual, setSlugManual] = useState(!!existing?.slug);
+  const [descripcion, setDescripcion] = useState(existing?.descripcion ?? '');
+  const [autor, setAutor] = useState(existing?.autor ?? '');
+  const [categorias, setCategorias] = useState<CategoriaSlug[]>(existing?.categorias ?? []);
+  const [subcategoria, setSubcategoria] = useState(existing?.subcategoria ?? '');
+  const [marcaInput, setMarcaInput] = useState('');
+  const [marcas, setMarcas] = useState<string[]>(existing?.marcas ?? []);
+  const [fechaPublicacion, setFechaPublicacion] = useState(existing?.fechaPublicacion ?? today());
+
+  /* ── preview image ── */
+  const previewInputRef = useRef<HTMLInputElement>(null);
+  const [previewLocalURL, setPreviewLocalURL] = useState('');
+  const [previewStorageURL, setPreviewStorageURL] = useState(existing?.previewURL ?? existing?.portadaURL ?? '');
+  const [previewProgress, setPreviewProgress] = useState<number | null>(null);
+  const [previewError, setPreviewError] = useState('');
+
+  /* ── PDF ── */
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const pdfFirstPageCanvasRef = useRef<HTMLCanvasElement>(null);
+  const pdfFileRef = useRef<File | null>(null);
+  const [pdfFileName, setPdfFileName] = useState('');
+  const [pdfFileSize, setPdfFileSize] = useState('');
+  const [numPages, setNumPages] = useState(existing?.totalPaginas ?? 0);
+  const [pdfReady, setPdfReady] = useState((existing?.totalPaginas ?? 0) > 0);
+  const [pdfStorageURL, setPdfStorageURL] = useState(existing?.pdfURL ?? '');
+  const [pdfUploadProgress, setPdfUploadProgress] = useState<number | null>(null);
+  const [pdfError, setPdfError] = useState('');
+
+  /* ── saving ── */
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  /* --- step 1: basic info --- */
-  const [titulo, setTitulo] = useState(existing?.titulo ?? '');
-  const [descripcion, setDescripcion] = useState(existing?.descripcion ?? '');
-  const [slug, setSlug] = useState(existing?.slug ?? '');
-  const [slugManual, setSlugManual] = useState(!!existing?.slug);
-  const [categorias, setCategorias] = useState<CategoriaSlug[]>(existing?.categorias ?? []);
-  const [marcas, setMarcas] = useState(existing?.marcas?.join(', ') ?? '');
-  const [fechaPublicacion, setFechaPublicacion] = useState(existing?.fechaPublicacion ?? today());
-  const [estado, setEstado] = useState<'borrador' | 'publicada'>(existing?.estado ?? 'borrador');
-
-  /* --- step 2: cover --- */
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const [coverURL, setCoverURL] = useState(existing?.portadaURL ?? '');
-  const [coverProgress, setCoverProgress] = useState<number | null>(null);
-  const [coverError, setCoverError] = useState('');
-
-  /* --- step 3: pages --- */
-  const pagesInputRef = useRef<HTMLInputElement>(null);
-  const [pages, setPages] = useState<PageItem[]>(existing?.paginas ?? []);
-  const [uploads, setUploads] = useState<UploadItem[]>([]);
-
-  const sensors = useSensors(useSensor(PointerSensor));
-
-  /* auto-slug from titulo */
+  // Auto-slug
   useEffect(() => {
     if (!slugManual) setSlug(slugify(titulo));
   }, [titulo, slugManual]);
 
-  /* --- cover upload --- */
-  const uploadCover = useCallback((file: File) => {
+  /* ── Preview upload ── */
+  const handlePreviewFile = useCallback((file: File) => {
     if (!storage) return;
-    setCoverError('');
-    setCoverProgress(0);
-    const storageRef = ref(storage, `revistas/covers/${Date.now()}_${file.name}`);
-    const task = uploadBytesResumable(storageRef, file);
-    task.on('state_changed',
-      snap => setCoverProgress(Math.round(snap.bytesTransferred / snap.totalBytes * 100)),
-      err => { setCoverError(err.message); setCoverProgress(null); },
-      async () => {
-        const url = await getDownloadURL(task.snapshot.ref);
-        setCoverURL(url);
-        setCoverProgress(null);
-      },
+    if (file.size > 5 * 1024 * 1024) { setPreviewError('Máximo 5 MB.'); return; }
+    setPreviewError('');
+    const local = URL.createObjectURL(file);
+    setPreviewLocalURL(local);
+    setPreviewProgress(0);
+    setPreviewStorageURL('');
+    const storageRef = ref(storage, `revistas/${docId}/preview.jpg`);
+    const task = uploadBytesResumable(storageRef, file, { contentType: file.type });
+    task.on(
+      'state_changed',
+      s => setPreviewProgress(Math.round(s.bytesTransferred / s.totalBytes * 100)),
+      err => { setPreviewError(err.message); setPreviewProgress(null); },
+      async () => { setPreviewStorageURL(await getDownloadURL(task.snapshot.ref)); setPreviewProgress(null); },
     );
-  }, []);
+  }, [docId]);
 
-  /* --- page uploads --- */
-  const uploadPages = useCallback((files: FileList) => {
+  /* ── PDF select: read numPages + first page thumbnail + upload ── */
+  const handlePDFFile = useCallback(async (file: File) => {
     if (!storage) return;
-    const items: UploadItem[] = Array.from(files).map(f => ({
-      file: f, progress: 0, id: `${Date.now()}_${Math.random()}`,
-    }));
-    setUploads(prev => [...prev, ...items]);
-    items.forEach(item => {
-      const storageRef = ref(storage!, `revistas/pages/${Date.now()}_${item.file.name}`);
-      const task = uploadBytesResumable(storageRef, item.file);
-      task.on('state_changed',
-        snap => {
-          const p = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-          setUploads(prev => prev.map(u => u.id === item.id ? { ...u, progress: p } : u));
-        },
-        err => {
-          setUploads(prev => prev.map(u => u.id === item.id ? { ...u, error: err.message } : u));
-        },
-        async () => {
-          const url = await getDownloadURL(task.snapshot.ref);
-          const nextOrden = pages.length + 1;
-          const newPage: PageItem = { orden: nextOrden, imageURL: url, descripcionAlt: '' };
-          setPages(prev => {
-            const updated = [...prev, { ...newPage, orden: prev.length + 1 }];
-            return updated;
-          });
-          setUploads(prev => prev.filter(u => u.id !== item.id));
-        },
-      );
-    });
-  }, [pages.length]);
+    if (file.size > 150 * 1024 * 1024) { setPdfError('Máximo 150 MB.'); return; }
+    setPdfError('');
+    setPdfReady(false);
+    setPdfStorageURL('');
+    setNumPages(0);
+    pdfFileRef.current = file;
+    setPdfFileName(file.name);
+    setPdfFileSize((file.size / (1024 * 1024)).toFixed(1) + ' MB');
 
-  const removePage = (orden: number) => {
-    setPages(prev => {
-      const filtered = prev.filter(p => p.orden !== orden);
-      return filtered.map((p, i) => ({ ...p, orden: i + 1 }));
-    });
+    try {
+      const pdfjsLib = await import('pdfjs-dist');
+      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+      const buf = await file.arrayBuffer();
+      const pdf = await (pdfjsLib as any).getDocument({ data: buf }).promise;
+      setNumPages(pdf.numPages);
+
+      // First-page thumbnail
+      if (pdfFirstPageCanvasRef.current) {
+        const page = await pdf.getPage(1);
+        const vp = page.getViewport({ scale: 0.6 });
+        const canvas = pdfFirstPageCanvasRef.current;
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      }
+      setPdfReady(true);
+    } catch (err: any) {
+      setPdfError(err.name === 'PasswordException'
+        ? 'El PDF está protegido con contraseña.'
+        : 'No se pudo leer el PDF. Verifica que no esté dañado.');
+      return;
+    }
+
+    // Upload original PDF
+    const pdfStorageRef = ref(storage, `revistas/${docId}/revista.pdf`);
+    const task = uploadBytesResumable(pdfStorageRef, file, { contentType: 'application/pdf' });
+    setPdfUploadProgress(0);
+    task.on(
+      'state_changed',
+      s => setPdfUploadProgress(Math.round(s.bytesTransferred / s.totalBytes * 100)),
+      err => { setPdfError(err.message); setPdfUploadProgress(null); },
+      async () => { setPdfStorageURL(await getDownloadURL(task.snapshot.ref)); setPdfUploadProgress(null); },
+    );
+  }, [docId]);
+
+  /* ── Tag helpers ── */
+  const addMarca = (v: string) => {
+    const t = v.trim();
+    if (t && !marcas.includes(t)) setMarcas(prev => [...prev, t]);
+    setMarcaInput('');
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    setPages(prev => {
-      const oldIdx = prev.findIndex(p => String(p.orden) === active.id);
-      const newIdx = prev.findIndex(p => String(p.orden) === over.id);
-      const reordered = arrayMove(prev, oldIdx, newIdx);
-      return reordered.map((p, i) => ({ ...p, orden: i + 1 }));
-    });
-  };
+  /* ── Save ── */
+  const handleSave = async (targetEstado: 'borrador' | 'publicada') => {
+    if (!db) { setSaveError('Firebase no disponible.'); return; }
+    if (!titulo.trim()) { setSaveError('El título es requerido.'); return; }
+    if (!slug.trim()) { setSaveError('El slug es requerido.'); return; }
+    if (!descripcion.trim()) { setSaveError('La descripción es requerida.'); return; }
+    if (!autor.trim()) { setSaveError('El autor es requerido.'); return; }
+    if (categorias.length === 0) { setSaveError('Selecciona al menos una categoría.'); return; }
+    if (!previewStorageURL) { setSaveError('Sube la imagen de preview antes de guardar.'); return; }
 
-  /* --- save --- */
-  const handleSave = async () => {
-    if (!db) { setSaveError('Firebase no está disponible.'); return; }
     setSaving(true);
     setSaveError('');
-    const marcasArr = marcas.split(',').map(s => s.trim()).filter(Boolean);
-    const data = {
-      titulo: titulo.trim(),
-      descripcion: descripcion.trim(),
-      slug: slug.trim(),
-      categorias,
-      marcas: marcasArr,
-      fechaPublicacion,
-      estado,
-      portadaURL: coverURL,
-      paginas: pages,
-      totalPaginas: pages.length,
-      updatedAt: serverTimestamp(),
-    };
+
     try {
+      const data: Record<string, any> = {
+        titulo: titulo.trim(),
+        slug: slug.trim(),
+        descripcion: descripcion.trim(),
+        autor: autor.trim(),
+        subcategoria: subcategoria.trim() || null,
+        categorias,
+        marcas,
+        fechaPublicacion,
+        estado: targetEstado,
+        previewURL: previewStorageURL,
+        portadaURL: previewStorageURL,
+        pdfURL: pdfStorageURL || null,
+        totalPaginas: numPages,
+        updatedAt: serverTimestamp(),
+      };
+
       if (existing) {
         await updateDoc(doc(db, 'revistas', existing.id), data);
       } else {
-        await addDoc(collection(db, 'revistas'), { ...data, createdAt: serverTimestamp() });
+        await setDoc(doc(db, 'revistas', docId), { ...data, createdAt: serverTimestamp() });
       }
       router.push('/admin/revistas');
     } catch (err: any) {
@@ -229,340 +194,274 @@ export default function AdminRevistaEditor({ existing }: Props) {
     }
   };
 
-  /* --- validation per step --- */
-  const canProceed: Record<Step, boolean> = {
-    0: titulo.trim().length >= 2 && slug.trim().length >= 2 && categorias.length > 0,
-    1: true,
-    2: true,
-    3: true,
-  };
+  const isUploading = previewProgress !== null || pdfUploadProgress !== null;
 
-  /* ===================== render ===================== */
+  /* ── JSX ── */
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Steps nav */}
-      <div className="flex items-center gap-0">
-        {STEPS.map((s, i) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => i < step ? setStep(i as Step) : undefined}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition ${
-              step === i
-                ? 'text-[#1E3A5F] border-b-2 border-[#1E3A5F]'
-                : i < step
-                ? 'text-emerald-600 border-b-2 border-emerald-200 cursor-pointer hover:text-emerald-700'
-                : 'text-slate-400 border-b-2 border-transparent cursor-default'
-            }`}
-          >
-            <span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${
-              step === i ? 'bg-[#1E3A5F] text-white' : i < step ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'
-            }`}>
-              {i < step ? '✓' : i + 1}
-            </span>
-            <span className="hidden sm:inline">{s}</span>
-          </button>
-        ))}
+      {/* Título + Slug */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Título *</label>
+          <input
+            value={titulo}
+            onChange={e => setTitulo(e.target.value)}
+            placeholder="Ej: Revista Tripoli Abril 2026"
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Slug *</label>
+          <input
+            value={slug}
+            onChange={e => { setSlug(e.target.value); setSlugManual(true); }}
+            placeholder="revista-tripoli-abril-2026"
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+          />
+          <p className="text-[10px] text-slate-400">URL: /revistas/{slug || '...'}</p>
+        </div>
       </div>
 
-      {/* ---- Step 0: Info ---- */}
-      {step === 0 && (
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Título *</label>
-              <input
-                value={titulo}
-                onChange={e => setTitulo(e.target.value)}
-                placeholder="Ej: Revista Tripoli Abril 2026"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Slug *</label>
-              <input
-                value={slug}
-                onChange={e => { setSlug(e.target.value); setSlugManual(true); }}
-                placeholder="revista-tripoli-abril-2026"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-              />
-              <p className="text-[10px] text-slate-400">URL: /revistas/{slug || '...'}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Descripción</label>
-            <textarea
-              value={descripcion}
-              onChange={e => setDescripcion(e.target.value)}
-              rows={3}
-              placeholder="Breve descripción del contenido..."
-              className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] resize-none"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Categorías *</label>
-            <div className="flex flex-wrap gap-2">
-              {ALL_CATEGORIAS.map(cat => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategorias(prev =>
-                    prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-                  )}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-                    categorias.includes(cat)
-                      ? 'bg-[#1E3A5F] text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {CATEGORIA_LABELS[cat]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Marcas (separadas por coma)</label>
-              <input
-                value={marcas}
-                onChange={e => setMarcas(e.target.value)}
-                placeholder="Marca A, Marca B"
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fecha de publicación</label>
-              <input
-                type="date"
-                value={fechaPublicacion}
-                onChange={e => setFechaPublicacion(e.target.value)}
-                className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Estado</label>
-            <div className="flex gap-3">
-              {(['borrador', 'publicada'] as const).map(e => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setEstado(e)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    estado === e
-                      ? e === 'publicada' ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {e === 'publicada' ? 'Publicada' : 'Borrador'}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Descripción */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Descripción *</label>
+          <span className={`text-xs ${descripcion.length > 160 ? 'text-rose-500' : 'text-slate-400'}`}>
+            {descripcion.length}/160
+          </span>
         </div>
-      )}
+        <textarea
+          value={descripcion}
+          onChange={e => setDescripcion(e.target.value)}
+          maxLength={160}
+          rows={3}
+          placeholder="Breve descripción de la revista..."
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+        />
+      </div>
 
-      {/* ---- Step 1: Cover ---- */}
-      {step === 1 && (
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500">Sube la imagen de portada de la revista (recomendado: 600×800 px o proporción 3:4).</p>
+      {/* Autor */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Autor *</label>
+        <input
+          value={autor}
+          onChange={e => setAutor(e.target.value)}
+          placeholder="Nombre del autor o equipo editorial"
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+        />
+      </div>
 
-          <input
-            ref={coverInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={e => e.target.files?.[0] && uploadCover(e.target.files[0])}
-          />
-
-          {coverURL ? (
-            <div className="flex gap-4 items-start">
-              <div className="relative w-32 shrink-0" style={{ paddingBottom: '42.65%' }}>
-                <img src={coverURL} alt="Portada" className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-md" />
-              </div>
-              <div className="flex flex-col gap-2 pt-2">
-                <p className="text-sm text-emerald-600 font-medium">✓ Portada subida</p>
-                <button
-                  type="button"
-                  onClick={() => { setCoverURL(''); coverInputRef.current?.click(); }}
-                  className="text-xs text-slate-500 underline hover:text-slate-700"
-                >
-                  Cambiar imagen
-                </button>
-              </div>
-            </div>
-          ) : (
+      {/* Categorías */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Categorías *</label>
+        <div className="flex flex-wrap gap-2">
+          {ALL_CATEGORIAS.map(cat => (
             <button
+              key={cat}
               type="button"
-              onClick={() => coverInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center gap-2 hover:border-[#1E3A5F] hover:bg-slate-50 transition text-center"
+              onClick={() => setCategorias(prev =>
+                prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+              )}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                categorias.includes(cat)
+                  ? 'bg-[#1E3A5F] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
             >
-              <span className="text-3xl">🖼️</span>
-              <span className="text-sm font-medium text-slate-600">Haz clic para subir portada</span>
-              <span className="text-xs text-slate-400">JPG, PNG, WebP · máx. 5 MB</span>
+              {CATEGORIA_LABELS[cat]}
             </button>
-          )}
-
-          {coverProgress !== null && (
-            <div className="flex flex-col gap-1">
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-[#1E3A5F] rounded-full transition-all" style={{ width: `${coverProgress}%` }} />
-              </div>
-              <p className="text-xs text-slate-400">Subiendo... {coverProgress}%</p>
-            </div>
-          )}
-          {coverError && <p className="text-xs text-rose-600 bg-rose-50 px-3 py-2 rounded-lg">{coverError}</p>}
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* ---- Step 2: Pages ---- */}
-      {step === 2 && (
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500">
-            Sube las páginas de la revista. Puedes arrastrar para reordenarlas.
-            {pages.length > 0 && <span className="font-medium text-slate-700"> ({pages.length} páginas)</span>}
-          </p>
-
+      {/* Subcategoría + Fecha */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subcategoría</label>
           <input
-            ref={pagesInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={e => e.target.files && e.target.files.length > 0 && uploadPages(e.target.files)}
+            value={subcategoria}
+            onChange={e => setSubcategoria(e.target.value)}
+            placeholder="Ej: Negocios de Conveniencia, Startups..."
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
           />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fecha de publicación *</label>
+          <input
+            type="date"
+            value={fechaPublicacion}
+            onChange={e => setFechaPublicacion(e.target.value)}
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+          />
+        </div>
+      </div>
 
+      {/* Marcas */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Marcas Destacadas</label>
+        {marcas.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {marcas.map(m => (
+              <span key={m} className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded-full text-xs text-slate-700">
+                {m}
+                <button type="button" onClick={() => setMarcas(prev => prev.filter(x => x !== m))} className="text-slate-400 hover:text-rose-500 leading-none">✕</button>
+              </span>
+            ))}
+          </div>
+        )}
+        <input
+          value={marcaInput}
+          onChange={e => setMarcaInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addMarca(marcaInput); } }}
+          onBlur={() => marcaInput.trim() && addMarca(marcaInput)}
+          placeholder="Escribe y presiona Enter o coma para agregar"
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
+        />
+      </div>
+
+      {/* Preview image */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Imagen de Preview *</label>
+        <p className="text-xs text-slate-400">Se mostrará a 600×600px en listados · JPG, PNG, WebP · máx. 5 MB</p>
+        <input
+          ref={previewInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={e => e.target.files?.[0] && handlePreviewFile(e.target.files[0])}
+        />
+        {(previewLocalURL || previewStorageURL) ? (
+          <div className="flex gap-4 items-start">
+            <div className="w-28 h-28 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
+              <img src={previewLocalURL || previewStorageURL} alt="Preview" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col gap-2 pt-1">
+              {previewStorageURL
+                ? <p className="text-xs text-emerald-600 font-medium">✓ Imagen lista</p>
+                : previewProgress !== null
+                ? <div className="flex flex-col gap-1 w-28">
+                    <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#1E3A5F] transition-all" style={{ width: `${previewProgress}%` }} />
+                    </div>
+                    <p className="text-xs text-slate-400">Subiendo {previewProgress}%</p>
+                  </div>
+                : null
+              }
+              <button type="button" onClick={() => previewInputRef.current?.click()} className="text-xs text-slate-500 underline hover:text-slate-700">
+                Cambiar imagen
+              </button>
+            </div>
+          </div>
+        ) : (
           <button
             type="button"
-            onClick={() => pagesInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-300 rounded-xl p-5 flex items-center gap-3 hover:border-[#1E3A5F] hover:bg-slate-50 transition"
+            onClick={() => previewInputRef.current?.click()}
+            className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center gap-2 hover:border-[#1E3A5F] hover:bg-slate-50 transition w-40 text-center"
+          >
+            <span className="text-2xl">🖼️</span>
+            <span className="text-xs font-medium text-slate-600">Subir imagen</span>
+          </button>
+        )}
+        {previewError && <p className="text-xs text-rose-600">{previewError}</p>}
+      </div>
+
+      {/* PDF upload */}
+      <div className="flex flex-col gap-3">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">PDF de la Revista *</label>
+        <p className="text-xs text-slate-400">Solo PDF · máx. 150 MB</p>
+        <input
+          ref={pdfInputRef}
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          onChange={e => e.target.files?.[0] && handlePDFFile(e.target.files[0])}
+        />
+
+        {pdfFileName ? (
+          <div className="flex gap-4 items-start bg-slate-50 border border-slate-200 rounded-xl p-4">
+            {/* First-page thumbnail */}
+            <canvas
+              ref={pdfFirstPageCanvasRef}
+              className="rounded shadow shrink-0 border border-slate-200"
+              style={{ height: 100, width: 'auto' }}
+            />
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-800 truncate">{pdfFileName}</p>
+              <p className="text-xs text-slate-500">{pdfFileSize}</p>
+              {pdfReady && numPages > 0 && (
+                <p className="text-xs text-emerald-600 font-semibold">✓ {numPages} páginas detectadas</p>
+              )}
+              {pdfUploadProgress !== null ? (
+                <div className="flex flex-col gap-1">
+                  <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#1E3A5F] transition-all" style={{ width: `${pdfUploadProgress}%` }} />
+                  </div>
+                  <p className="text-xs text-slate-400">Subiendo PDF... {pdfUploadProgress}%</p>
+                </div>
+              ) : pdfStorageURL ? (
+                <p className="text-xs text-emerald-600 font-semibold">✓ PDF subido</p>
+              ) : null}
+              <button type="button" onClick={() => pdfInputRef.current?.click()} className="text-xs text-slate-500 underline hover:text-slate-700 w-fit">
+                Cambiar PDF
+              </button>
+            </div>
+          </div>
+        ) : existing?.pdfURL ? (
+          <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+            <span className="text-2xl">📄</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-700">PDF existente · {existing.totalPaginas} páginas</p>
+              <p className="text-xs text-slate-400 mt-0.5">Puedes reemplazarlo seleccionando un nuevo archivo</p>
+            </div>
+            <button type="button" onClick={() => pdfInputRef.current?.click()} className="text-xs text-slate-500 underline hover:text-slate-700 shrink-0">
+              Reemplazar
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => pdfInputRef.current?.click()}
+            className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex items-center gap-3 hover:border-[#1E3A5F] hover:bg-slate-50 transition"
           >
             <span className="text-2xl">📄</span>
             <div className="text-left">
-              <p className="text-sm font-medium text-slate-600">Agregar páginas</p>
-              <p className="text-xs text-slate-400">Selecciona una o varias imágenes a la vez</p>
+              <p className="text-sm font-medium text-slate-600">Subir PDF de la revista</p>
+              <p className="text-xs text-slate-400">Arrastra o haz clic para seleccionar</p>
             </div>
-          </button>
-
-          {/* Active uploads progress */}
-          {uploads.length > 0 && (
-            <div className="flex flex-col gap-2">
-              {uploads.map(u => (
-                <div key={u.id} className="flex items-center gap-3">
-                  <p className="text-xs text-slate-500 truncate flex-1">{u.file.name}</p>
-                  <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0">
-                    <div className="h-full bg-[#1E3A5F] transition-all" style={{ width: `${u.progress}%` }} />
-                  </div>
-                  <span className="text-xs text-slate-400 w-8 text-right">{u.progress}%</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pages grid with DnD */}
-          {pages.length > 0 && (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={pages.map(p => String(p.orden))} strategy={rectSortingStrategy}>
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                  {pages.map((p, i) => (
-                    <SortablePage
-                      key={String(p.orden)}
-                      id={String(p.orden)}
-                      page={p}
-                      idx={i}
-                      onRemove={removePage}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
-      )}
-
-      {/* ---- Step 3: Confirm ---- */}
-      {step === 3 && (
-        <div className="flex flex-col gap-5">
-          <div className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex flex-col gap-3">
-            <div className="flex gap-4 items-start">
-              {coverURL && (
-                <img src={coverURL} alt="Portada" className="w-20 rounded-lg shadow object-cover shrink-0" style={{ aspectRatio: '3/4' }} />
-              )}
-              <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-bold text-slate-900">{titulo}</h2>
-                <p className="text-xs text-slate-500 font-mono">/revistas/{slug}</p>
-                {descripcion && <p className="text-sm text-slate-600 mt-1">{descripcion}</p>}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-0.5">Categorías</p>
-                <div className="flex flex-wrap gap-1">
-                  {categorias.map(c => (
-                    <span key={c} className="text-[10px] bg-[#1E3A5F]/10 text-[#1E3A5F] px-1.5 py-0.5 rounded">
-                      {CATEGORIA_LABELS[c]}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-0.5">Páginas</p>
-                <p className="font-semibold text-slate-700">{pages.length}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-0.5">Publicación</p>
-                <p className="font-semibold text-slate-700">{fechaPublicacion}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-0.5">Estado</p>
-                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  estado === 'publicada' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                }`}>
-                  {estado === 'publicada' ? 'Publicada' : 'Borrador'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {saveError && (
-            <p className="text-sm text-rose-600 bg-rose-50 px-4 py-2 rounded-lg border border-rose-100">{saveError}</p>
-          )}
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="self-end rounded-xl bg-[#1E3A5F] px-6 py-3 text-sm font-bold text-white hover:bg-[#16304e] transition shadow-lg disabled:opacity-60"
-          >
-            {saving ? 'Guardando...' : existing ? 'Guardar cambios' : 'Crear revista'}
-          </button>
-        </div>
-      )}
-
-      {/* Navigation buttons */}
-      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-        <button
-          type="button"
-          onClick={() => step > 0 ? setStep((step - 1) as Step) : router.push('/admin/revistas')}
-          className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
-        >
-          {step === 0 ? '← Cancelar' : '← Anterior'}
-        </button>
-        {step < 3 && (
-          <button
-            type="button"
-            onClick={() => canProceed[step] && setStep((step + 1) as Step)}
-            disabled={!canProceed[step]}
-            className="px-5 py-2 rounded-lg bg-[#1E3A5F] text-sm font-semibold text-white hover:bg-[#16304e] transition disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Siguiente →
           </button>
         )}
+        {pdfError && <p className="text-xs text-rose-600 bg-rose-50 px-3 py-2 rounded-lg">{pdfError}</p>}
+      </div>
+
+      {/* Save error */}
+      {saveError && (
+        <p className="text-sm text-rose-600 bg-rose-50 px-4 py-2.5 rounded-lg border border-rose-100">{saveError}</p>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+        <a href="/admin/revistas" className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition">
+          ← Cancelar
+        </a>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => handleSave('borrador')}
+            disabled={saving || isUploading}
+            className="px-4 py-2 text-sm border border-[#1E3A5F] text-[#1E3A5F] rounded-lg font-medium hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Guardando...' : 'Guardar borrador'}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave('publicada')}
+            disabled={saving || isUploading}
+            className="px-5 py-2 text-sm bg-[#1E3A5F] text-white rounded-lg font-bold hover:bg-[#16304e] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          >
+            {saving ? 'Publicando...' : 'Publicar revista'}
+          </button>
+        </div>
       </div>
     </div>
   );
