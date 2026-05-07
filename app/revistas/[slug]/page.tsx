@@ -1,7 +1,14 @@
-import { getRevista } from '../../../lib/revistas';
+import { getRevista, getRevistas } from '../../../lib/revistas';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import FlipbookClient from '../../../components/revistas/FlipbookClient';
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const revistas = await getRevistas();
+  return revistas.map((r) => ({ slug: r.slug }));
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
