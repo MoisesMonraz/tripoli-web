@@ -161,6 +161,9 @@ export default function AdminPage() {
                   <a href="/admin/directorio" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
                     Directorio
                   </a>
+                  <a href="https://app.contentful.com" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">
+                    Revistas
+                  </a>
                 </>
               )}
               <a href="/admin/finanzas" className="rounded-lg border border-[#1E3A5F] px-4 py-2 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F] hover:text-white transition">

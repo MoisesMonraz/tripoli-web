@@ -129,11 +129,11 @@ function CardFavoriteButton({ articleSlug, articleData }) {
   );
 }
 
-export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, author, category, subcategory }) {
+export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, author, category, subcategory, href: hrefOverride, badge }) {
   const isPlaceholder = slug?.startsWith("placeholder-");
-  const articleHref = category && subcategory
+  const articleHref = hrefOverride || (category && subcategory
     ? `/${category}/${subcategory}/articulo/${slug}`
-    : `/articulo/${slug}`;
+    : `/articulo/${slug}`);
 
   const displayTitle = title;
 
@@ -166,6 +166,11 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
             <Link href={articleHref} className="block relative w-full h-full">
               <Image src={image} alt={title} fill className="object-cover" sizes="175px" />
             </Link>
+          )}
+          {badge && (
+            <span className="absolute top-1.5 left-1.5 rounded-full bg-[#1E3A5F]/90 px-1.5 py-0.5 text-[6.5px] font-bold uppercase tracking-wider text-white shadow z-10 pointer-events-none">
+              {badge}
+            </span>
           )}
         </div>
         <div className="flex flex-1 flex-col justify-between overflow-hidden px-3 py-2">
@@ -213,6 +218,11 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
             <Link href={articleHref} className="block relative w-full h-full">
               <Image src={image} alt={title} fill className="object-cover transition-transform duration-300 ease-out hover:scale-105" sizes="200px" />
             </Link>
+          )}
+          {badge && (
+            <span className="absolute top-2 left-2 rounded-full bg-[#1E3A5F]/90 px-2 py-0.5 text-[7.5px] font-bold uppercase tracking-wider text-white shadow z-10 pointer-events-none">
+              {badge}
+            </span>
           )}
         </div>
         {/* Text area - with padding, white background on right */}

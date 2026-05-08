@@ -1,4 +1,5 @@
 import { getArticlesBySubcategory } from "../../../lib/contentful";
+import { getRevistasByCategory } from "../../../lib/revistas";
 import ConsumoRetailClient from "./ConsumoRetailClient";
 
 export const metadata = {
@@ -7,10 +8,11 @@ export const metadata = {
 };
 
 export default async function ConsumoRetailPage() {
-  const [fabricantesData, cadenasData, convenienciaData] = await Promise.all([
+  const [fabricantesData, cadenasData, convenienciaData, revistas] = await Promise.all([
     getArticlesBySubcategory("consumo-y-retail", "fabricantes-y-proveedores", 6),
     getArticlesBySubcategory("consumo-y-retail", "cadenas-comerciales", 6),
     getArticlesBySubcategory("consumo-y-retail", "negocios-de-conveniencia", 6),
+    getRevistasByCategory("consumo-y-retail"),
   ]);
 
   return (
@@ -18,6 +20,7 @@ export default async function ConsumoRetailPage() {
       fabricantesData={fabricantesData}
       cadenasData={cadenasData}
       convenienciaData={convenienciaData}
+      revistas={revistas}
     />
   );
 }

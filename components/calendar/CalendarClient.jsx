@@ -69,7 +69,7 @@ function formatFullSpanishDate(dateInput) {
   return formatter.format(date);
 }
 
-export default function CalendarClient({ articles = [] }) {
+export default function CalendarClient({ articles = [], revistas = [] }) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(formatDateKey(today));
@@ -82,8 +82,26 @@ export default function CalendarClient({ articles = [] }) {
       if (!map[key]) map[key] = [];
       map[key].push(article);
     }
+    for (const revista of revistas) {
+      if (!revista.fechaPublicacion) continue;
+      const key = toDateKey(revista.fechaPublicacion);
+      if (!map[key]) map[key] = [];
+      map[key].push({
+        id: revista.id,
+        title: revista.titulo,
+        excerpt: revista.descripcion,
+        image: revista.previewUrl,
+        dateISO: revista.fechaPublicacion,
+        slug: revista.slug,
+        author: { name: revista.autor.nombre, slug: revista.autor.slug },
+        category: revista.categoria.slug,
+        subcategory: revista.subcategoria?.slug || revista.categoria.slug,
+        href: `/revistas/${revista.slug}`,
+        badge: "REVISTA",
+      });
+    }
     return map;
-  }, [articles]);
+  }, [articles, revistas]);
 
   const monthCells = useMemo(() => getMonthMatrix(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
 
@@ -197,9 +215,9 @@ export default function CalendarClient({ articles = [] }) {
             ) : (
               <ul className="space-y-2 sm:space-y-3">
                 {selectedPosts.map((post) => {
-                  const href = `/${post.category}/${post.subcategory}/articulo/${post.slug}`;
-                  const catLabel = post.categoryName || post.category?.replace(/-/g, " ") || "";
-                  const subLabel = post.subcategoryName || post.subcategory?.replace(/-/g, " ") || "";
+                  const href = post.href || `/${post.category}/${post.subcategory}/articulo/${post.slug}`;
+                  const catLabel = post.badge || post.categoryName || post.category?.replace(/-/g, " ") || "";
+                  const subLabel = post.badge ? "" : (post.subcategoryName || post.subcategory?.replace(/-/g, " ") || "");
                   const longDate = formatFullSpanishDate(post.dateISO);
 
                   return (

@@ -108,6 +108,7 @@ export default async function RootLayout({ children }) {
   const pathname = headersList.get('x-pathname') ?? '';
   const standalone = pathname === '/links';
   const isAdmin = pathname.startsWith('/admin');
+  const isRevistaViewer = pathname.startsWith('/revistas/');
 
   return (
     <html lang="es">
@@ -115,11 +116,11 @@ export default async function RootLayout({ children }) {
         <FavoritesProvider>
           <OrganizationJsonLd />
           <ScrollToTop />
-          {!standalone && !isAdmin && <Header />}
+          {!standalone && !isAdmin && !isRevistaViewer && <Header />}
           {children}
-          {!standalone && !isAdmin && <Footer />}
+          {!standalone && !isAdmin && !isRevistaViewer && <Footer />}
           <AccessGateModal />
-          {!standalone && !isAdmin && <AIChatWidget />}
+          {!standalone && !isAdmin && !isRevistaViewer && <AIChatWidget />}
         </FavoritesProvider>
       </body>
     </html>

@@ -5,7 +5,29 @@ import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanne
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerPoliticaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Politica y Leyes.png";
 
-export default function PoliticaClient({ organismosData, administracionData, juridicosData }) {
+function mergeWithRevistas(posts, subcatSlug, revistas) {
+  const revistaPosts = (revistas || [])
+    .filter((r) => r.subcategoria?.slug === subcatSlug)
+    .map((r) => ({
+      id: r.id,
+      title: r.titulo,
+      excerpt: r.descripcion,
+      image: r.previewUrl,
+      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
+      dateISO: r.fechaPublicacion,
+      slug: r.slug,
+      author: { name: r.autor.nombre, slug: r.autor.slug },
+      category: r.categoria.slug,
+      subcategory: r.subcategoria?.slug || r.categoria.slug,
+      href: `/revistas/${r.slug}`,
+      badge: "REVISTA",
+    }));
+  const merged = [...posts, ...revistaPosts];
+  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
+  return merged;
+}
+
+export default function PoliticaClient({ organismosData, administracionData, juridicosData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -86,7 +108,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={organismosData}
+        posts={mergeWithRevistas(organismosData, "organismos-publicos", revistas)}
         titleHref="/categoria/politica-y-leyes/organismos-publicos"
         moreHref="/categoria/politica-y-leyes/organismos-publicos"
       />
@@ -97,7 +119,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.cadenas}
-        posts={administracionData}
+        posts={mergeWithRevistas(administracionData, "administracion-publica", revistas)}
         titleHref="/categoria/politica-y-leyes/administracion-publica"
         moreHref="/categoria/politica-y-leyes/administracion-publica"
       />
@@ -108,7 +130,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={juridicosData}
+        posts={mergeWithRevistas(juridicosData, "servicios-juridicos", revistas)}
         titleHref="/categoria/politica-y-leyes/servicios-juridicos"
         moreHref="/categoria/politica-y-leyes/servicios-juridicos"
       />
