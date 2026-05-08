@@ -8,25 +8,7 @@ import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategoria
 import bannerPromotores from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Promotores-Culturales.png";
 import bannerFestivales from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Festivales-Eventos-y-Artistas.png";
 
-function mergeWithRevistas(articles, subcatLabel, revistas) {
-  const mags = (revistas || [])
-    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
-    .map((r) => ({
-      slug: `rev-${r.slug}`,
-      title: r.titulo,
-      excerpt: r.descripcion || '',
-      image: r.previewURL || r.portadaURL || '',
-      date: r.fechaPublicacion,
-      dateISO: r.fechaPublicacion,
-      href: `/revistas/${r.slug}`,
-      badge: 'REVISTA',
-    }));
-  return [...(articles || []), ...mags].sort(
-    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
-  );
-}
-
-export default function EntretenimientoClient({ productorasData, recintosData, festivalesData, revistas }) {
+export default function EntretenimientoClient({ productorasData, recintosData, festivalesData }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -134,13 +116,13 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
         <BaseBanner slides={heroSlides} />
       </section>
 
-      <SectionBlock title={labels.fabricantes} posts={mergeWithRevistas(productorasData, "Productoras de Contenido", revistas)} titleHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" moreHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" />
+      <SectionBlock title={labels.fabricantes} posts={productorasData} titleHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" moreHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" />
       <section aria-label={labels.bannerFabricantes} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerFabricantes}</h2>
         <BaseBanner slides={productorasSlides} />
       </section>
 
-      <SectionBlock title={labels.cadenas} posts={mergeWithRevistas(recintosData, "Promotores Culturales", revistas)} titleHref="/categoria/entretenimiento-y-cultura/promotores-culturales" moreHref="/categoria/entretenimiento-y-cultura/promotores-culturales" />
+      <SectionBlock title={labels.cadenas} posts={recintosData} titleHref="/categoria/entretenimiento-y-cultura/promotores-culturales" moreHref="/categoria/entretenimiento-y-cultura/promotores-culturales" />
       <section aria-label={labels.bannerCadenas} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerCadenas}</h2>
         <BaseBanner slides={recintosSlides} />
@@ -148,7 +130,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(festivalesData, "Festivales, Eventos y Artistas", revistas)}
+        posts={festivalesData}
         titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
         moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
         titleClassName="text-[13.5px] sm:text-lg lg:text-xl"

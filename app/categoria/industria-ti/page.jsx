@@ -1,5 +1,4 @@
 import { getArticlesBySubcategory } from "../../../lib/contentful";
-import { getRevistas } from "../../../lib/revistas";
 import IndustriaTIClient from "./IndustriaTIClient";
 
 export const metadata = {
@@ -8,11 +7,10 @@ export const metadata = {
 };
 
 export default async function IndustriaTIPage() {
-  const [fabricantesData, mayoristasData, canalesData, revistas] = await Promise.all([
+  const [fabricantesData, mayoristasData, canalesData] = await Promise.all([
     getArticlesBySubcategory("industria-ti", "fabricantes-de-tecnologia", 6),
     getArticlesBySubcategory("industria-ti", "mayoristas-ti", 6),
     getArticlesBySubcategory("industria-ti", "canales-de-distribucion", 6),
-    getRevistas({ categoria: "industria-ti" }),
   ]);
 
   return (
@@ -20,7 +18,6 @@ export default async function IndustriaTIPage() {
       fabricantesData={fabricantesData}
       mayoristasData={mayoristasData}
       canalesData={canalesData}
-      revistas={revistas}
     />
   );
 }

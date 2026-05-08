@@ -5,25 +5,7 @@ import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanne
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerSaludHero from "../../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.png";
 
-function mergeWithRevistas(articles, subcatLabel, revistas) {
-  const mags = (revistas || [])
-    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
-    .map((r) => ({
-      slug: `rev-${r.slug}`,
-      title: r.titulo,
-      excerpt: r.descripcion || '',
-      image: r.previewURL || r.portadaURL || '',
-      date: r.fechaPublicacion,
-      dateISO: r.fechaPublicacion,
-      href: `/revistas/${r.slug}`,
-      badge: 'REVISTA',
-    }));
-  return [...(articles || []), ...mags].sort(
-    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
-  );
-}
-
-export default function SaludClient({ fabricantesData, institucionesData, especialistasData, revistas }) {
+export default function SaludClient({ fabricantesData, institucionesData, especialistasData }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -104,7 +86,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "Fabricantes de equipos e insumos", revistas)}
+        posts={fabricantesData}
         titleHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         moreHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         titleClassName="text-[12.5px] sm:text-lg lg:text-xl"
@@ -116,7 +98,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(institucionesData, "Instituciones de Salud", revistas)}
+        posts={institucionesData}
         titleHref="/categoria/sector-salud/instituciones-de-salud"
         moreHref="/categoria/sector-salud/instituciones-de-salud"
       />
@@ -127,7 +109,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(especialistasData, "Especialistas Médicos", revistas)}
+        posts={especialistasData}
         titleHref="/categoria/sector-salud/especialistas-medicos"
         moreHref="/categoria/sector-salud/especialistas-medicos"
       />

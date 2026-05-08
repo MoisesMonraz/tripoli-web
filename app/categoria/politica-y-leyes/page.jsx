@@ -1,5 +1,4 @@
 import { getArticlesBySubcategory } from "../../../lib/contentful";
-import { getRevistas } from "../../../lib/revistas";
 import PoliticaClient from "./PoliticaClient";
 
 export const metadata = {
@@ -8,11 +7,10 @@ export const metadata = {
 };
 
 export default async function PoliticaYLeyesPage() {
-  const [organismosData, administracionData, juridicosData, revistas] = await Promise.all([
+  const [organismosData, administracionData, juridicosData] = await Promise.all([
     getArticlesBySubcategory("politica-y-leyes", "organismos-publicos", 6),
     getArticlesBySubcategory("politica-y-leyes", "administracion-publica", 6),
     getArticlesBySubcategory("politica-y-leyes", "servicios-juridicos", 6),
-    getRevistas({ categoria: "politica-y-leyes" }),
   ]);
 
   return (
@@ -20,7 +18,6 @@ export default async function PoliticaYLeyesPage() {
       organismosData={organismosData}
       administracionData={administracionData}
       juridicosData={juridicosData}
-      revistas={revistas}
     />
   );
 }

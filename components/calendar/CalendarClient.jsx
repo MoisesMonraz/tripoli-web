@@ -69,35 +69,21 @@ function formatFullSpanishDate(dateInput) {
   return formatter.format(date);
 }
 
-export default function CalendarClient({ articles = [], revistas = [] }) {
+export default function CalendarClient({ articles = [] }) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(formatDateKey(today));
-  // Group articles + revistas by date key (YYYY-MM-DD)
+  // Group articles by date key (YYYY-MM-DD)
   const postsByDate = useMemo(() => {
     const map = {};
     for (const article of articles) {
       if (!article.dateISO) continue;
       const key = toDateKey(article.dateISO);
       if (!map[key]) map[key] = [];
-      map[key].push({ ...article, _tipo: 'articulo' });
-    }
-    for (const r of revistas) {
-      if (!r.fechaPublicacion) continue;
-      // Use fechaPublicacion directly (already YYYY-MM-DD) to avoid UTC offset issues
-      const key = r.fechaPublicacion;
-      if (!map[key]) map[key] = [];
-      map[key].push({
-        slug: `rev-${r.slug}`,
-        title: r.titulo,
-        dateISO: r.fechaPublicacion,
-        _tipo: 'revista',
-        _href: `/revistas/${r.slug}`,
-        _autor: r.autor,
-      });
+      map[key].push(article);
     }
     return map;
-  }, [articles, revistas]);
+  }, [articles]);
 
   const monthCells = useMemo(() => getMonthMatrix(viewDate.getFullYear(), viewDate.getMonth()), [viewDate]);
 
@@ -211,12 +197,9 @@ export default function CalendarClient({ articles = [], revistas = [] }) {
             ) : (
               <ul className="space-y-2 sm:space-y-3">
                 {selectedPosts.map((post) => {
-                  const isRevista = post._tipo === 'revista';
-                  const href = isRevista
-                    ? post._href
-                    : `/${post.category}/${post.subcategory}/articulo/${post.slug}`;
-                  const catLabel = isRevista ? 'Revista' : (post.categoryName || post.category?.replace(/-/g, " ") || "");
-                  const subLabel = isRevista ? '' : (post.subcategoryName || post.subcategory?.replace(/-/g, " ") || "");
+                  const href = `/${post.category}/${post.subcategory}/articulo/${post.slug}`;
+                  const catLabel = post.categoryName || post.category?.replace(/-/g, " ") || "";
+                  const subLabel = post.subcategoryName || post.subcategory?.replace(/-/g, " ") || "";
                   const longDate = formatFullSpanishDate(post.dateISO);
 
                   return (
@@ -226,25 +209,16 @@ export default function CalendarClient({ articles = [], revistas = [] }) {
                         className="block rounded-lg sm:rounded-xl border border-slate-200/80 bg-white p-3 sm:p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#00BFFF] hover:shadow-md dark:border-slate-700/80 dark:bg-slate-900 dark:hover:border-[#33ceff]"
                       >
                         <div className="flex items-center gap-1.5 text-[7.5px] sm:text-[9px] font-bold uppercase tracking-[0.2em]">
-                          {isRevista ? (
-                            <span className="px-1.5 py-0.5 bg-[#1E3A5F] text-white rounded-sm leading-none">REVISTA</span>
-                          ) : (
-                            <>
-                              {catLabel && <span className="text-[#00BFFF] dark:text-[#33ceff]">{catLabel}</span>}
-                              {catLabel && subLabel && <span className="text-slate-300 dark:text-slate-600">/</span>}
-                              {subLabel && <span className="text-[#00BFFF] dark:text-[#33ceff]">{subLabel}</span>}
-                            </>
-                          )}
+                          {catLabel && <span className="text-[#00BFFF] dark:text-[#33ceff]">{catLabel}</span>}
+                          {catLabel && subLabel && <span className="text-slate-300 dark:text-slate-600">/</span>}
+                          {subLabel && <span className="text-[#00BFFF] dark:text-[#33ceff]">{subLabel}</span>}
                         </div>
 
                         <p className="mt-1 text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-50">{post.title}</p>
 
                         <div className="mt-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-sans text-slate-500 dark:text-slate-400">
                           <span className="font-semibold text-slate-700 dark:text-slate-200">
-                            {isRevista
-                              ? (post._autor || 'Tripoli Media')
-                              : <AuthorDisplay author={post.author} />
-                            }
+                            <AuthorDisplay author={post.author} />
                           </span>
                           <span className="text-slate-300 dark:text-slate-600">|</span>
                           <time dateTime={post.dateISO}>{longDate}</time>

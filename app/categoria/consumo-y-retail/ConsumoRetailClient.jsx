@@ -8,25 +8,7 @@ import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategoria
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
 import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Negocios-de-Conveniencia.png";
 
-function mergeWithRevistas(articles, subcatLabel, revistas) {
-  const mags = (revistas || [])
-    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
-    .map((r) => ({
-      slug: `rev-${r.slug}`,
-      title: r.titulo,
-      excerpt: r.descripcion || '',
-      image: r.previewURL || r.portadaURL || '',
-      date: r.fechaPublicacion,
-      dateISO: r.fechaPublicacion,
-      href: `/revistas/${r.slug}`,
-      badge: 'REVISTA',
-    }));
-  return [...(articles || []), ...mags].sort(
-    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
-  );
-}
-
-export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData, revistas }) {
+export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -166,7 +148,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "Fabricantes y Proveedores", revistas)}
+        posts={fabricantesData}
         titleHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
         moreHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
       />
@@ -177,7 +159,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(cadenasData, "Cadenas Comerciales", revistas)}
+        posts={cadenasData}
         titleHref="/categoria/consumo-y-retail/cadenas-comerciales"
         moreHref="/categoria/consumo-y-retail/cadenas-comerciales"
       />
@@ -188,7 +170,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(convenienciaData, "Negocios de Conveniencia", revistas)}
+        posts={convenienciaData}
         titleHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
         moreHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
       />

@@ -5,25 +5,7 @@ import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanne
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerIndustriaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Industria T.I..png";
 
-function mergeWithRevistas(articles, subcatLabel, revistas) {
-  const mags = (revistas || [])
-    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
-    .map((r) => ({
-      slug: `rev-${r.slug}`,
-      title: r.titulo,
-      excerpt: r.descripcion || '',
-      image: r.previewURL || r.portadaURL || '',
-      date: r.fechaPublicacion,
-      dateISO: r.fechaPublicacion,
-      href: `/revistas/${r.slug}`,
-      badge: 'REVISTA',
-    }));
-  return [...(articles || []), ...mags].sort(
-    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
-  );
-}
-
-export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData, revistas }) {
+export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -110,7 +92,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "Fabricantes de Tecnología", revistas)}
+        posts={fabricantesData}
         titleHref="/categoria/industria-ti/fabricantes-de-tecnologia"
         moreHref="/categoria/industria-ti/fabricantes-de-tecnologia"
       />
@@ -121,7 +103,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(mayoristasData, "Mayoristas TI", revistas)}
+        posts={mayoristasData}
         titleHref="/categoria/industria-ti/mayoristas-ti"
         moreHref="/categoria/industria-ti/mayoristas-ti"
       />
@@ -132,7 +114,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(canalesData, "Canales de Distribución", revistas)}
+        posts={canalesData}
         titleHref="/categoria/industria-ti/canales-de-distribucion"
         moreHref="/categoria/industria-ti/canales-de-distribucion"
       />

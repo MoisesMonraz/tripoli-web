@@ -1,5 +1,4 @@
 import { getArticlesBySubcategory } from "../../../lib/contentful";
-import { getRevistas } from "../../../lib/revistas";
 import EntretenimientoClient from "./EntretenimientoClient";
 
 export const metadata = {
@@ -8,11 +7,10 @@ export const metadata = {
 };
 
 export default async function EntretenimientoCulturaPage() {
-  const [productorasData, recintosData, festivalesData, revistas] = await Promise.all([
+  const [productorasData, recintosData, festivalesData] = await Promise.all([
     getArticlesBySubcategory("entretenimiento-y-cultura", "productoras-de-contenido", 6),
     getArticlesBySubcategory("entretenimiento-y-cultura", "promotores-culturales", 6),
     getArticlesBySubcategory("entretenimiento-y-cultura", "festivales-eventos-y-artistas", 6),
-    getRevistas({ categoria: "entretenimiento-y-cultura" }),
   ]);
 
   return (
@@ -20,7 +18,6 @@ export default async function EntretenimientoCulturaPage() {
       productorasData={productorasData}
       recintosData={recintosData}
       festivalesData={festivalesData}
-      revistas={revistas}
     />
   );
 }

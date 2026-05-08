@@ -1,5 +1,4 @@
 import { getArticlesBySubcategory } from "../../../lib/contentful";
-import { getRevistas } from "../../../lib/revistas";
 import InfraestructuraClient from "./InfraestructuraClient";
 
 export const metadata = {
@@ -8,11 +7,10 @@ export const metadata = {
 };
 
 export default async function InfraestructuraSocialPage() {
-  const [proveedoresData, desarrolladoresData, promotoresData, revistas] = await Promise.all([
+  const [proveedoresData, desarrolladoresData, promotoresData] = await Promise.all([
     getArticlesBySubcategory("infraestructura-social", "proveedores-de-materiales", 6),
     getArticlesBySubcategory("infraestructura-social", "desarrolladores-de-proyectos", 6),
     getArticlesBySubcategory("infraestructura-social", "promotores-inmobiliarios", 6),
-    getRevistas({ categoria: "infraestructura-social" }),
   ]);
 
   return (
@@ -20,7 +18,6 @@ export default async function InfraestructuraSocialPage() {
       proveedoresData={proveedoresData}
       desarrolladoresData={desarrolladoresData}
       promotoresData={promotoresData}
-      revistas={revistas}
     />
   );
 }

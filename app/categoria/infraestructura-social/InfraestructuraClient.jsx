@@ -5,25 +5,7 @@ import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanne
 import NewsCarousel from "../../../components/home/NewsCarousel";
 import bannerInfraHero from "../../../Imagenes/Banners-Pagina-Web/Banner Infraestructura Social.png";
 
-function mergeWithRevistas(articles, subcatLabel, revistas) {
-  const mags = (revistas || [])
-    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
-    .map((r) => ({
-      slug: `rev-${r.slug}`,
-      title: r.titulo,
-      excerpt: r.descripcion || '',
-      image: r.previewURL || r.portadaURL || '',
-      date: r.fechaPublicacion,
-      dateISO: r.fechaPublicacion,
-      href: `/revistas/${r.slug}`,
-      badge: 'REVISTA',
-    }));
-  return [...(articles || []), ...mags].sort(
-    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
-  );
-}
-
-export default function InfraestructuraClient({ proveedoresData, desarrolladoresData, promotoresData, revistas }) {
+export default function InfraestructuraClient({ proveedoresData, desarrolladoresData, promotoresData }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -112,7 +94,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.proveedores}
-        posts={mergeWithRevistas(proveedoresData, "Proveedores de Materiales", revistas)}
+        posts={proveedoresData}
         titleHref="/categoria/infraestructura-social/proveedores-de-materiales"
         moreHref="/categoria/infraestructura-social/proveedores-de-materiales"
       />
@@ -123,7 +105,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.desarrolladores}
-        posts={mergeWithRevistas(desarrolladoresData, "Desarrolladores de Proyectos", revistas)}
+        posts={desarrolladoresData}
         titleHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
         moreHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
         titleClassName="text-[13.5px] sm:text-lg lg:text-xl"
@@ -135,7 +117,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.promotores}
-        posts={mergeWithRevistas(promotoresData, "Promotores Inmobiliarios", revistas)}
+        posts={promotoresData}
         titleHref="/categoria/infraestructura-social/promotores-inmobiliarios"
         moreHref="/categoria/infraestructura-social/promotores-inmobiliarios"
       />

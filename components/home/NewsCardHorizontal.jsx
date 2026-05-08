@@ -129,11 +129,11 @@ function CardFavoriteButton({ articleSlug, articleData }) {
   );
 }
 
-export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, author, category, subcategory, href: hrefOverride, badge }) {
+export default function NewsCardHorizontal({ title, excerpt, image, date, dateISO, slug, author, category, subcategory }) {
   const isPlaceholder = slug?.startsWith("placeholder-");
-  const articleHref = hrefOverride ?? (category && subcategory
+  const articleHref = category && subcategory
     ? `/${category}/${subcategory}/articulo/${slug}`
-    : `/articulo/${slug}`);
+    : `/articulo/${slug}`;
 
   const displayTitle = title;
 
@@ -166,11 +166,6 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
             <Link href={articleHref} className="block relative w-full h-full">
               <Image src={image} alt={title} fill className="object-cover" sizes="175px" />
             </Link>
-          )}
-          {badge && (
-            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide bg-[#1E3A5F] text-white rounded-sm leading-none pointer-events-none">
-              {badge}
-            </span>
           )}
         </div>
         <div className="flex flex-1 flex-col justify-between overflow-hidden px-3 py-2">
@@ -218,11 +213,6 @@ export default function NewsCardHorizontal({ title, excerpt, image, date, dateIS
             <Link href={articleHref} className="block relative w-full h-full">
               <Image src={image} alt={title} fill className="object-cover transition-transform duration-300 ease-out hover:scale-105" sizes="200px" />
             </Link>
-          )}
-          {badge && (
-            <span className="absolute top-2 left-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-[#1E3A5F] text-white rounded-sm leading-none pointer-events-none">
-              {badge}
-            </span>
           )}
         </div>
         {/* Text area - with padding, white background on right */}

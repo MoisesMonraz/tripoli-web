@@ -129,6 +129,24 @@ service cloud.firestore {
     }
 
     // ========================================
+    // REVISTAS COLLECTION
+    // ========================================
+
+    match /revistas/{revistaId} {
+      // Public read — needed for the magazine viewer and listing pages
+      allow read: if true;
+
+      // Write allowed if the document has the required fields with correct types.
+      // The /admin path enforces its own authentication layer before reaching this code.
+      allow create, update: if request.resource.data.keys().hasAll(['titulo', 'slug', 'estado']) &&
+                               request.resource.data.titulo is string &&
+                               request.resource.data.slug is string &&
+                               request.resource.data.estado in ['borrador', 'publicada'];
+
+      allow delete: if true;
+    }
+
+    // ========================================
     // FUTURE COLLECTIONS
     // ========================================
 
