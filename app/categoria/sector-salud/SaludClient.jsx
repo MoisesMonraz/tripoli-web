@@ -3,10 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerSaludHero from "../../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.png";
 
-export default function SaludClient({ fabricantesData, institucionesData, especialistasData }) {
+function mergeWithRevistas(articles, subcatLabel, revistas) {
+  const mags = (revistas || [])
+    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
+    .map((r) => ({
+      slug: `rev-${r.slug}`,
+      title: r.titulo,
+      excerpt: r.descripcion || '',
+      image: r.previewURL || r.portadaURL || '',
+      date: r.fechaPublicacion,
+      dateISO: r.fechaPublicacion,
+      href: `/revistas/${r.slug}`,
+      badge: 'REVISTA',
+    }));
+  return [...(articles || []), ...mags].sort(
+    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
+  );
+}
+
+export default function SaludClient({ fabricantesData, institucionesData, especialistasData, revistas }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -87,7 +104,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={fabricantesData}
+        posts={mergeWithRevistas(fabricantesData, "Fabricantes de equipos e insumos", revistas)}
         titleHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         moreHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         titleClassName="text-[12.5px] sm:text-lg lg:text-xl"
@@ -99,7 +116,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.cadenas}
-        posts={institucionesData}
+        posts={mergeWithRevistas(institucionesData, "Instituciones de Salud", revistas)}
         titleHref="/categoria/sector-salud/instituciones-de-salud"
         moreHref="/categoria/sector-salud/instituciones-de-salud"
       />
@@ -110,7 +127,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={especialistasData}
+        posts={mergeWithRevistas(especialistasData, "Especialistas Médicos", revistas)}
         titleHref="/categoria/sector-salud/especialistas-medicos"
         moreHref="/categoria/sector-salud/especialistas-medicos"
       />
@@ -118,8 +135,6 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={especialistasSlides} aspectRatioOverride={0.25} />
       </section>
-
-      <MagazinesInlineSection categoria="sector-salud" />
 
       <style>{`
         @property --subcat-grad-pos {

@@ -3,10 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerIndustriaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Industria T.I..png";
 
-export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData }) {
+function mergeWithRevistas(articles, subcatLabel, revistas) {
+  const mags = (revistas || [])
+    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
+    .map((r) => ({
+      slug: `rev-${r.slug}`,
+      title: r.titulo,
+      excerpt: r.descripcion || '',
+      image: r.previewURL || r.portadaURL || '',
+      date: r.fechaPublicacion,
+      dateISO: r.fechaPublicacion,
+      href: `/revistas/${r.slug}`,
+      badge: 'REVISTA',
+    }));
+  return [...(articles || []), ...mags].sort(
+    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
+  );
+}
+
+export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData, revistas }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -93,7 +110,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={fabricantesData}
+        posts={mergeWithRevistas(fabricantesData, "Fabricantes de Tecnología", revistas)}
         titleHref="/categoria/industria-ti/fabricantes-de-tecnologia"
         moreHref="/categoria/industria-ti/fabricantes-de-tecnologia"
       />
@@ -104,7 +121,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mayoristasData}
+        posts={mergeWithRevistas(mayoristasData, "Mayoristas TI", revistas)}
         titleHref="/categoria/industria-ti/mayoristas-ti"
         moreHref="/categoria/industria-ti/mayoristas-ti"
       />
@@ -115,7 +132,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={canalesData}
+        posts={mergeWithRevistas(canalesData, "Canales de Distribución", revistas)}
         titleHref="/categoria/industria-ti/canales-de-distribucion"
         moreHref="/categoria/industria-ti/canales-de-distribucion"
       />
@@ -123,8 +140,6 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={canalesSlides} aspectRatioOverride={0.25} />
       </section>
-
-      <MagazinesInlineSection categoria="industria-ti" />
 
       <style>{`
         @property --subcat-grad-pos {

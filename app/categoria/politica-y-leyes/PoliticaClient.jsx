@@ -3,10 +3,27 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerPoliticaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Politica y Leyes.png";
 
-export default function PoliticaClient({ organismosData, administracionData, juridicosData }) {
+function mergeWithRevistas(articles, subcatLabel, revistas) {
+  const mags = (revistas || [])
+    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
+    .map((r) => ({
+      slug: `rev-${r.slug}`,
+      title: r.titulo,
+      excerpt: r.descripcion || '',
+      image: r.previewURL || r.portadaURL || '',
+      date: r.fechaPublicacion,
+      dateISO: r.fechaPublicacion,
+      href: `/revistas/${r.slug}`,
+      badge: 'REVISTA',
+    }));
+  return [...(articles || []), ...mags].sort(
+    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
+  );
+}
+
+export default function PoliticaClient({ organismosData, administracionData, juridicosData, revistas }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -87,7 +104,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={organismosData}
+        posts={mergeWithRevistas(organismosData, "Organismos Públicos", revistas)}
         titleHref="/categoria/politica-y-leyes/organismos-publicos"
         moreHref="/categoria/politica-y-leyes/organismos-publicos"
       />
@@ -98,7 +115,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.cadenas}
-        posts={administracionData}
+        posts={mergeWithRevistas(administracionData, "Administración Pública", revistas)}
         titleHref="/categoria/politica-y-leyes/administracion-publica"
         moreHref="/categoria/politica-y-leyes/administracion-publica"
       />
@@ -109,7 +126,7 @@ export default function PoliticaClient({ organismosData, administracionData, jur
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={juridicosData}
+        posts={mergeWithRevistas(juridicosData, "Servicios Jurídicos", revistas)}
         titleHref="/categoria/politica-y-leyes/servicios-juridicos"
         moreHref="/categoria/politica-y-leyes/servicios-juridicos"
       />
@@ -117,8 +134,6 @@ export default function PoliticaClient({ organismosData, administracionData, jur
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={juridicosSlides} aspectRatioOverride={0.25} />
       </section>
-
-      <MagazinesInlineSection categoria="politica-y-leyes" />
 
       <style>{`
         @property --subcat-grad-pos {

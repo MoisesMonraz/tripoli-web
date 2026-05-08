@@ -3,13 +3,30 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
 import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Negocios-de-Conveniencia.png";
 
-export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData }) {
+function mergeWithRevistas(articles, subcatLabel, revistas) {
+  const mags = (revistas || [])
+    .filter((r) => r.subcategoria?.toLowerCase().trim() === subcatLabel.toLowerCase())
+    .map((r) => ({
+      slug: `rev-${r.slug}`,
+      title: r.titulo,
+      excerpt: r.descripcion || '',
+      image: r.previewURL || r.portadaURL || '',
+      date: r.fechaPublicacion,
+      dateISO: r.fechaPublicacion,
+      href: `/revistas/${r.slug}`,
+      badge: 'REVISTA',
+    }));
+  return [...(articles || []), ...mags].sort(
+    (a, b) => (b.dateISO || b.date || '').localeCompare(a.dateISO || a.date || '')
+  );
+}
+
+export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData, revistas }) {
   const getLocalizedPosts = (posts) =>
     (posts || []).map((post, idx) => ({
       ...post,
@@ -149,7 +166,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={fabricantesData}
+        posts={mergeWithRevistas(fabricantesData, "Fabricantes y Proveedores", revistas)}
         titleHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
         moreHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
       />
@@ -160,7 +177,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.cadenas}
-        posts={cadenasData}
+        posts={mergeWithRevistas(cadenasData, "Cadenas Comerciales", revistas)}
         titleHref="/categoria/consumo-y-retail/cadenas-comerciales"
         moreHref="/categoria/consumo-y-retail/cadenas-comerciales"
       />
@@ -171,7 +188,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={convenienciaData}
+        posts={mergeWithRevistas(convenienciaData, "Negocios de Conveniencia", revistas)}
         titleHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
         moreHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
       />
@@ -179,8 +196,6 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
         <h2 className="sr-only">{labels.bannerConveniencia}</h2>
         <BaseBanner slides={convenienciaSlides} aspectRatioOverride={0.25} />
       </section>
-
-      <MagazinesInlineSection categoria="consumo-y-retail" />
 
       <style>{`
         @property --subcat-grad-pos {
