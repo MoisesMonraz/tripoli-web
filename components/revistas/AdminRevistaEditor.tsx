@@ -1,12 +1,46 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase/client';
 import type { Revista, CategoriaSlug } from '../../types/revistas';
 import { CATEGORIA_LABELS, ALL_CATEGORIAS } from '../../types/revistas';
+
+/* ── subcategory data ── */
+const SUBCATS: Record<string, { slug: string; label: string }[]> = {
+  'consumo-y-retail': [
+    { slug: 'fabricantes-y-proveedores',  label: 'Fabricantes y Proveedores' },
+    { slug: 'cadenas-comerciales',         label: 'Cadenas Comerciales' },
+    { slug: 'negocios-de-conveniencia',    label: 'Negocios de Conveniencia' },
+  ],
+  'entretenimiento-y-cultura': [
+    { slug: 'productoras-de-contenido',    label: 'Productoras de Contenido' },
+    { slug: 'promotores-culturales',       label: 'Promotores Culturales' },
+    { slug: 'festivales-eventos-y-artistas', label: 'Festivales, Eventos y Artistas' },
+  ],
+  'industria-ti': [
+    { slug: 'canales-de-distribucion',     label: 'Canales de Distribución' },
+    { slug: 'fabricantes-de-tecnologia',   label: 'Fabricantes de Tecnología' },
+    { slug: 'mayoristas-ti',               label: 'Mayoristas TI' },
+  ],
+  'infraestructura-social': [
+    { slug: 'desarrolladores-de-proyectos', label: 'Desarrolladores de Proyectos' },
+    { slug: 'promotores-inmobiliarios',    label: 'Promotores Inmobiliarios' },
+    { slug: 'proveedores-de-materiales',   label: 'Proveedores de Materiales' },
+  ],
+  'politica-y-leyes': [
+    { slug: 'administracion-publica',      label: 'Administración Pública' },
+    { slug: 'organismos-publicos',         label: 'Organismos Públicos' },
+    { slug: 'servicios-juridicos',         label: 'Servicios Jurídicos' },
+  ],
+  'sector-salud': [
+    { slug: 'especialistas-medicos',       label: 'Especialistas Médicos' },
+    { slug: 'fabricantes-equipos-insumos', label: 'Fabricantes Equipos e Insumos' },
+    { slug: 'instituciones-de-salud',      label: 'Instituciones de Salud' },
+  ],
+};
 
 /* ── helpers ── */
 function slugify(text: string) {
@@ -36,6 +70,7 @@ export default function AdminRevistaEditor({ existing }: Props) {
   const docId = docIdRef.current;
 
   /* ── form state ── */
+  const [openCat, setOpenCat] = useState<string | null>(null);
   const [titulo, setTitulo] = useState(existing?.titulo ?? '');
   const [slug, setSlug] = useState(existing?.slug ?? '');
   const [slugManual, setSlugManual] = useState(!!existing?.slug);
@@ -252,50 +287,172 @@ export default function AdminRevistaEditor({ existing }: Props) {
         />
       </div>
 
-      {/* Categorías */}
-      <div className="flex flex-col gap-2">
+      {/* Categorías + Subcategorías (dropdown) */}
+      {openCat && <div className="fixed inset-0 z-10" onClick={() => setOpenCat(null)} />}
+      <div className="flex flex-col gap-3">
         <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Categorías *</label>
         <div className="flex flex-wrap gap-2">
-          {ALL_CATEGORIAS.map(cat => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCategorias(prev =>
-                prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-              )}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-                categorias.includes(cat)
-                  ? 'bg-[#1E3A5F] text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {CATEGORIA_LABELS[cat]}
-            </button>
-          ))}
+          {ALL_CATEGORIAS.map(cat => {
+            const isSelected = categorias.includes(cat);
+            const isOpen = openCat === cat;
+            const catSubcats = SUBCATS[cat] ?? [];
+            return (
+              <div key={cat} className="relative z-20">
+                <button
+                  type="button"
+                  onClick={() => setOpenCat(isOpen ? null : cat)}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                    isSelected ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {CATEGORIA_LABELS[cat]}
+                  <svg
+                    width="10" height="10" viewBox="0 0 10 10" fill="currentColor"
+                    className={`transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
+                  >
+                    <path d="M1 3l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </button>
+
+                {isOpen && (
+                  <div className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg py-1 min-w-[220px]">
+                    {catSubcats.map(sub => {
+                      const isActiveSub = subcategoria === sub.label;
+                      return (
+                        <button
+                          key={sub.slug}
+                          type="button"
+                          onClick={() => {
+                            setCategorias(prev => prev.includes(cat) ? prev : [...prev, cat]);
+                            setSubcategoria(isActiveSub ? '' : sub.label);
+                            setOpenCat(null);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition flex items-center justify-between ${
+                            isActiveSub
+                              ? 'text-[#1E3A5F] font-semibold bg-[#1E3A5F]/5'
+                              : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          {sub.label}
+                          {isActiveSub && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2.5">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                    {isSelected && (
+                      <>
+                        <div className="mx-3 my-1 border-t border-slate-100" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCategorias(prev => prev.filter(c => c !== cat));
+                            if (catSubcats.some(s => s.label === subcategoria)) setSubcategoria('');
+                            setOpenCat(null);
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs text-rose-500 hover:bg-rose-50 transition"
+                        >
+                          Quitar categoría
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+
+        {/* Active filters summary */}
+        {(categorias.length > 0 || subcategoria) && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {subcategoria && (
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-[#1E3A5F]/10 text-[#1E3A5F] rounded-full font-semibold">
+                {subcategoria}
+                <button type="button" onClick={() => setSubcategoria('')} className="hover:text-rose-500 leading-none">✕</button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Subcategoría + Fecha */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Subcategoría</label>
-          <input
-            value={subcategoria}
-            onChange={e => setSubcategoria(e.target.value)}
-            placeholder="Ej: Negocios de Conveniencia, Startups..."
-            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fecha de publicación *</label>
-          <input
-            type="date"
-            value={fechaPublicacion}
-            onChange={e => setFechaPublicacion(e.target.value)}
-            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F]"
-          />
-        </div>
+      {/* Fecha de publicación */}
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fecha de publicación *</label>
+        <input
+          type="date"
+          value={fechaPublicacion}
+          onChange={e => setFechaPublicacion(e.target.value)}
+          className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/20 focus:border-[#1E3A5F] max-w-xs"
+        />
       </div>
+
+      {/* Live preview — appears once a category is selected */}
+      {categorias.length > 0 && (
+        <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Vista previa · {CATEGORIA_LABELS[categorias[0]]}
+            {subcategoria && <span className="text-slate-300"> / {subcategoria}</span>}
+          </p>
+          {/* Mini carousel — 2 placeholder articles + magazine card */}
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+            {/* Placeholder article left */}
+            <div className="flex-shrink-0 w-[155px] rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden opacity-40">
+              <div className="h-[80px] bg-slate-200 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div className="p-2 space-y-1.5">
+                <div className="h-2 bg-slate-200 rounded w-5/6" />
+                <div className="h-2 bg-slate-200 rounded w-3/4" />
+                <div className="h-1.5 bg-slate-100 rounded w-1/2 mt-2" />
+              </div>
+            </div>
+
+            {/* Magazine card — live data */}
+            <div className="flex-shrink-0 w-[155px] rounded-xl border-2 border-[#1E3A5F]/40 bg-white shadow-md overflow-hidden">
+              <div className="relative h-[80px] bg-slate-100 overflow-hidden">
+                {(previewLocalURL || previewStorageURL) ? (
+                  <img
+                    src={previewLocalURL || previewStorageURL}
+                    alt="preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                )}
+                <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide bg-[#1E3A5F] text-white rounded-sm leading-none">
+                  REVISTA
+                </span>
+              </div>
+              <div className="p-2">
+                <p className="text-[9.5px] font-semibold text-slate-800 line-clamp-2 leading-tight">
+                  {titulo || 'Título de la revista'}
+                </p>
+                {subcategoria && (
+                  <p className="text-[7.5px] text-slate-400 italic mt-0.5">{subcategoria}</p>
+                )}
+                <p className="text-[7.5px] text-slate-400 mt-1">{fechaPublicacion}</p>
+              </div>
+            </div>
+
+            {/* Placeholder article right */}
+            <div className="flex-shrink-0 w-[155px] rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden opacity-40">
+              <div className="h-[80px] bg-slate-200 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div className="p-2 space-y-1.5">
+                <div className="h-2 bg-slate-200 rounded w-4/6" />
+                <div className="h-2 bg-slate-200 rounded w-5/6" />
+                <div className="h-1.5 bg-slate-100 rounded w-2/5 mt-2" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Marcas */}
       <div className="flex flex-col gap-2">
