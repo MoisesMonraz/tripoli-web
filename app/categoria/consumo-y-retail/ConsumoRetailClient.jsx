@@ -3,7 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import RevistasSection from "../../../components/revistas/RevistasSection";
+import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
@@ -180,7 +180,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
         <BaseBanner slides={convenienciaSlides} aspectRatioOverride={0.25} />
       </section>
 
-      <RevistasSection categoria="consumo-y-retail" />
+      <MagazinesInlineSection categoria="consumo-y-retail" />
 
       <style>{`
         @property --subcat-grad-pos {

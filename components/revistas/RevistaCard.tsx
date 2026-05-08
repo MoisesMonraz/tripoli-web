@@ -50,6 +50,9 @@ export default function RevistaCard({ revista, compact = false }: Props) {
                     </span>
                   ))}
                 </div>
+                {revista.subcategoria && (
+                  <p className="text-white/50 text-[9px] italic mt-0.5">{revista.subcategoria}</p>
+                )}
                 <p className="text-white/60 text-[10px] mt-1">{formatDate(revista.fechaPublicacion)}</p>
               </>
             )}

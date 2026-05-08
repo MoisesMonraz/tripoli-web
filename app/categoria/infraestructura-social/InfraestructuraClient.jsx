@@ -3,7 +3,7 @@
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
-import RevistasSection from "../../../components/revistas/RevistasSection";
+import MagazinesInlineSection from "../../../components/revistas/MagazinesInlineSection";
 import bannerInfraHero from "../../../Imagenes/Banners-Pagina-Web/Banner Infraestructura Social.png";
 
 export default function InfraestructuraClient({ proveedoresData, desarrolladoresData, promotoresData }) {
@@ -127,7 +127,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
         <BaseBanner slides={promotoresSlides} aspectRatioOverride={0.25} />
       </section>
 
-      <RevistasSection categoria="infraestructura-social" />
+      <MagazinesInlineSection categoria="infraestructura-social" />
 
       <style>{`
         @property --subcat-grad-pos {

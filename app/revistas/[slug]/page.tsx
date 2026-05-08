@@ -1,13 +1,17 @@
 import { getRevista, getRevistas } from '../../../lib/revistas';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import FlipbookClient from '../../../components/revistas/FlipbookClient';
+import FlipbookClientWrapper from '../../../components/revistas/FlipbookClientWrapper';
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const revistas = await getRevistas();
-  return revistas.map((r) => ({ slug: r.slug }));
+  try {
+    const revistas = await getRevistas();
+    return revistas.map((r) => ({ slug: r.slug }));
+  } catch {
+    return [];
+  }
 }
 
 interface Props {
@@ -40,5 +44,5 @@ export default async function RevistaPage({ params }: Props) {
   const { slug } = await params;
   const revista = await getRevista(slug);
   if (!revista || revista.estado === 'borrador') notFound();
-  return <FlipbookClient revista={revista} />;
+  return <FlipbookClientWrapper revista={revista} />;
 }
