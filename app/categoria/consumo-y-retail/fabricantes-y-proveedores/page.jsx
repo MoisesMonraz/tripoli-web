@@ -1,9 +1,16 @@
-import { getArticlesBySubcategory } from "../../../../lib/contentful";
+﻿import { getArticlesBySubcategory } from "../../../../lib/contentful";
+import { getRevistasBySubcategory, revistaToPost } from "../../../../lib/revistas";
 import SubcategoryListPageClient from "../../../../components/category/SubcategoryListPageClient";
 import BannerFabricantes from "../../../../components/fabricantes-y-proveedores/bannerheader";
 
 export default async function FabricantesYProveedoresPage() {
-  const posts = await getArticlesBySubcategory("consumo-y-retail", "fabricantes-y-proveedores", 50);
+  const [articlePosts, revistaItems] = await Promise.all([
+    getArticlesBySubcategory("consumo-y-retail", "fabricantes-y-proveedores", 50),
+    getRevistasBySubcategory("fabricantes-y-proveedores"),
+  ]);
+  const posts = [...articlePosts, ...revistaItems.map(revistaToPost)].sort(
+    (a, b) => new Date(b.dateISO || 0).getTime() - new Date(a.dateISO || 0).getTime()
+  );
 
   return (
     <SubcategoryListPageClient

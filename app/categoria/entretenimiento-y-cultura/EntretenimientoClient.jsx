@@ -1,34 +1,13 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import { revistaToPost } from "@/lib/revista-utils";
 import bannerEntretenimientoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Entretenimiento y Cultura.png";
 import bannerProductoras from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Productoras-de-Contenido.png";
 import bannerPromotores from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Promotores-Culturales.png";
 import bannerFestivales from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Festivales-Eventos-y-Artistas.png";
-
-function mergeWithRevistas(posts, subcatSlug, revistas) {
-  const revistaPosts = (revistas || [])
-    .filter((r) => r.subcategoria?.slug === subcatSlug)
-    .map((r) => ({
-      id: r.id,
-      title: r.titulo,
-      excerpt: r.descripcion,
-      image: r.previewUrl,
-      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
-      dateISO: r.fechaPublicacion,
-      slug: r.slug,
-      author: { name: r.autor.nombre, slug: r.autor.slug },
-      category: r.categoria.slug,
-      subcategory: r.subcategoria?.slug || r.categoria.slug,
-      href: `/revistas/${r.slug}`,
-      badge: "REVISTA",
-    }));
-  const merged = [...posts, ...revistaPosts];
-  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
-  return merged;
-}
 
 export default function EntretenimientoClient({ productorasData, recintosData, festivalesData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
@@ -138,13 +117,13 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
         <BaseBanner slides={heroSlides} />
       </section>
 
-      <SectionBlock title={labels.fabricantes} posts={mergeWithRevistas(productorasData, "productoras-de-contenido", revistas)} titleHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" moreHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" />
+      <SectionBlock title={labels.fabricantes} posts={[...(productorasData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "productoras-de-contenido").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())} titleHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" moreHref="/categoria/entretenimiento-y-cultura/productoras-de-contenido" />
       <section aria-label={labels.bannerFabricantes} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerFabricantes}</h2>
         <BaseBanner slides={productorasSlides} />
       </section>
 
-      <SectionBlock title={labels.cadenas} posts={mergeWithRevistas(recintosData, "promotores-culturales", revistas)} titleHref="/categoria/entretenimiento-y-cultura/promotores-culturales" moreHref="/categoria/entretenimiento-y-cultura/promotores-culturales" />
+      <SectionBlock title={labels.cadenas} posts={[...(recintosData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "promotores-culturales").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())} titleHref="/categoria/entretenimiento-y-cultura/promotores-culturales" moreHref="/categoria/entretenimiento-y-cultura/promotores-culturales" />
       <section aria-label={labels.bannerCadenas} className="m-0 p-0">
         <h2 className="sr-only">{labels.bannerCadenas}</h2>
         <BaseBanner slides={recintosSlides} />
@@ -152,7 +131,7 @@ export default function EntretenimientoClient({ productorasData, recintosData, f
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(festivalesData, "festivales-eventos-y-artistas", revistas)}
+        posts={[...(festivalesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "festivales-eventos-y-artistas").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
         moreHref="/categoria/entretenimiento-y-cultura/festivales-eventos-y-artistas"
         titleClassName="text-[13.5px] sm:text-lg lg:text-xl"

@@ -1,31 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import { revistaToPost } from "@/lib/revista-utils";
 import bannerSaludHero from "../../../Imagenes/Banners-Pagina-Web/Banner Sector Salud.png";
-
-function mergeWithRevistas(posts, subcatSlug, revistas) {
-  const revistaPosts = (revistas || [])
-    .filter((r) => r.subcategoria?.slug === subcatSlug)
-    .map((r) => ({
-      id: r.id,
-      title: r.titulo,
-      excerpt: r.descripcion,
-      image: r.previewUrl,
-      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
-      dateISO: r.fechaPublicacion,
-      slug: r.slug,
-      author: { name: r.autor.nombre, slug: r.autor.slug },
-      category: r.categoria.slug,
-      subcategory: r.subcategoria?.slug || r.categoria.slug,
-      href: `/revistas/${r.slug}`,
-      badge: "REVISTA",
-    }));
-  const merged = [...posts, ...revistaPosts];
-  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
-  return merged;
-}
 
 export default function SaludClient({ fabricantesData, institucionesData, especialistasData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
@@ -108,7 +87,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "fabricantes-equipos-insumos", revistas)}
+        posts={[...(fabricantesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "fabricantes-equipos-insumos").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         moreHref="/categoria/sector-salud/fabricantes-equipos-insumos"
         titleClassName="text-[12.5px] sm:text-lg lg:text-xl"
@@ -120,7 +99,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(institucionesData, "instituciones-de-salud", revistas)}
+        posts={[...(institucionesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "instituciones-de-salud").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/sector-salud/instituciones-de-salud"
         moreHref="/categoria/sector-salud/instituciones-de-salud"
       />
@@ -131,7 +110,7 @@ export default function SaludClient({ fabricantesData, institucionesData, especi
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(especialistasData, "especialistas-medicos", revistas)}
+        posts={[...(especialistasData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "especialistas-medicos").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/sector-salud/especialistas-medicos"
         moreHref="/categoria/sector-salud/especialistas-medicos"
       />

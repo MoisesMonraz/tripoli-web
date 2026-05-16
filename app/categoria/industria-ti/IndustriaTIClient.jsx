@@ -1,31 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import { revistaToPost } from "@/lib/revista-utils";
 import bannerIndustriaHero from "../../../Imagenes/Banners-Pagina-Web/Banner Industria T.I..png";
-
-function mergeWithRevistas(posts, subcatSlug, revistas) {
-  const revistaPosts = (revistas || [])
-    .filter((r) => r.subcategoria?.slug === subcatSlug)
-    .map((r) => ({
-      id: r.id,
-      title: r.titulo,
-      excerpt: r.descripcion,
-      image: r.previewUrl,
-      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
-      dateISO: r.fechaPublicacion,
-      slug: r.slug,
-      author: { name: r.autor.nombre, slug: r.autor.slug },
-      category: r.categoria.slug,
-      subcategory: r.subcategoria?.slug || r.categoria.slug,
-      href: `/revistas/${r.slug}`,
-      badge: "REVISTA",
-    }));
-  const merged = [...posts, ...revistaPosts];
-  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
-  return merged;
-}
 
 export default function IndustriaTIClient({ fabricantesData, mayoristasData, canalesData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
@@ -114,7 +93,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "fabricantes-de-tecnologia", revistas)}
+        posts={[...(fabricantesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "fabricantes-de-tecnologia").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/industria-ti/fabricantes-de-tecnologia"
         moreHref="/categoria/industria-ti/fabricantes-de-tecnologia"
       />
@@ -125,7 +104,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(mayoristasData, "mayoristas-ti", revistas)}
+        posts={[...(mayoristasData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "mayoristas-ti").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/industria-ti/mayoristas-ti"
         moreHref="/categoria/industria-ti/mayoristas-ti"
       />
@@ -136,7 +115,7 @@ export default function IndustriaTIClient({ fabricantesData, mayoristasData, can
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(canalesData, "canales-de-distribucion", revistas)}
+        posts={[...(canalesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "canales-de-distribucion").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/industria-ti/canales-de-distribucion"
         moreHref="/categoria/industria-ti/canales-de-distribucion"
       />

@@ -1,4 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getRevista, getRevistas } from "@/lib/revistas";
 import FlipbookClientWrapper from "@/components/revistas/FlipbookClientWrapper";
 import type { Metadata } from "next";
@@ -8,7 +9,13 @@ export const revalidate = false;
 export async function generateStaticParams() {
   try {
     const revistas = await getRevistas();
-    return revistas.map((r) => ({ slug: r.slug }));
+    return revistas
+      .filter((r) => r.categoria?.slug && r.subcategoria?.slug)
+      .map((r) => ({
+        category: r.categoria.slug,
+        subcategory: r.subcategoria!.slug,
+        slug: r.slug,
+      }));
   } catch {
     return [];
   }
@@ -17,17 +24,15 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: { category: string; subcategory: string; slug: string };
 }): Promise<Metadata> {
   try {
     const revista = await getRevista(params.slug);
     if (!revista) return {};
     return {
-      title: `${revista.titulo} | Revistas | Tripoli Media`,
+      title: `${revista.titulo} — Tripoli Media`,
       description: revista.descripcion,
-      openGraph: revista.ogUrl
-        ? { images: [{ url: revista.ogUrl }] }
-        : undefined,
+      openGraph: revista.ogUrl ? { images: [{ url: revista.ogUrl }] } : undefined,
     };
   } catch {
     return {};
@@ -37,16 +42,21 @@ export async function generateMetadata({
 export default async function RevistaPage({
   params,
 }: {
-  params: { slug: string };
+  params: { category: string; subcategory: string; slug: string };
 }) {
   const revista = await getRevista(params.slug);
+
   if (!revista) notFound();
 
-  // Redirect to canonical URL if the revista has category + subcategory
+  // Canonical URL verification — redirect if slugs don't match
   const catSlug = revista.categoria?.slug ?? "";
   const subcatSlug = revista.subcategoria?.slug ?? "";
-  if (catSlug && subcatSlug) {
-    redirect(`/${catSlug}/${subcatSlug}/revista/${revista.slug}`);
+
+  if (catSlug !== params.category || subcatSlug !== params.subcategory) {
+    if (catSlug && subcatSlug) {
+      redirect(`/${catSlug}/${subcatSlug}/revista/${revista.slug}`);
+    }
+    notFound();
   }
 
   return (

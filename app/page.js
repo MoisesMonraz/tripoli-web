@@ -7,9 +7,18 @@ import BannerInfraestructuraSociaI from "../components/home/BannerInfraestructur
 import BannerPoliticaLeyes from "../components/home/BannerPoliticaLeyes";
 import StructuredData from "../components/seo/StructuredData";
 import { getArticlesByCategory } from "../lib/contentful";
+import { getRevistas, revistaToPost } from "../lib/revistas";
+
+function mergeWithRevistas(articles, revistas, catSlug) {
+  const revistaPosts = revistas
+    .filter((r) => r.categoria.slug === catSlug)
+    .map(revistaToPost);
+  return [...articles, ...revistaPosts].sort(
+    (a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime()
+  );
+}
 
 export default async function HomePage() {
-  // Fetch articles for each category in parallel
   const [
     consumoArticles,
     entretenimientoArticles,
@@ -17,6 +26,7 @@ export default async function HomePage() {
     infraestructuraArticles,
     politicaArticles,
     saludArticles,
+    allRevistas,
   ] = await Promise.all([
     getArticlesByCategory('consumo-y-retail', 6),
     getArticlesByCategory('entretenimiento-y-cultura', 6),
@@ -24,6 +34,7 @@ export default async function HomePage() {
     getArticlesByCategory('infraestructura-social', 6),
     getArticlesByCategory('politica-y-leyes', 6),
     getArticlesByCategory('sector-salud', 6),
+    getRevistas(),
   ]);
 
   return (
@@ -36,7 +47,7 @@ export default async function HomePage() {
           titleEn="Consumer & Retail"
           slug="consumo-y-retail"
           titleHref="/categoria/consumo-y-retail"
-          posts={consumoArticles}
+          posts={mergeWithRevistas(consumoArticles, allRevistas, "consumo-y-retail")}
           barColor="#f39200"
           barLightColor="#fee5c8"
           barPulseDuration="8s"
@@ -47,7 +58,7 @@ export default async function HomePage() {
           title="Entretenimiento y Cultura"
           titleEn="Entertainment & Culture"
           slug="entretenimiento-y-cultura"
-          posts={entretenimientoArticles}
+          posts={mergeWithRevistas(entretenimientoArticles, allRevistas, "entretenimiento-y-cultura")}
           BannerComponent={BannerEntretenimientoCultura}
           barColor="#009640"
           barLightColor="#cce5ce"
@@ -62,7 +73,7 @@ export default async function HomePage() {
           title="Industria TI"
           titleEn="Industry IT"
           slug="industria-ti"
-          posts={industriaTIArticles}
+          posts={mergeWithRevistas(industriaTIArticles, allRevistas, "industria-ti")}
           BannerComponent={BannerIndustriaTI}
           barColor="#0069b4"
           barLightColor="#c8d5ef"
@@ -77,7 +88,7 @@ export default async function HomePage() {
           title="Infraestructura Social"
           titleEn="Social Infrastructure"
           slug="infraestructura-social"
-          posts={infraestructuraArticles}
+          posts={mergeWithRevistas(infraestructuraArticles, allRevistas, "infraestructura-social")}
           BannerComponent={BannerInfraestructuraSociaI}
           barColor="#5d514c"
           barLightColor="#d8d4d3"
@@ -92,7 +103,7 @@ export default async function HomePage() {
           title="Política y Leyes"
           titleEn="Politics & Law"
           slug="politica-y-leyes"
-          posts={politicaArticles}
+          posts={mergeWithRevistas(politicaArticles, allRevistas, "politica-y-leyes")}
           BannerComponent={BannerPoliticaLeyes}
           barColor="#312783"
           barLightColor="#c8c1e1"
@@ -107,7 +118,7 @@ export default async function HomePage() {
           title="Sector Salud"
           titleEn="Health Sector"
           slug="sector-salud"
-          posts={saludArticles}
+          posts={mergeWithRevistas(saludArticles, allRevistas, "sector-salud")}
           BannerComponent={BannerSectorsalud}
           barColor="#e6007e"
           barLightColor="#f9d3e6"

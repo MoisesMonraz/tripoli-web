@@ -1,4 +1,4 @@
-import { getArticlesBySubcategory } from "../../../lib/contentful";
+﻿import { getArticlesBySubcategory } from "../../../lib/contentful";
 import { getRevistasByCategory } from "../../../lib/revistas";
 import PoliticaClient from "./PoliticaClient";
 
@@ -25,4 +25,4 @@ export default async function PoliticaYLeyesPage() {
   );
 }
 
-export const revalidate = 3600;
+export const revalidate = 60;

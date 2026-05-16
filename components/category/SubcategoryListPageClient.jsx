@@ -204,7 +204,7 @@ export default function SubcategoryListPageClient({
               // Ensuring date is strictly lowercase as requested
               const rawDate = formatFullSpanishDate(post.dateISO) || formatFullSpanishDate(post.date) || post.date || "";
               const formattedDate = rawDate.toLowerCase();
-              const articleHref = post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`;
+              const articleHref = post.href || (post.category && post.subcategory ? `/${post.category}/${post.subcategory}/articulo/${post.slug}` : `/articulo/${post.slug}`);
               const fullUrl = typeof window !== "undefined" ? `${window.location.origin}${articleHref}` : articleHref;
               const articleData = {
                 title: post.title,
@@ -227,6 +227,11 @@ export default function SubcategoryListPageClient({
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="100vw"
                       />
+                      {post.badge && (
+                        <span className="absolute top-2 left-2 rounded-full bg-[#1E3A5F]/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow">
+                          {post.badge}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col p-4">
                       <h2 className="font-sans text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-[#00BFFF] dark:text-slate-50 dark:group-hover:text-[#33ceff] line-clamp-2">
@@ -265,6 +270,11 @@ export default function SubcategoryListPageClient({
                         className="object-cover transition-transform duration-500 hover:scale-105"
                         sizes="240px"
                       />
+                      {post.badge && (
+                        <span className="absolute top-2 left-2 rounded-full bg-[#1E3A5F]/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow">
+                          {post.badge}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col justify-center gap-2 p-4 pr-12">
                       <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 group-hover:text-[#00BFFF] dark:group-hover:text-[#33ceff] line-clamp-2">

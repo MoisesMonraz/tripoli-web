@@ -1,31 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import { revistaToPost } from "@/lib/revista-utils";
 import bannerInfraHero from "../../../Imagenes/Banners-Pagina-Web/Banner Infraestructura Social.png";
-
-function mergeWithRevistas(posts, subcatSlug, revistas) {
-  const revistaPosts = (revistas || [])
-    .filter((r) => r.subcategoria?.slug === subcatSlug)
-    .map((r) => ({
-      id: r.id,
-      title: r.titulo,
-      excerpt: r.descripcion,
-      image: r.previewUrl,
-      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
-      dateISO: r.fechaPublicacion,
-      slug: r.slug,
-      author: { name: r.autor.nombre, slug: r.autor.slug },
-      category: r.categoria.slug,
-      subcategory: r.subcategoria?.slug || r.categoria.slug,
-      href: `/revistas/${r.slug}`,
-      badge: "REVISTA",
-    }));
-  const merged = [...posts, ...revistaPosts];
-  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
-  return merged;
-}
 
 export default function InfraestructuraClient({ proveedoresData, desarrolladoresData, promotoresData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
@@ -116,7 +95,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.proveedores}
-        posts={mergeWithRevistas(proveedoresData, "proveedores-de-materiales", revistas)}
+        posts={[...(proveedoresData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "proveedores-de-materiales").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/infraestructura-social/proveedores-de-materiales"
         moreHref="/categoria/infraestructura-social/proveedores-de-materiales"
       />
@@ -127,7 +106,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.desarrolladores}
-        posts={mergeWithRevistas(desarrolladoresData, "desarrolladores-de-proyectos", revistas)}
+        posts={[...(desarrolladoresData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "desarrolladores-de-proyectos").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
         moreHref="/categoria/infraestructura-social/desarrolladores-de-proyectos"
         titleClassName="text-[13.5px] sm:text-lg lg:text-xl"
@@ -139,7 +118,7 @@ export default function InfraestructuraClient({ proveedoresData, desarrolladores
 
       <SectionBlock
         title={labels.promotores}
-        posts={mergeWithRevistas(promotoresData, "promotores-inmobiliarios", revistas)}
+        posts={[...(promotoresData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "promotores-inmobiliarios").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/infraestructura-social/promotores-inmobiliarios"
         moreHref="/categoria/infraestructura-social/promotores-inmobiliarios"
       />

@@ -25,17 +25,29 @@ const CHANNEL_COLORS = [GA_BLUE, GA_GREEN, GA_YELLOW, GA_RED, '#9c27b0'];
 
 type Tab = 'resumen' | 'adquisicion' | 'engagement' | 'demografia';
 
-interface SavedSim {
+interface Period {
   id: string;
   dateFrom: string;
   dateTo: string;
   totalVisits: number;
-  uniqueUsers: number;
-  generatedAt: string;
-  simulationData: SimulationResult;
+  createdAt: string;
 }
 
-interface OverlapInfo { saved: SavedSim; }
+interface RealChanges {
+  sessions: number | null;
+  users: number | null;
+  pageViews: number | null;
+  newSessions: number | null;
+  prevDateFrom: string | null;
+  prevDateTo: string | null;
+}
+
+const LS_KEY = 'tm_analytics_periods';
+const SS_KEY = 'tm_analytics_session';
+const NULL_CHANGES: RealChanges = {
+  sessions: null, users: null, pageViews: null,
+  newSessions: null, prevDateFrom: null, prevDateTo: null,
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatDateDMY(iso: string): string {
@@ -43,33 +55,89 @@ function formatDateDMY(iso: string): string {
   return `${d}/${m}/${y}`;
 }
 
-function addDays(iso: string, days: number): string {
-  const d = new Date(iso + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
+function calcChange(current: number, previous: number | null): number | null {
+  if (!previous) return null;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
 }
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+// Deterministic metric derivations used for cross-period comparisons
+function deriveUniqueUsers(totalVisits: number): number {
+  return Math.round(totalVisits * 0.72);
+}
+function derivePaginasVistas(totalVisits: number): number {
+  return Math.round(totalVisits * 2.8);
+}
+function deriveNewSessions(totalVisits: number): number {
+  return Math.round(totalVisits * 0.55);
 }
 
-function firstOfMonthISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+// ─── Storage helpers ──────────────────────────────────────────────────────────
+function loadPeriods(): Period[] {
+  try { const r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : []; }
+  catch { return []; }
+}
+function savePeriods(list: Period[]): void {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+}
+function loadActiveId(): string | null {
+  try { const r = sessionStorage.getItem(SS_KEY); return r ? JSON.parse(r).activePeriodId : null; }
+  catch { return null; }
+}
+function saveActiveId(id: string | null): void {
+  try {
+    if (id) sessionStorage.setItem(SS_KEY, JSON.stringify({ activePeriodId: id }));
+    else sessionStorage.removeItem(SS_KEY);
+  } catch { /* ignore */ }
 }
 
 // ─── Trend badge ──────────────────────────────────────────────────────────────
-function Trend({ value }: { value: number }) {
+function Trend({ value, prevDateFrom, prevDateTo }: {
+  value: number | null;
+  prevDateFrom?: string | null;
+  prevDateTo?: string | null;
+}) {
+  if (value === null) {
+    return (
+      <div className="flex flex-col gap-0.5">
+        <span className="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full text-[#5f6368] bg-[#f1f3f4]">
+          — Sin período anterior
+        </span>
+      </div>
+    );
+  }
+  const colorClass = value > 0
+    ? 'text-[#34a853] bg-[#e6f4ea]'
+    : value < 0
+    ? 'text-[#ea4335] bg-[#fce8e6]'
+    : 'text-[#5f6368] bg-[#f1f3f4]';
+  const arrow = value > 0 ? '▲' : value < 0 ? '▼' : '→';
+  const sign  = value > 0 ? '+' : '';
   return (
-    <span className="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full text-[#34a853] bg-[#e6f4ea]">
-      ▲ {Math.abs(value).toFixed(1)}%
-    </span>
+    <div className="flex flex-col gap-0.5">
+      <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${colorClass}`}>
+        {arrow} {sign}{value.toFixed(1)}%
+      </span>
+      {prevDateFrom && prevDateTo && (
+        <span className="text-[9px] text-[#5f6368]">
+          vs {formatDateDMY(prevDateFrom)} – {formatDateDMY(prevDateTo)}
+        </span>
+      )}
+    </div>
   );
 }
 
+// ─── "vs anterior" inline badge for the table column ─────────────────────────
+function VsAnterior({ change }: { change: number | null }) {
+  if (change === null) return <span className="text-[#9aa0a6] text-[12px]">—</span>;
+  if (change > 0) return <span className="text-[#34a853] font-medium text-[12px]">▲ +{change.toFixed(1)}%</span>;
+  if (change < 0) return <span className="text-[#ea4335] font-medium text-[12px]">▼ {change.toFixed(1)}%</span>;
+  return <span className="text-[#5f6368] text-[12px]">→ 0%</span>;
+}
+
 // ─── KPI Card ────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, change, sparkData, dataKey, color = GA_BLUE, primary, sub }: {
-  label: string; value: string; change: number;
+function KpiCard({ label, value, change, prevDateFrom, prevDateTo, sparkData, dataKey, color = GA_BLUE, primary, sub }: {
+  label: string; value: string; change: number | null;
+  prevDateFrom?: string | null; prevDateTo?: string | null;
   sparkData: any[]; dataKey: string; color?: string; primary?: boolean; sub?: string;
 }) {
   const uid = `spark-${dataKey}-${label.replace(/\s/g, '')}`;
@@ -81,7 +149,7 @@ function KpiCard({ label, value, change, sparkData, dataKey, color = GA_BLUE, pr
       <p className="text-[13px] text-[#5f6368] leading-tight">{label}</p>
       <div className="flex items-baseline gap-2 flex-wrap">
         <p className={`font-normal text-[#202124] leading-none ${primary ? 'text-[32px]' : 'text-[28px]'}`}>{value}</p>
-        <Trend value={change} />
+        <Trend value={change} prevDateFrom={prevDateFrom} prevDateTo={prevDateTo} />
       </div>
       {sub && <p className="text-[11px] text-[#5f6368]">{sub}</p>}
       <div className="mt-1">
@@ -127,7 +195,7 @@ const gaTooltip = {
 };
 
 // ─── Tab: Resumen ─────────────────────────────────────────────────────────────
-function TabResumen({ data }: { data: SimulationResult }) {
+function TabResumen({ data, realChanges }: { data: SimulationResult; realChanges: RealChanges }) {
   const { summary, timeSeries } = data;
   const interval = Math.max(0, Math.floor(timeSeries.length / 10) - 1);
   const newUsersRate = Math.round((summary.newSessions / summary.uniqueUsers) * 100);
@@ -136,17 +204,18 @@ function TabResumen({ data }: { data: SimulationResult }) {
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Visitas a la página" value={fmtNum(summary.totalSessions)}
-          change={summary.vsLastPeriod.sessions} sparkData={timeSeries} dataKey="sessions"
-          color={GA_BLUE} primary />
+          change={realChanges.sessions} prevDateFrom={realChanges.prevDateFrom} prevDateTo={realChanges.prevDateTo}
+          sparkData={timeSeries} dataKey="sessions" color={GA_BLUE} primary />
         <KpiCard label="Usuarios Únicos" value={fmtNum(summary.uniqueUsers)}
-          change={summary.vsLastPeriod.users} sparkData={timeSeries} dataKey="uniqueUsers"
-          color={GA_GREEN} />
+          change={realChanges.users} prevDateFrom={realChanges.prevDateFrom} prevDateTo={realChanges.prevDateTo}
+          sparkData={timeSeries} dataKey="uniqueUsers" color={GA_GREEN} />
         <KpiCard label="Páginas vistas" value={fmtNum(summary.pageViews)}
-          change={summary.vsLastPeriod.pageViews} sparkData={timeSeries} dataKey="sessions"
-          color={GA_YELLOW} />
+          change={realChanges.pageViews} prevDateFrom={realChanges.prevDateFrom} prevDateTo={realChanges.prevDateTo}
+          sparkData={timeSeries} dataKey="sessions" color={GA_YELLOW} />
         <KpiCard label="Sesiones nuevas" value={fmtNum(summary.newSessions)}
-          change={summary.vsLastPeriod.newSessions} sparkData={timeSeries} dataKey="uniqueUsers"
-          color={GA_RED} sub={`${newUsersRate}% usuarios nuevos en este período`} />
+          change={realChanges.newSessions} prevDateFrom={realChanges.prevDateFrom} prevDateTo={realChanges.prevDateTo}
+          sparkData={timeSeries} dataKey="uniqueUsers" color={GA_RED}
+          sub={`${newUsersRate}% usuarios nuevos en este período`} />
       </div>
 
       <SectionCard title="Visitas a la página y Usuarios Únicos en el tiempo">
@@ -396,28 +465,42 @@ function TabDemografia({ data }: { data: SimulationResult }) {
   );
 }
 
-// ─── Main Page ──────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking]   = useState(true);
-  const [session, setSession]         = useState<any>(null);
-  const [visits, setVisits]           = useState(10000);
-  const [dateFrom, setDateFrom]       = useState(firstOfMonthISO);
-  const [dateTo, setDateTo]           = useState(todayISO);
-  const [dateError, setDateError]     = useState('');
+  const [isChecking, setIsChecking] = useState(true);
+  const [session, setSession]       = useState<any>(null);
+  const [mounted, setMounted]       = useState(false);
+
+  // Periods
+  const [periods, setPeriods]               = useState<Period[]>([]);
+  const [activePeriodId, setActivePeriodId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [showDeleteAll, setShowDeleteAll]   = useState(false);
+
+  // Add form (always visible)
+  const [formFrom, setFormFrom]       = useState('');
+  const [formTo, setFormTo]           = useState('');
+  const [formVisits, setFormVisits]   = useState<number | ''>('');
+  const [formError, setFormError]     = useState('');
+  const [overlapPeriod, setOverlapPeriod] = useState<Period | null>(null);
+
+  // Simulation
   const [simData, setSimData]         = useState<SimulationResult | null>(null);
+  const [realChanges, setRealChanges] = useState<RealChanges>(NULL_CHANGES);
   const [tab, setTab]                 = useState<Tab>('resumen');
-  const [mounted, setMounted]         = useState(false);
-  const [savedSims, setSavedSims]     = useState<SavedSim[]>([]);
-  const [overlapWarning, setOverlapWarning] = useState<OverlapInfo | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('analytics_simulations');
-      if (raw) setSavedSims(JSON.parse(raw));
-    } catch { /* ignore */ }
+    const saved = loadPeriods();
+    setPeriods(saved);
+    const activeId = loadActiveId();
+    if (activeId) {
+      const period = saved.find(p => p.id === activeId);
+      if (period) runLoadPeriod(period, saved);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -434,58 +517,111 @@ export default function AnalyticsPage() {
     if (!isChecking && (!session?.ok || session?.email !== OWNER_EMAIL)) router.push('/admin');
   }, [isChecking, session, router]);
 
-  const maxDateTo = addDays(dateFrom, 365);
+  const sortedPeriods = [...periods].sort(
+    (a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime()
+  );
 
-  const doGenerate = (fromSaved?: SavedSim[]) => {
-    const list = fromSaved ?? savedSims;
-    const accumulatedUsers = list
-      .filter(s => s.dateTo < dateFrom)
-      .reduce((sum, s) => sum + s.uniqueUsers, 0);
+  // ── Core: generate simulation + compute real comparison ───────────────────────
+  function runLoadPeriod(period: Period, allPeriods: Period[]) {
+    const sorted = [...allPeriods].sort(
+      (a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime()
+    );
+    const idx  = sorted.findIndex(p => p.id === period.id);
+    const prev = idx > 0 ? sorted[idx - 1] : null;
 
-    const data = generateSimulation({ totalVisits: Math.max(100, visits), dateFrom, dateTo, accumulatedUsers });
+    const accumulatedUsers = allPeriods
+      .filter(p => p.dateTo < period.dateFrom)
+      .reduce((sum, p) => sum + deriveUniqueUsers(p.totalVisits), 0);
+
+    const data = generateSimulation({
+      totalVisits: Math.max(1, period.totalVisits),
+      dateFrom: period.dateFrom,
+      dateTo: period.dateTo,
+      accumulatedUsers,
+    });
+
+    setRealChanges(prev ? {
+      sessions:    calcChange(period.totalVisits,                        prev.totalVisits),
+      users:       calcChange(deriveUniqueUsers(period.totalVisits),     deriveUniqueUsers(prev.totalVisits)),
+      pageViews:   calcChange(derivePaginasVistas(period.totalVisits),   derivePaginasVistas(prev.totalVisits)),
+      newSessions: calcChange(data.summary.newSessions,                  deriveNewSessions(prev.totalVisits)),
+      prevDateFrom: prev.dateFrom,
+      prevDateTo:   prev.dateTo,
+    } : NULL_CHANGES);
+
     setSimData(data);
+    setActivePeriodId(period.id);
+    saveActiveId(period.id);
     setTab('resumen');
-    setOverlapWarning(null);
-    setDateError('');
+  }
 
-    const newSim: SavedSim = {
+  // ── Add period ────────────────────────────────────────────────────────────────
+  const handleAdd = (forceOverlap = false) => {
+    const visits = typeof formVisits === 'number' ? formVisits : parseInt(String(formVisits));
+    if (!formFrom || !formTo) { setFormError('Completa todos los campos.'); return; }
+    if (formTo <= formFrom)   { setFormError('"Hasta" debe ser posterior a "Desde".'); return; }
+    if (!visits || visits < 1) { setFormError('Las visitas deben ser al menos 1.'); return; }
+
+    if (!forceOverlap) {
+      const overlap = periods.find(p => p.dateFrom <= formTo && p.dateTo >= formFrom);
+      if (overlap) { setOverlapPeriod(overlap); return; }
+    }
+
+    const newPeriod: Period = {
       id: Date.now().toString(),
-      dateFrom,
-      dateTo,
+      dateFrom: formFrom,
+      dateTo: formTo,
       totalVisits: visits,
-      uniqueUsers: data.summary.uniqueUsers,
-      generatedAt: new Date().toISOString(),
-      simulationData: data,
+      createdAt: new Date().toISOString(),
     };
-    const updated = [...list, newSim].slice(-24);
-    setSavedSims(updated);
-    try { localStorage.setItem('analytics_simulations', JSON.stringify(updated)); } catch { /* ignore */ }
+    const updated = [...periods, newPeriod];
+    setPeriods(updated);
+    savePeriods(updated);
+
+    // Reset form
+    setFormFrom('');
+    setFormTo('');
+    setFormVisits('');
+    setFormError('');
+    setOverlapPeriod(null);
+
+    runLoadPeriod(newPeriod, updated);
   };
 
-  const handleGenerate = () => {
-    const start = new Date(dateFrom + 'T00:00:00Z');
-    const end   = new Date(dateTo   + 'T00:00:00Z');
-    const days  = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-    if (days < 7)   { setDateError('El rango mínimo es 7 días.');   return; }
-    if (days > 366) { setDateError('El rango máximo es 366 días.'); return; }
-    setDateError('');
-
-    const overlap = savedSims.find(s => s.dateFrom <= dateTo && s.dateTo >= dateFrom);
-    if (overlap) { setOverlapWarning({ saved: overlap }); return; }
-
-    doGenerate();
+  // ── Delete single ─────────────────────────────────────────────────────────────
+  const deletePeriod = (id: string) => {
+    const updated = periods.filter(p => p.id !== id);
+    setPeriods(updated);
+    savePeriods(updated);
+    setDeleteConfirmId(null);
+    if (activePeriodId === id) {
+      setSimData(null);
+      setActivePeriodId(null);
+      saveActiveId(null);
+      setRealChanges(NULL_CHANGES);
+    }
   };
 
-  const loadSavedSim = (sim: SavedSim) => {
-    setSimData(sim.simulationData);
-    setDateFrom(sim.dateFrom);
-    setDateTo(sim.dateTo);
-    setVisits(sim.totalVisits);
-    setTab('resumen');
-    setOverlapWarning(null);
+  // ── Clear session ─────────────────────────────────────────────────────────────
+  const clearSession = () => {
+    saveActiveId(null);
+    setSimData(null);
+    setActivePeriodId(null);
+    setRealChanges(NULL_CHANGES);
   };
 
+  // ── Delete all ────────────────────────────────────────────────────────────────
+  const deleteAll = () => {
+    try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
+    saveActiveId(null);
+    setPeriods([]);
+    setActivePeriodId(null);
+    setSimData(null);
+    setRealChanges(NULL_CHANGES);
+    setShowDeleteAll(false);
+  };
+
+  // ── Export ────────────────────────────────────────────────────────────────────
   const handleExport = () => {
     if (!simData) return;
     const { summary, engagement, trafficSources, urlStats, config } = simData;
@@ -499,8 +635,10 @@ export default function AnalyticsPage() {
       `Páginas vistas: ${fmtNum(summary.pageViews)}`,
       `Sesiones nuevas: ${fmtNum(summary.newSessions)}`,
       '', '=== ENGAGEMENT ===',
-      `Tiempo promedio: ${engagement.avgTime}`, `Tasa de rebote: ${fmtPct(engagement.bounceRate)}`,
-      `Páginas/sesión: ${engagement.pagesPerSession.toFixed(1)}`, `Conversión: ${fmtPct(engagement.conversionRate)}`,
+      `Tiempo promedio: ${engagement.avgTime}`,
+      `Tasa de rebote: ${fmtPct(engagement.bounceRate)}`,
+      `Páginas/sesión: ${engagement.pagesPerSession.toFixed(1)}`,
+      `Conversión: ${fmtPct(engagement.conversionRate)}`,
       '', '=== FUENTES ===',
       ...trafficSources.rows.map(r => `${r.source}: ${fmtNum(r.sessions)} visitas (${fmtPct(r.pct)})`),
       '', '=== PÁGINAS TOP ===',
@@ -515,6 +653,7 @@ export default function AnalyticsPage() {
     a.click();
   };
 
+  // ── Auth guards ───────────────────────────────────────────────────────────────
   if (isChecking) {
     return <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center"><p className="text-[#5f6368] text-[13px]">Verificando sesión...</p></main>;
   }
@@ -523,31 +662,7 @@ export default function AnalyticsPage() {
   return (
     <main className="min-h-screen bg-[#f8f9fa]">
 
-      {/* Overlap modal */}
-      {overlapWarning && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-[15px] font-medium text-[#202124] mb-2">Ya existe una simulación en este período</h3>
-            <p className="text-[13px] text-[#5f6368] mb-5">
-              Del <strong>{formatDateDMY(overlapWarning.saved.dateFrom)}</strong> al <strong>{formatDateDMY(overlapWarning.saved.dateTo)}</strong> ya se registró una simulación
-              con <strong>{fmtNum(overlapWarning.saved.totalVisits)}</strong> visitas
-              y <strong>{fmtNum(overlapWarning.saved.uniqueUsers)}</strong> usuarios únicos.
-            </p>
-            <div className="flex gap-3 flex-wrap">
-              <button type="button" onClick={() => loadSavedSim(overlapWarning.saved)}
-                className="flex-1 bg-[#1a73e8] text-white text-[13px] font-medium px-4 py-2 rounded hover:bg-[#1765cc] transition-colors">
-                Ver simulación guardada
-              </button>
-              <button type="button" onClick={() => doGenerate()}
-                className="flex-1 border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-2 rounded hover:bg-[#f8f9fa] transition-colors">
-                Generar nueva igualmente
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Top navigation bar */}
+      {/* Nav bar */}
       <div className="bg-white border-b border-[#e0e0e0] px-6 flex items-center justify-between h-[48px]">
         <div className="flex items-center gap-2 h-full">
           <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">← Admin</a>
@@ -565,85 +680,202 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Property + config header */}
-      <div className="bg-white border-b border-[#e0e0e0] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-end gap-4 justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+
+        {/* ── Period Manager ──────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-lg border border-[#e0e0e0] p-6 flex flex-col gap-5">
+
+          {/* Header */}
           <div>
-            <p className="text-[11px] text-[#5f6368] mb-0.5 uppercase tracking-wide">Métricas Página Web - Tripoli Media</p>
-            <h1 className="text-[22px] font-normal text-[#202124]">Resumen del informe</h1>
+            <p className="text-[11px] text-[#5f6368] uppercase tracking-wide mb-0.5">Métricas Página Web - Tripoli Media</p>
+            <h1 className="text-[20px] font-normal text-[#202124]">Períodos registrados</h1>
           </div>
 
-          {/* Date range picker + controls */}
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] text-[#5f6368]">{formatDateDMY(dateFrom)} — {formatDateDMY(dateTo)}</span>
-              <div className="flex items-center gap-2 border border-[#dadce0] rounded px-3 py-1.5 bg-white focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8]">
-                <span className="text-[11px] text-[#5f6368] shrink-0">Desde</span>
-                <input type="date" value={dateFrom}
-                  onChange={e => { setDateFrom(e.target.value); setDateError(''); }}
-                  max={dateTo}
-                  className="text-[13px] text-[#202124] focus:outline-none bg-transparent cursor-pointer" />
-                <span className="text-[#dadce0] mx-1">—</span>
-                <span className="text-[11px] text-[#5f6368] shrink-0">Hasta</span>
-                <input type="date" value={dateTo}
-                  onChange={e => { setDateTo(e.target.value); setDateError(''); }}
-                  min={dateFrom}
-                  max={maxDateTo}
-                  className="text-[13px] text-[#202124] focus:outline-none bg-transparent cursor-pointer" />
+          {/* Sub-part A — Saved periods table */}
+          {sortedPeriods.length === 0 ? (
+            <p className="text-[13px] text-[#9aa0a6] py-4">No hay períodos registrados aún.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#e0e0e0]">
+                    {['Período', 'Visitas', 'vs anterior', 'Acciones'].map(h => (
+                      <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'Acciones' ? 'text-right' : 'text-left'}`}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPeriods.map((p, idx) => {
+                    const prev   = idx > 0 ? sortedPeriods[idx - 1] : null;
+                    const change = prev ? calcChange(p.totalVisits, prev.totalVisits) : null;
+                    const isActive = p.id === activePeriodId;
+                    return (
+                      <tr key={p.id} className={`border-b border-[#f1f3f4] transition-colors ${isActive ? 'bg-[#e8f0fe]' : 'hover:bg-[#f8f9fa]'}`}>
+                        <td className="py-3 font-medium text-[#202124]">
+                          {formatDateDMY(p.dateFrom)} — {formatDateDMY(p.dateTo)}
+                          {isActive && (
+                            <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#1a73e8] text-white tracking-wide align-middle">
+                              Activo
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 text-[#5f6368]">{fmtNum(p.totalVisits)}</td>
+                        <td className="py-3"><VsAnterior change={change} /></td>
+                        <td className="py-3 text-right">
+                          {deleteConfirmId === p.id ? (
+                            <span className="inline-flex items-center gap-2">
+                              <span className="text-[12px] text-[#5f6368]">¿Eliminar este período?</span>
+                              <button type="button" onClick={() => deletePeriod(p.id)}
+                                className="text-[12px] font-medium text-white bg-[#ea4335] px-2.5 py-0.5 rounded hover:bg-[#c5221f] transition-colors">
+                                Confirmar
+                              </button>
+                              <button type="button" onClick={() => setDeleteConfirmId(null)}
+                                className="text-[12px] font-medium text-[#5f6368] px-2.5 py-0.5 rounded border border-[#dadce0] hover:bg-[#f8f9fa] transition-colors">
+                                Cancelar
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5">
+                              <button type="button" onClick={() => { runLoadPeriod(p, periods); setDeleteConfirmId(null); setShowDeleteAll(false); }}
+                                className="text-[12px] font-medium text-[#1a73e8] hover:bg-[#e8f0fe] px-2.5 py-1 rounded transition-colors">
+                                Cargar
+                              </button>
+                              <button type="button" onClick={() => { setDeleteConfirmId(p.id); setShowDeleteAll(false); }}
+                                className="text-[12px] font-medium text-[#ea4335] hover:bg-[#fce8e6] px-2.5 py-1 rounded transition-colors">
+                                Eliminar
+                              </button>
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Sub-part B — Add period form (always visible) */}
+          <div className="border-t border-[#f1f3f4] pt-5">
+            <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wide mb-3">Agregar período</p>
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#5f6368]">Desde</label>
+                <input type="date" value={formFrom}
+                  onChange={e => { setFormFrom(e.target.value); setFormError(''); setOverlapPeriod(null); }}
+                  max={formTo || undefined}
+                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]" />
               </div>
-              {dateError && <p className="text-[11px] text-[#ea4335]">{dateError}</p>}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#5f6368]">Hasta</label>
+                <input type="date" value={formTo}
+                  onChange={e => { setFormTo(e.target.value); setFormError(''); setOverlapPeriod(null); }}
+                  min={formFrom || undefined}
+                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-[#5f6368]">Visitas totales</label>
+                <input type="number" min="1" value={formVisits}
+                  placeholder="ej. 10000"
+                  onChange={e => { setFormVisits(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value) || 1)); setFormError(''); }}
+                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] w-36" />
+              </div>
+              <button type="button" onClick={() => handleAdd(false)}
+                className="bg-[#1a73e8] text-white text-[13px] font-medium px-4 py-2 rounded hover:bg-[#1765cc] transition-colors shadow-sm whitespace-nowrap">
+                Agregar período
+              </button>
             </div>
 
-            <div className="flex items-center gap-1 border border-[#dadce0] rounded px-3 py-1.5 bg-white focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8]">
-              <span className="text-[11px] text-[#5f6368] whitespace-nowrap">Visitas:</span>
-              <input type="number" min="100" value={visits}
-                onChange={e => setVisits(Math.max(100, parseInt(e.target.value) || 100))}
-                className="w-20 text-[13px] text-[#202124] focus:outline-none ml-1" />
-            </div>
+            {formError && (
+              <p className="mt-2 text-[12px] text-[#ea4335]">{formError}</p>
+            )}
 
-            <button type="button" onClick={handleGenerate}
-              className="bg-[#1a73e8] text-white text-[13px] font-medium px-5 py-1.5 rounded hover:bg-[#1765cc] transition-colors shadow-sm whitespace-nowrap">
-              Aplicar
+            {overlapPeriod && !formError && (
+              <div className="mt-3 p-3.5 bg-[#fef9e7] border border-[#fbbc04] rounded-lg">
+                <p className="text-[13px] text-[#202124] mb-2">
+                  Este período se superpone con{' '}
+                  <strong>{formatDateDMY(overlapPeriod.dateFrom)} — {formatDateDMY(overlapPeriod.dateTo)}</strong>.
+                  ¿Guardar igualmente?
+                </p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => { setOverlapPeriod(null); handleAdd(true); }}
+                    className="bg-[#1a73e8] text-white text-[12px] font-medium px-3 py-1 rounded hover:bg-[#1765cc] transition-colors">
+                    Sí, guardar
+                  </button>
+                  <button type="button" onClick={() => setOverlapPeriod(null)}
+                    className="border border-[#dadce0] text-[#5f6368] text-[12px] font-medium px-3 py-1 rounded hover:bg-[#f8f9fa] transition-colors">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sub-part C — Action buttons */}
+          <div className="border-t border-[#f1f3f4] pt-4 flex items-center gap-3 flex-wrap">
+            <button type="button" onClick={clearSession}
+              className="border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
+              Limpiar sesión
             </button>
+            {periods.length > 0 && (
+              <button type="button" onClick={() => { setShowDeleteAll(true); setDeleteConfirmId(null); }}
+                className="border border-[#ea4335] text-[#ea4335] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#fce8e6] transition-colors">
+                Borrar todos los registros
+              </button>
+            )}
           </div>
-        </div>
-      </div>
 
-      {/* Tab bar */}
-      {simData && (
-        <div className="bg-white border-b border-[#e0e0e0] px-6">
-          <div className="max-w-7xl mx-auto flex overflow-x-auto">
-            {([
-              ['resumen',     'Resumen'],
-              ['adquisicion', 'Adquisición'],
-              ['engagement',  'Engagement'],
-              ['demografia',  'Demografía'],
-            ] as [Tab, string][]).map(([t, label]) => (
-              <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
-            ))}
-          </div>
+          {/* Delete-all confirmation */}
+          {showDeleteAll && (
+            <div className="p-4 border border-[#ea4335] rounded-lg bg-[#fff8f7]">
+              <p className="text-[13px] font-medium text-[#202124] mb-0.5">¿Borrar todos los períodos guardados?</p>
+              <p className="text-[12px] text-[#5f6368] mb-3">Esta acción no se puede deshacer.</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={deleteAll}
+                  className="bg-[#ea4335] text-white text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#c5221f] transition-colors">
+                  Sí, borrar todo
+                </button>
+                <button type="button" onClick={() => setShowDeleteAll(false)}
+                  className="border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {!simData && (
-          <div className="bg-white rounded-lg border border-[#e0e0e0] p-16 text-center">
-            <p className="text-[15px] text-[#5f6368]">
-              Selecciona un rango de fechas y haz clic en{' '}
-              <strong className="text-[#1a73e8] font-medium">Aplicar</strong>{' '}
-              para generar el informe.
+        {/* ── Dashboard: hint when no period loaded ───────────────────────────── */}
+        {!simData && sortedPeriods.length > 0 && (
+          <div className="bg-white rounded-lg border border-[#e0e0e0] p-12 text-center">
+            <p className="text-[14px] text-[#5f6368]">
+              Haz clic en <strong className="text-[#1a73e8] font-medium">Cargar</strong> en un período para generar el informe.
             </p>
           </div>
         )}
+
+        {/* ── Dashboard: tab bar + content ────────────────────────────────────── */}
         {simData && mounted && (
           <>
-            {tab === 'resumen'     && <TabResumen    data={simData} />}
+            <div className="bg-white border-b border-[#e0e0e0] rounded-t-lg px-2 overflow-x-auto">
+              <div className="flex">
+                {([
+                  ['resumen',     'Resumen'],
+                  ['adquisicion', 'Adquisición'],
+                  ['engagement',  'Engagement'],
+                  ['demografia',  'Demografía'],
+                ] as [Tab, string][]).map(([t, label]) => (
+                  <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
+                ))}
+              </div>
+            </div>
+
+            {tab === 'resumen'     && <TabResumen    data={simData} realChanges={realChanges} />}
             {tab === 'adquisicion' && <TabAdquisicion data={simData} />}
             {tab === 'engagement'  && <TabEngagement  data={simData} />}
             {tab === 'demografia'  && <TabDemografia  data={simData} />}
           </>
         )}
+
       </div>
     </main>
   );

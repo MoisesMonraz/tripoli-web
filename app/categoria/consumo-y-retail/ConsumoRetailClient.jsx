@@ -1,34 +1,13 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import BaseBanner, { defaultSlides } from "../../../components/banners/BaseBanner";
 import NewsCarousel from "../../../components/home/NewsCarousel";
+import { revistaToPost } from "@/lib/revista-utils";
 import bannerConsumoHero from "../../../Imagenes/Banners-Pagina-Web/Banner Consumo y Retail.png";
 import bannerFabricantes from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Fabricantes-y-Proveedores.png";
 import bannerCadenas from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Cadenas-Comerciales.png";
 import bannerConveniencia from "../../../Imagenes/Banners-Pagina-Web/Subcategorias/Banner-Negocios-de-Conveniencia.png";
-
-function mergeWithRevistas(posts, subcatSlug, revistas) {
-  const revistaPosts = (revistas || [])
-    .filter((r) => r.subcategoria?.slug === subcatSlug)
-    .map((r) => ({
-      id: r.id,
-      title: r.titulo,
-      excerpt: r.descripcion,
-      image: r.previewUrl,
-      date: new Date(r.fechaPublicacion).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" }),
-      dateISO: r.fechaPublicacion,
-      slug: r.slug,
-      author: { name: r.autor.nombre, slug: r.autor.slug },
-      category: r.categoria.slug,
-      subcategory: r.subcategoria?.slug || r.categoria.slug,
-      href: `/revistas/${r.slug}`,
-      badge: "REVISTA",
-    }));
-  const merged = [...posts, ...revistaPosts];
-  merged.sort((a, b) => new Date(b.dateISO || b.date || 0).getTime() - new Date(a.dateISO || a.date || 0).getTime());
-  return merged;
-}
 
 export default function ConsumoRetailClient({ fabricantesData, cadenasData, convenienciaData, revistas = [] }) {
   const getLocalizedPosts = (posts) =>
@@ -170,7 +149,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.fabricantes}
-        posts={mergeWithRevistas(fabricantesData, "fabricantes-y-proveedores", revistas)}
+        posts={[...(fabricantesData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "fabricantes-y-proveedores").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
         moreHref="/categoria/consumo-y-retail/fabricantes-y-proveedores"
       />
@@ -181,7 +160,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.cadenas}
-        posts={mergeWithRevistas(cadenasData, "cadenas-comerciales", revistas)}
+        posts={[...(cadenasData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "cadenas-comerciales").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/consumo-y-retail/cadenas-comerciales"
         moreHref="/categoria/consumo-y-retail/cadenas-comerciales"
       />
@@ -192,7 +171,7 @@ export default function ConsumoRetailClient({ fabricantesData, cadenasData, conv
 
       <SectionBlock
         title={labels.conveniencia}
-        posts={mergeWithRevistas(convenienciaData, "negocios-de-conveniencia", revistas)}
+        posts={[...(convenienciaData || []), ...(revistas ?? []).filter(r => r.subcategoria?.slug === "negocios-de-conveniencia").map(revistaToPost)].sort((a, b) => new Date(b.dateISO ?? b.date ?? 0).getTime() - new Date(a.dateISO ?? a.date ?? 0).getTime())}
         titleHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
         moreHref="/categoria/consumo-y-retail/negocios-de-conveniencia"
       />

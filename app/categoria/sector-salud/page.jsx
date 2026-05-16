@@ -1,4 +1,4 @@
-import { getArticlesBySubcategory } from "../../../lib/contentful";
+﻿import { getArticlesBySubcategory } from "../../../lib/contentful";
 import { getRevistasByCategory } from "../../../lib/revistas";
 import SaludClient from "./SaludClient";
 
@@ -25,4 +25,4 @@ export default async function SectorSaludPage() {
   );
 }
 
-export const revalidate = 3600;
+export const revalidate = 60;

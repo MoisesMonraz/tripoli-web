@@ -1,9 +1,16 @@
-import { getArticlesBySubcategory } from "../../../../lib/contentful";
+﻿import { getArticlesBySubcategory } from "../../../../lib/contentful";
+import { getRevistasBySubcategory, revistaToPost } from "../../../../lib/revistas";
 import SubcategoryListPageClient from "../../../../components/category/SubcategoryListPageClient";
 import BannerInstituciones from "../../../../components/instituciones-de-salud/bannerheader";
 
 export default async function InstitucionesDeSaludPage() {
-  const posts = await getArticlesBySubcategory("sector-salud", "instituciones-de-salud", 50);
+  const [articlePosts, revistaItems] = await Promise.all([
+    getArticlesBySubcategory("sector-salud", "instituciones-de-salud", 50),
+    getRevistasBySubcategory("instituciones-de-salud"),
+  ]);
+  const posts = [...articlePosts, ...revistaItems.map(revistaToPost)].sort(
+    (a, b) => new Date(b.dateISO || 0).getTime() - new Date(a.dateISO || 0).getTime()
+  );
 
   return (
     <SubcategoryListPageClient

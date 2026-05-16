@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getRevistas } from "@/lib/revistas";
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 export const metadata: Metadata = {
   title: "Revistas | Tripoli Media",
