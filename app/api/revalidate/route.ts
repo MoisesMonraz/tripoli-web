@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 const CATEGORY_PATHS = [
   "/categoria/consumo-y-retail",
@@ -27,7 +27,6 @@ function revalidateRevistas() {
 }
 
 function revalidateBlogPosts() {
-  revalidateTag("articles");
   for (const p of CATEGORY_PATHS) revalidatePath(p);
   revalidatePath("/calendario");
   console.log("[revalidate] Revalidated blogPost paths:", [
