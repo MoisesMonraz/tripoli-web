@@ -14,7 +14,7 @@ function revalidateRevistas() {
   revalidatePath("/revistas");
   revalidatePath("/revistas/[slug]", "page");
   revalidatePath("/[category]/[subcategory]/revista/[slug]", "page");
-  revalidateTag("revistas");
+  revalidatePath("/revistas", "page");
   for (const p of CATEGORY_PATHS) revalidatePath(p);
   revalidatePath("/calendario");
   console.log("[revalidate] Revalidated revista paths:", [
