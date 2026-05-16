@@ -13,18 +13,22 @@ import { useRouter } from 'next/navigation';
 
 const OWNER_EMAIL = 'monrazescoto@gmail.com';
 
-const GA_BLUE    = '#1a73e8';
-const GA_GREEN   = '#34a853';
-const GA_RED     = '#ea4335';
-const GA_YELLOW  = '#fbbc04';
-const GA_TEXT    = '#202124';
-const GA_SUB     = '#5f6368';
-const GA_BORDER  = '#e0e0e0';
-
+const GA_BLUE   = '#1a73e8';
+const GA_GREEN  = '#34a853';
+const GA_RED    = '#ea4335';
+const GA_YELLOW = '#fbbc04';
+const GA_TEXT   = '#202124';
+const GA_SUB    = '#5f6368';
+const GA_BORDER = '#e0e0e0';
 const CHANNEL_COLORS = [GA_BLUE, GA_GREEN, GA_YELLOW, GA_RED, '#9c27b0'];
 
+const LS_KEY = 'tm_periods';
+const SS_KEY = 'tm_active';
+
+type Screen = 'loading' | 'modal' | 'manager';
 type Tab = 'resumen' | 'adquisicion' | 'engagement' | 'demografia';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface Period {
   id: string;
   dateFrom: string;
@@ -42,36 +46,12 @@ interface RealChanges {
   prevDateTo: string | null;
 }
 
-const LS_KEY = 'tm_analytics_periods';
-const SS_KEY = 'tm_analytics_session';
 const NULL_CHANGES: RealChanges = {
   sessions: null, users: null, pageViews: null,
   newSessions: null, prevDateFrom: null, prevDateTo: null,
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatDateDMY(iso: string): string {
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-function calcChange(current: number, previous: number | null): number | null {
-  if (!previous) return null;
-  return Math.round(((current - previous) / previous) * 1000) / 10;
-}
-
-// Deterministic metric derivations used for cross-period comparisons
-function deriveUniqueUsers(totalVisits: number): number {
-  return Math.round(totalVisits * 0.72);
-}
-function derivePaginasVistas(totalVisits: number): number {
-  return Math.round(totalVisits * 2.8);
-}
-function deriveNewSessions(totalVisits: number): number {
-  return Math.round(totalVisits * 0.55);
-}
-
-// ─── Storage helpers ──────────────────────────────────────────────────────────
+// ─── Storage ──────────────────────────────────────────────────────────────────
 function loadPeriods(): Period[] {
   try { const r = localStorage.getItem(LS_KEY); return r ? JSON.parse(r) : []; }
   catch { return []; }
@@ -80,53 +60,45 @@ function savePeriods(list: Period[]): void {
   try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch { /* ignore */ }
 }
 function loadActiveId(): string | null {
-  try { const r = sessionStorage.getItem(SS_KEY); return r ? JSON.parse(r).activePeriodId : null; }
-  catch { return null; }
+  try { return sessionStorage.getItem(SS_KEY); } catch { return null; }
 }
 function saveActiveId(id: string | null): void {
   try {
-    if (id) sessionStorage.setItem(SS_KEY, JSON.stringify({ activePeriodId: id }));
+    if (id) sessionStorage.setItem(SS_KEY, id);
     else sessionStorage.removeItem(SS_KEY);
   } catch { /* ignore */ }
 }
-
-// ─── Trend badge ──────────────────────────────────────────────────────────────
-function Trend({ value, prevDateFrom, prevDateTo }: {
-  value: number | null;
-  prevDateFrom?: string | null;
-  prevDateTo?: string | null;
-}) {
-  if (value === null) {
-    return (
-      <div className="flex flex-col gap-0.5">
-        <span className="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full text-[#5f6368] bg-[#f1f3f4]">
-          — Sin período anterior
-        </span>
-      </div>
-    );
-  }
-  const colorClass = value > 0
-    ? 'text-[#34a853] bg-[#e6f4ea]'
-    : value < 0
-    ? 'text-[#ea4335] bg-[#fce8e6]'
-    : 'text-[#5f6368] bg-[#f1f3f4]';
-  const arrow = value > 0 ? '▲' : value < 0 ? '▼' : '→';
-  const sign  = value > 0 ? '+' : '';
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${colorClass}`}>
-        {arrow} {sign}{value.toFixed(1)}%
-      </span>
-      {prevDateFrom && prevDateTo && (
-        <span className="text-[9px] text-[#5f6368]">
-          vs {formatDateDMY(prevDateFrom)} – {formatDateDMY(prevDateTo)}
-        </span>
-      )}
-    </div>
-  );
+function clearAll(): void {
+  try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
+  saveActiveId(null);
 }
 
-// ─── "vs anterior" inline badge for the table column ─────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function formatDMY(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function periodLabel(dateFrom: string, dateTo: string): string {
+  const [fy, fm] = dateFrom.split('-').map(Number);
+  const [ty, tm] = dateTo.split('-').map(Number);
+  if (fy === ty && fm === tm) return `${MONTHS_ES[fm - 1]} ${fy}`;
+  if (fy === ty && tm - fm === 1) return `${MONTHS_ES[fm - 1]}–${MONTHS_ES[tm - 1]} ${fy}`;
+  return `${formatDMY(dateFrom)} — ${formatDMY(dateTo)}`;
+}
+
+function calcChange(current: number, previous: number | null): number | null {
+  if (!previous || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
+
+function deriveUsers(v: number)       { return Math.round(v * 0.72); }
+function derivePageViews(v: number)   { return Math.round(v * 2.8); }
+function deriveNewSessions(v: number) { return Math.round(v * 0.55); }
+
+// ─── Micro components ─────────────────────────────────────────────────────────
 function VsAnterior({ change }: { change: number | null }) {
   if (change === null) return <span className="text-[#9aa0a6] text-[12px]">—</span>;
   if (change > 0) return <span className="text-[#34a853] font-medium text-[12px]">▲ +{change.toFixed(1)}%</span>;
@@ -134,11 +106,37 @@ function VsAnterior({ change }: { change: number | null }) {
   return <span className="text-[#5f6368] text-[12px]">→ 0%</span>;
 }
 
-// ─── KPI Card ────────────────────────────────────────────────────────────────
+function Trend({ value, prevDateFrom, prevDateTo }: {
+  value: number | null;
+  prevDateFrom?: string | null;
+  prevDateTo?: string | null;
+}) {
+  if (value === null) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full text-[#5f6368] bg-[#f1f3f4]">
+        — Sin período anterior
+      </span>
+    );
+  }
+  const cls = value > 0 ? 'text-[#34a853] bg-[#e6f4ea]' : value < 0 ? 'text-[#ea4335] bg-[#fce8e6]' : 'text-[#5f6368] bg-[#f1f3f4]';
+  const arrow = value > 0 ? '▲' : value < 0 ? '▼' : '→';
+  const sign = value > 0 ? '+' : '';
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-full ${cls}`}>
+        {arrow} {sign}{value.toFixed(1)}%
+      </span>
+      {prevDateFrom && prevDateTo && (
+        <span className="text-[9px] text-[#5f6368]">vs {formatDMY(prevDateFrom)} – {formatDMY(prevDateTo)}</span>
+      )}
+    </div>
+  );
+}
+
 function KpiCard({ label, value, change, prevDateFrom, prevDateTo, sparkData, dataKey, color = GA_BLUE, primary, sub }: {
   label: string; value: string; change: number | null;
   prevDateFrom?: string | null; prevDateTo?: string | null;
-  sparkData: any[]; dataKey: string; color?: string; primary?: boolean; sub?: string;
+  sparkData: object[]; dataKey: string; color?: string; primary?: boolean; sub?: string;
 }) {
   const uid = `spark-${dataKey}-${label.replace(/\s/g, '')}`;
   return (
@@ -169,7 +167,6 @@ function KpiCard({ label, value, change, prevDateFrom, prevDateTo, sparkData, da
   );
 }
 
-// ─── Tab button ───────────────────────────────────────────────────────────────
 function TabBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
@@ -199,7 +196,6 @@ function TabResumen({ data, realChanges }: { data: SimulationResult; realChanges
   const { summary, timeSeries } = data;
   const interval = Math.max(0, Math.floor(timeSeries.length / 10) - 1);
   const newUsersRate = Math.round((summary.newSessions / summary.uniqueUsers) * 100);
-
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -217,7 +213,6 @@ function TabResumen({ data, realChanges }: { data: SimulationResult; realChanges
           sparkData={timeSeries} dataKey="uniqueUsers" color={GA_RED}
           sub={`${newUsersRate}% usuarios nuevos en este período`} />
       </div>
-
       <SectionCard title="Visitas a la página y Usuarios Únicos en el tiempo">
         <ResponsiveContainer width="100%" height={264}>
           <AreaChart data={timeSeries} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -266,6 +261,7 @@ function TabAdquisicion({ data }: { data: SimulationResult }) {
               <PieChart>
                 <Pie data={trafficSources.donut} cx="50%" cy="50%" innerRadius={60} outerRadius={98}
                   dataKey="value" labelLine={false}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
                     const R = Math.PI / 180;
                     const rr = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -295,7 +291,6 @@ function TabAdquisicion({ data }: { data: SimulationResult }) {
             ))}
           </div>
         </div>
-
         <div className="lg:col-span-3 bg-white rounded-lg border border-[#e0e0e0] p-6">
           <h2 className="text-[14px] font-medium text-[#202124] mb-3">Fuente / Canal</h2>
           <table className="w-full text-[13px]">
@@ -353,7 +348,6 @@ function TabEngagement({ data }: { data: SimulationResult }) {
           </div>
         ))}
       </div>
-
       <SectionCard title="Páginas y pantallas">
         <table className="w-full text-[13px]">
           <thead>
@@ -387,7 +381,6 @@ function TabEngagement({ data }: { data: SimulationResult }) {
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full inline-block bg-[#ea4335]" /> &lt; 1:30</span>
         </div>
       </SectionCard>
-
       <SectionCard title="Tiempo promedio por sección">
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={engagement.sectionTimes.map(s => ({ name: s.section, seg: s.avgSeconds }))} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -401,7 +394,6 @@ function TabEngagement({ data }: { data: SimulationResult }) {
           </BarChart>
         </ResponsiveContainer>
       </SectionCard>
-
       <SectionCard title="Conclusiones">
         <div className="flex flex-col gap-2.5">
           {engagement.insights.map((txt, i) => (
@@ -449,7 +441,6 @@ function TabDemografia({ data }: { data: SimulationResult }) {
           </tbody>
         </table>
       </SectionCard>
-
       <SectionCard title="Usuarios por ciudad">
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={cities.slice(0, 12).map(c => ({ name: c.city, pct: parseFloat(c.pct.toFixed(1)) }))} layout="vertical" margin={{ top: 0, right: 50, left: 0, bottom: 0 }}>
@@ -468,70 +459,64 @@ function TabDemografia({ data }: { data: SimulationResult }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [session, setSession]       = useState<any>(null);
-  const [mounted, setMounted]       = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [session, setSession]           = useState<{ ok: boolean; email?: string } | null>(null);
 
-  // Periods
-  const [periods, setPeriods]               = useState<Period[]>([]);
+  const [screen, setScreen]               = useState<Screen>('loading');
+  const [periods, setPeriods]             = useState<Period[]>([]);
   const [activePeriodId, setActivePeriodId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [showDeleteAll, setShowDeleteAll]   = useState(false);
+  const [simData, setSimData]             = useState<SimulationResult | null>(null);
+  const [realChanges, setRealChanges]     = useState<RealChanges>(NULL_CHANGES);
+  const [tab, setTab]                     = useState<Tab>('resumen');
 
-  // Add form (always visible)
-  const [formFrom, setFormFrom]       = useState('');
-  const [formTo, setFormTo]           = useState('');
-  const [formVisits, setFormVisits]   = useState<number | ''>('');
-  const [formError, setFormError]     = useState('');
-  const [overlapPeriod, setOverlapPeriod] = useState<Period | null>(null);
+  // Sidebar form
+  const [showAddForm, setShowAddForm]     = useState(false);
+  const [formFrom, setFormFrom]           = useState('');
+  const [formTo, setFormTo]               = useState('');
+  const [formVisits, setFormVisits]       = useState<number | ''>('');
+  const [formError, setFormError]         = useState('');
 
-  // Simulation
-  const [simData, setSimData]         = useState<SimulationResult | null>(null);
-  const [realChanges, setRealChanges] = useState<RealChanges>(NULL_CHANGES);
-  const [tab, setTab]                 = useState<Tab>('resumen');
+  // Confirmations
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
-
-  useEffect(() => {
-    const saved = loadPeriods();
-    setPeriods(saved);
-    const activeId = loadActiveId();
-    if (activeId) {
-      const period = saved.find(p => p.id === activeId);
-      if (period) runLoadPeriod(period, saved);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // Auth check
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch('/api/admin/status');
         setSession(res.ok ? await res.json() : null);
       } catch { setSession(null); }
-      finally { setIsChecking(false); }
+      finally { setAuthChecking(false); }
     })();
   }, []);
 
   useEffect(() => {
-    if (!isChecking && (!session?.ok || session?.email !== OWNER_EMAIL)) router.push('/admin');
-  }, [isChecking, session, router]);
+    if (!authChecking && (!session?.ok || session?.email !== OWNER_EMAIL)) router.push('/admin');
+  }, [authChecking, session, router]);
 
-  const sortedPeriods = [...periods].sort(
-    (a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime()
-  );
+  // Init: decide which screen to show
+  useEffect(() => {
+    const saved = loadPeriods();
+    if (saved.length > 0) {
+      setPeriods(saved);
+      setScreen('modal');
+    } else {
+      setScreen('manager');
+    }
+  }, []);
 
-  // ── Core: generate simulation + compute real comparison ───────────────────────
-  function runLoadPeriod(period: Period, allPeriods: Period[]) {
-    const sorted = [...allPeriods].sort(
-      (a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime()
-    );
-    const idx  = sorted.findIndex(p => p.id === period.id);
-    const prev = idx > 0 ? sorted[idx - 1] : null;
+  // ── Sorted periods ───────────────────────────────────────────────────────────
+  const sorted = [...periods].sort((a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime());
+
+  // ── Core: load period + generate simulation ──────────────────────────────────
+  function runLoad(period: Period, allPeriods: Period[]) {
+    const sortedAll = [...allPeriods].sort((a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime());
+    const idx  = sortedAll.findIndex(p => p.id === period.id);
+    const prev = idx > 0 ? sortedAll[idx - 1] : null;
 
     const accumulatedUsers = allPeriods
       .filter(p => p.dateTo < period.dateFrom)
-      .reduce((sum, p) => sum + deriveUniqueUsers(p.totalVisits), 0);
+      .reduce((sum, p) => sum + deriveUsers(p.totalVisits), 0);
 
     const data = generateSimulation({
       totalVisits: Math.max(1, period.totalVisits),
@@ -541,10 +526,10 @@ export default function AnalyticsPage() {
     });
 
     setRealChanges(prev ? {
-      sessions:    calcChange(period.totalVisits,                        prev.totalVisits),
-      users:       calcChange(deriveUniqueUsers(period.totalVisits),     deriveUniqueUsers(prev.totalVisits)),
-      pageViews:   calcChange(derivePaginasVistas(period.totalVisits),   derivePaginasVistas(prev.totalVisits)),
-      newSessions: calcChange(data.summary.newSessions,                  deriveNewSessions(prev.totalVisits)),
+      sessions:    calcChange(period.totalVisits,             prev.totalVisits),
+      users:       calcChange(deriveUsers(period.totalVisits),    deriveUsers(prev.totalVisits)),
+      pageViews:   calcChange(derivePageViews(period.totalVisits), derivePageViews(prev.totalVisits)),
+      newSessions: calcChange(data.summary.newSessions,           deriveNewSessions(prev.totalVisits)),
       prevDateFrom: prev.dateFrom,
       prevDateTo:   prev.dateTo,
     } : NULL_CHANGES);
@@ -555,79 +540,72 @@ export default function AnalyticsPage() {
     setTab('resumen');
   }
 
-  // ── Add period ────────────────────────────────────────────────────────────────
-  const handleAdd = (forceOverlap = false) => {
-    const visits = typeof formVisits === 'number' ? formVisits : parseInt(String(formVisits));
-    if (!formFrom || !formTo) { setFormError('Completa todos los campos.'); return; }
-    if (formTo <= formFrom)   { setFormError('"Hasta" debe ser posterior a "Desde".'); return; }
-    if (!visits || visits < 1) { setFormError('Las visitas deben ser al menos 1.'); return; }
-
-    if (!forceOverlap) {
-      const overlap = periods.find(p => p.dateFrom <= formTo && p.dateTo >= formFrom);
-      if (overlap) { setOverlapPeriod(overlap); return; }
+  // ── Welcome modal actions ────────────────────────────────────────────────────
+  const handleContinue = () => {
+    setScreen('manager');
+    const activeId = loadActiveId();
+    if (activeId) {
+      const found = periods.find(p => p.id === activeId);
+      if (found) runLoad(found, periods);
     }
+  };
+
+  const handleReset = () => {
+    clearAll();
+    setPeriods([]);
+    setActivePeriodId(null);
+    setSimData(null);
+    setRealChanges(NULL_CHANGES);
+    setScreen('manager');
+  };
+
+  // ── Add period ───────────────────────────────────────────────────────────────
+  const handleAdd = () => {
+    const visits = typeof formVisits === 'number' ? formVisits : parseInt(String(formVisits));
+    if (!formFrom || !formTo)   { setFormError('Completa todos los campos.'); return; }
+    if (formTo <= formFrom)     { setFormError('"Hasta" debe ser posterior a "Desde".'); return; }
+    if (!visits || visits < 1) { setFormError('Las visitas deben ser al menos 1.'); return; }
 
     const newPeriod: Period = {
       id: Date.now().toString(),
-      dateFrom: formFrom,
-      dateTo: formTo,
+      dateFrom: formFrom, dateTo: formTo,
       totalVisits: visits,
       createdAt: new Date().toISOString(),
     };
     const updated = [...periods, newPeriod];
     setPeriods(updated);
     savePeriods(updated);
-
-    // Reset form
-    setFormFrom('');
-    setFormTo('');
-    setFormVisits('');
-    setFormError('');
-    setOverlapPeriod(null);
-
-    runLoadPeriod(newPeriod, updated);
+    setFormFrom(''); setFormTo(''); setFormVisits(''); setFormError('');
+    setShowAddForm(false);
+    runLoad(newPeriod, updated);
   };
 
-  // ── Delete single ─────────────────────────────────────────────────────────────
-  const deletePeriod = (id: string) => {
-    const updated = periods.filter(p => p.id !== id);
-    setPeriods(updated);
-    savePeriods(updated);
-    setDeleteConfirmId(null);
-    if (activePeriodId === id) {
-      setSimData(null);
-      setActivePeriodId(null);
-      saveActiveId(null);
-      setRealChanges(NULL_CHANGES);
-    }
-  };
-
-  // ── Clear session ─────────────────────────────────────────────────────────────
-  const clearSession = () => {
-    saveActiveId(null);
-    setSimData(null);
-    setActivePeriodId(null);
-    setRealChanges(NULL_CHANGES);
-  };
-
-  // ── Delete all ────────────────────────────────────────────────────────────────
-  const deleteAll = () => {
-    try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
-    saveActiveId(null);
+  // ── Delete all ───────────────────────────────────────────────────────────────
+  const handleDeleteAll = () => {
+    clearAll();
     setPeriods([]);
     setActivePeriodId(null);
     setSimData(null);
     setRealChanges(NULL_CHANGES);
     setShowDeleteAll(false);
+    setShowAddForm(false);
   };
 
-  // ── Export ────────────────────────────────────────────────────────────────────
+  // ── Clear session ────────────────────────────────────────────────────────────
+  const handleClearSession = () => {
+    saveActiveId(null);
+    setActivePeriodId(null);
+    setSimData(null);
+    setRealChanges(NULL_CHANGES);
+  };
+
+  // ── Export ───────────────────────────────────────────────────────────────────
   const handleExport = () => {
     if (!simData) return;
     const { summary, engagement, trafficSources, urlStats, config } = simData;
     const lines = [
       'REPORTE ANALYTICS — TRIPOLI MEDIA',
-      `Período: ${formatDateDMY(config.dateFrom)} - ${formatDateDMY(config.dateTo)}`,
+      `Período: ${formatDMY(config.dateFrom)} - ${formatDMY(config.dateTo)}`,
       `Generado: ${new Date().toLocaleString('es-MX')}`,
       '', '=== RESUMEN ===',
       `Visitas a la página: ${fmtNum(summary.totalSessions)}`,
@@ -653,17 +631,58 @@ export default function AnalyticsPage() {
     a.click();
   };
 
-  // ── Auth guards ───────────────────────────────────────────────────────────────
-  if (isChecking) {
-    return <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center"><p className="text-[#5f6368] text-[13px]">Verificando sesión...</p></main>;
+  // ── Auth / loading guards ─────────────────────────────────────────────────
+  if (authChecking || screen === 'loading') {
+    return (
+      <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+        <p className="text-[#5f6368] text-[13px]">Verificando sesión...</p>
+      </main>
+    );
   }
   if (!session?.ok || session?.email !== OWNER_EMAIL) return null;
 
+  // ── SCREEN 1: Welcome modal ───────────────────────────────────────────────
+  if (screen === 'modal') {
+    const lastPeriod = [...periods].sort((a, b) => b.dateFrom.localeCompare(a.dateFrom))[0];
+    return (
+      <main className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
+        {/* Dimmed backdrop */}
+        <div className="fixed inset-0 bg-black/30" />
+        {/* Modal card */}
+        <div className="relative z-10 bg-white rounded-xl border border-[#e0e0e0] shadow-xl p-8 w-full max-w-md flex flex-col gap-6">
+          <div>
+            <p className="text-[11px] text-[#5f6368] uppercase tracking-wide mb-1">Tripoli Media</p>
+            <h1 className="text-[22px] font-normal text-[#202124] leading-snug">Métricas Página Web</h1>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button type="button" onClick={handleContinue}
+              className="w-full bg-[#1a73e8] text-white text-[14px] font-medium py-2.5 rounded-lg hover:bg-[#1765cc] transition-colors shadow-sm">
+              Continuar sesión
+            </button>
+            <button type="button" onClick={handleReset}
+              className="w-full border border-[#ea4335] text-[#ea4335] text-[14px] font-medium py-2.5 rounded-lg hover:bg-[#fce8e6] transition-colors">
+              Empezar de cero
+            </button>
+          </div>
+
+          <p className="text-[13px] text-[#5f6368] border-t border-[#f1f3f4] pt-4">
+            Tienes <strong className="text-[#202124]">{periods.length}</strong> período{periods.length !== 1 ? 's' : ''} guardado{periods.length !== 1 ? 's' : ''}.
+            {lastPeriod && (
+              <> Último: <strong className="text-[#202124]">{formatDMY(lastPeriod.dateFrom)} — {formatDMY(lastPeriod.dateTo)}</strong></>
+            )}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // ── SCREEN 2: Period Manager + Dashboard ──────────────────────────────────
   return (
-    <main className="min-h-screen bg-[#f8f9fa]">
+    <main className="min-h-screen bg-[#f8f9fa] flex flex-col">
 
       {/* Nav bar */}
-      <div className="bg-white border-b border-[#e0e0e0] px-6 flex items-center justify-between h-[48px]">
+      <div className="bg-white border-b border-[#e0e0e0] px-6 flex items-center justify-between h-[48px] shrink-0">
         <div className="flex items-center gap-2 h-full">
           <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">← Admin</a>
           <span className="text-[#e0e0e0] mx-1">/</span>
@@ -680,130 +699,126 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+      {/* Body: sidebar + main — flex row on desktop, column on mobile */}
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0">
 
-        {/* ── Period Manager ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-[#e0e0e0] p-6 flex flex-col gap-5">
+        {/* ── SIDEBAR (desktop: fixed 280px, mobile: horizontal pill scroll) ── */}
 
-          {/* Header */}
-          <div>
-            <p className="text-[11px] text-[#5f6368] uppercase tracking-wide mb-0.5">Métricas Página Web - Tripoli Media</p>
-            <h1 className="text-[20px] font-normal text-[#202124]">Períodos registrados</h1>
+        {/* Mobile pills */}
+        <div className="lg:hidden bg-white border-b border-[#e0e0e0] px-4 py-3">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {sorted.map((p, idx) => {
+              const prev = idx > 0 ? sorted[idx - 1] : null;
+              const change = prev ? calcChange(p.totalVisits, prev.totalVisits) : null;
+              const isActive = p.id === activePeriodId;
+              return (
+                <button key={p.id} type="button"
+                  onClick={() => runLoad(p, periods)}
+                  className={`flex-shrink-0 flex flex-col items-start px-3 py-2 rounded-lg border text-left transition-colors ${
+                    isActive ? 'border-[#1a73e8] bg-[#e8f0fe]' : 'border-[#e0e0e0] bg-white hover:bg-[#f8f9fa]'
+                  }`}>
+                  <span className="text-[12px] font-medium text-[#202124] whitespace-nowrap">{periodLabel(p.dateFrom, p.dateTo)}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-[#5f6368]">{fmtNum(p.totalVisits)}</span>
+                    <VsAnterior change={change} />
+                  </div>
+                </button>
+              );
+            })}
+            <button type="button" onClick={() => setShowAddForm(v => !v)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-[#dadce0] text-[#1a73e8] text-[12px] font-medium hover:bg-[#e8f0fe] transition-colors whitespace-nowrap">
+              + Agregar
+            </button>
           </div>
 
-          {/* Sub-part A — Saved periods table */}
-          {sortedPeriods.length === 0 ? (
-            <p className="text-[13px] text-[#9aa0a6] py-4">No hay períodos registrados aún.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr className="border-b border-[#e0e0e0]">
-                    {['Período', 'Visitas', 'vs anterior', 'Acciones'].map(h => (
-                      <th key={h} className={`pb-2.5 text-[11px] font-medium text-[#5f6368] uppercase tracking-wide ${h === 'Acciones' ? 'text-right' : 'text-left'}`}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedPeriods.map((p, idx) => {
-                    const prev   = idx > 0 ? sortedPeriods[idx - 1] : null;
-                    const change = prev ? calcChange(p.totalVisits, prev.totalVisits) : null;
-                    const isActive = p.id === activePeriodId;
-                    return (
-                      <tr key={p.id} className={`border-b border-[#f1f3f4] transition-colors ${isActive ? 'bg-[#e8f0fe]' : 'hover:bg-[#f8f9fa]'}`}>
-                        <td className="py-3 font-medium text-[#202124]">
-                          {formatDateDMY(p.dateFrom)} — {formatDateDMY(p.dateTo)}
-                          {isActive && (
-                            <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#1a73e8] text-white tracking-wide align-middle">
-                              Activo
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 text-[#5f6368]">{fmtNum(p.totalVisits)}</td>
-                        <td className="py-3"><VsAnterior change={change} /></td>
-                        <td className="py-3 text-right">
-                          {deleteConfirmId === p.id ? (
-                            <span className="inline-flex items-center gap-2">
-                              <span className="text-[12px] text-[#5f6368]">¿Eliminar este período?</span>
-                              <button type="button" onClick={() => deletePeriod(p.id)}
-                                className="text-[12px] font-medium text-white bg-[#ea4335] px-2.5 py-0.5 rounded hover:bg-[#c5221f] transition-colors">
-                                Confirmar
-                              </button>
-                              <button type="button" onClick={() => setDeleteConfirmId(null)}
-                                className="text-[12px] font-medium text-[#5f6368] px-2.5 py-0.5 rounded border border-[#dadce0] hover:bg-[#f8f9fa] transition-colors">
-                                Cancelar
-                              </button>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5">
-                              <button type="button" onClick={() => { runLoadPeriod(p, periods); setDeleteConfirmId(null); setShowDeleteAll(false); }}
-                                className="text-[12px] font-medium text-[#1a73e8] hover:bg-[#e8f0fe] px-2.5 py-1 rounded transition-colors">
-                                Cargar
-                              </button>
-                              <button type="button" onClick={() => { setDeleteConfirmId(p.id); setShowDeleteAll(false); }}
-                                className="text-[12px] font-medium text-[#ea4335] hover:bg-[#fce8e6] px-2.5 py-1 rounded transition-colors">
-                                Eliminar
-                              </button>
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          {/* Mobile add form */}
+          {showAddForm && (
+            <div className="mt-3 p-4 bg-[#f8f9fa] rounded-lg border border-[#e0e0e0]">
+              <MobileAddForm
+                formFrom={formFrom} formTo={formTo} formVisits={formVisits} formError={formError}
+                setFormFrom={v => { setFormFrom(v); setFormError(''); }}
+                setFormTo={v => { setFormTo(v); setFormError(''); }}
+                setFormVisits={v => { setFormVisits(v); setFormError(''); }}
+                onSave={handleAdd}
+                onCancel={() => { setShowAddForm(false); setFormError(''); }}
+              />
             </div>
           )}
+        </div>
 
-          {/* Sub-part B — Add period form (always visible) */}
-          <div className="border-t border-[#f1f3f4] pt-5">
-            <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wide mb-3">Agregar período</p>
-            <div className="flex flex-wrap gap-3 items-end">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#5f6368]">Desde</label>
-                <input type="date" value={formFrom}
-                  onChange={e => { setFormFrom(e.target.value); setFormError(''); setOverlapPeriod(null); }}
-                  max={formTo || undefined}
-                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#5f6368]">Hasta</label>
-                <input type="date" value={formTo}
-                  onChange={e => { setFormTo(e.target.value); setFormError(''); setOverlapPeriod(null); }}
-                  min={formFrom || undefined}
-                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8]" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-[#5f6368]">Visitas totales</label>
-                <input type="number" min="1" value={formVisits}
-                  placeholder="ej. 10000"
-                  onChange={e => { setFormVisits(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value) || 1)); setFormError(''); }}
-                  className="border border-[#dadce0] rounded px-3 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] w-36" />
-              </div>
-              <button type="button" onClick={() => handleAdd(false)}
-                className="bg-[#1a73e8] text-white text-[13px] font-medium px-4 py-2 rounded hover:bg-[#1765cc] transition-colors shadow-sm whitespace-nowrap">
-                Agregar período
-              </button>
-            </div>
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:flex flex-col w-[280px] shrink-0 bg-white border-r border-[#e0e0e0] overflow-y-auto">
+          <div className="p-5 border-b border-[#f1f3f4]">
+            <p className="text-[11px] text-[#5f6368] uppercase tracking-wide mb-0.5">Métricas — Tripoli Media</p>
+            <h1 className="text-[16px] font-normal text-[#202124]">Períodos</h1>
+          </div>
 
-            {formError && (
-              <p className="mt-2 text-[12px] text-[#ea4335]">{formError}</p>
+          {/* Period list */}
+          <div className="flex flex-col flex-1">
+            {sorted.length === 0 && !showAddForm && (
+              <p className="text-[13px] text-[#9aa0a6] px-5 py-6">No hay períodos aún.</p>
             )}
 
-            {overlapPeriod && !formError && (
-              <div className="mt-3 p-3.5 bg-[#fef9e7] border border-[#fbbc04] rounded-lg">
-                <p className="text-[13px] text-[#202124] mb-2">
-                  Este período se superpone con{' '}
-                  <strong>{formatDateDMY(overlapPeriod.dateFrom)} — {formatDateDMY(overlapPeriod.dateTo)}</strong>.
-                  ¿Guardar igualmente?
-                </p>
+            {sorted.map((p, idx) => {
+              const prev = idx > 0 ? sorted[idx - 1] : null;
+              const change = prev ? calcChange(p.totalVisits, prev.totalVisits) : null;
+              const isActive = p.id === activePeriodId;
+              return (
+                <button key={p.id} type="button"
+                  onClick={() => runLoad(p, periods)}
+                  className={`w-full text-left px-5 py-3.5 border-l-2 transition-colors hover:bg-[#f8f9fa] ${
+                    isActive ? 'border-[#1a73e8] bg-[#e8f0fe] hover:bg-[#dce9fb]' : 'border-transparent'
+                  }`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[13px] font-medium text-[#202124] leading-snug">
+                      {periodLabel(p.dateFrom, p.dateTo)}
+                      {isActive && (
+                        <span className="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#1a73e8] text-white tracking-wide align-middle">
+                          Activo
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[12px] text-[#5f6368]">{fmtNum(p.totalVisits)} visitas</span>
+                    <VsAnterior change={change} />
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Add period form (toggleable) */}
+            {showAddForm && (
+              <div className="px-5 py-4 border-t border-[#f1f3f4] flex flex-col gap-3">
+                <p className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wide">Nuevo período</p>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] text-[#5f6368]">Desde</label>
+                    <input type="date" value={formFrom} max={formTo || undefined}
+                      onChange={e => { setFormFrom(e.target.value); setFormError(''); }}
+                      className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] w-full" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] text-[#5f6368]">Hasta</label>
+                    <input type="date" value={formTo} min={formFrom || undefined}
+                      onChange={e => { setFormTo(e.target.value); setFormError(''); }}
+                      className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] w-full" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] text-[#5f6368]">Visitas totales</label>
+                    <input type="number" min="1" value={formVisits} placeholder="ej. 10000"
+                      onChange={e => { setFormVisits(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value) || 1)); setFormError(''); }}
+                      className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] w-full" />
+                  </div>
+                </div>
+                {formError && <p className="text-[11px] text-[#ea4335]">{formError}</p>}
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => { setOverlapPeriod(null); handleAdd(true); }}
-                    className="bg-[#1a73e8] text-white text-[12px] font-medium px-3 py-1 rounded hover:bg-[#1765cc] transition-colors">
-                    Sí, guardar
+                  <button type="button" onClick={handleAdd}
+                    className="flex-1 bg-[#1a73e8] text-white text-[13px] font-medium py-1.5 rounded hover:bg-[#1765cc] transition-colors">
+                    Guardar
                   </button>
-                  <button type="button" onClick={() => setOverlapPeriod(null)}
-                    className="border border-[#dadce0] text-[#5f6368] text-[12px] font-medium px-3 py-1 rounded hover:bg-[#f8f9fa] transition-colors">
+                  <button type="button" onClick={() => { setShowAddForm(false); setFormError(''); setFormFrom(''); setFormTo(''); setFormVisits(''); }}
+                    className="flex-1 border border-[#dadce0] text-[#5f6368] text-[13px] font-medium py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
                     Cancelar
                   </button>
                 </div>
@@ -811,72 +826,135 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          {/* Sub-part C — Action buttons */}
-          <div className="border-t border-[#f1f3f4] pt-4 flex items-center gap-3 flex-wrap">
-            <button type="button" onClick={clearSession}
-              className="border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
-              Limpiar sesión
-            </button>
-            {periods.length > 0 && (
-              <button type="button" onClick={() => { setShowDeleteAll(true); setDeleteConfirmId(null); }}
-                className="border border-[#ea4335] text-[#ea4335] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#fce8e6] transition-colors">
-                Borrar todos los registros
+          {/* Sidebar actions */}
+          <div className="p-4 border-t border-[#f1f3f4] flex flex-col gap-2">
+            {!showAddForm && (
+              <button type="button" onClick={() => setShowAddForm(true)}
+                className="w-full bg-[#1a73e8] text-white text-[13px] font-medium py-2 rounded hover:bg-[#1765cc] transition-colors shadow-sm">
+                + Agregar período
               </button>
             )}
+            <button type="button" onClick={handleClearSession}
+              className="w-full border border-[#dadce0] text-[#5f6368] text-[13px] font-medium py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
+              Limpiar sesión
+            </button>
+            {periods.length > 0 && !showDeleteAll && (
+              <button type="button" onClick={() => setShowDeleteAll(true)}
+                className="w-full text-[#ea4335] text-[13px] font-medium py-1.5 rounded hover:bg-[#fce8e6] transition-colors">
+                Borrar todo
+              </button>
+            )}
+            {showDeleteAll && (
+              <div className="bg-[#fff8f7] border border-[#ea4335] rounded-lg p-3 flex flex-col gap-2">
+                <p className="text-[12px] text-[#202124] font-medium">¿Borrar todos los períodos?</p>
+                <p className="text-[11px] text-[#5f6368]">Esta acción no se puede deshacer.</p>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={handleDeleteAll}
+                    className="flex-1 bg-[#ea4335] text-white text-[12px] font-medium py-1.5 rounded hover:bg-[#c5221f] transition-colors">
+                    Sí, borrar
+                  </button>
+                  <button type="button" onClick={() => setShowDeleteAll(false)}
+                    className="flex-1 border border-[#dadce0] text-[#5f6368] text-[12px] font-medium py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+        </aside>
 
-          {/* Delete-all confirmation */}
-          {showDeleteAll && (
-            <div className="p-4 border border-[#ea4335] rounded-lg bg-[#fff8f7]">
-              <p className="text-[13px] font-medium text-[#202124] mb-0.5">¿Borrar todos los períodos guardados?</p>
-              <p className="text-[12px] text-[#5f6368] mb-3">Esta acción no se puede deshacer.</p>
-              <div className="flex gap-2">
-                <button type="button" onClick={deleteAll}
-                  className="bg-[#ea4335] text-white text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#c5221f] transition-colors">
-                  Sí, borrar todo
-                </button>
-                <button type="button" onClick={() => setShowDeleteAll(false)}
-                  className="border border-[#dadce0] text-[#5f6368] text-[13px] font-medium px-4 py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
-                  Cancelar
-                </button>
+        {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+
+          {/* No period selected */}
+          {!simData && (
+            <div className="flex-1 flex items-center justify-center p-12">
+              <div className="text-center">
+                <p className="text-[15px] text-[#5f6368]">
+                  {sorted.length === 0
+                    ? 'Agrega un período para comenzar.'
+                    : <>Selecciona un período para ver las métricas.</>
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Dashboard */}
+          {simData && (
+            <div className="flex flex-col flex-1">
+              {/* Tab bar */}
+              <div className="bg-white border-b border-[#e0e0e0] px-4 lg:px-6 overflow-x-auto shrink-0">
+                <div className="flex">
+                  {([
+                    ['resumen',     'Resumen'],
+                    ['adquisicion', 'Adquisición'],
+                    ['engagement',  'Engagement'],
+                    ['demografia',  'Demografía'],
+                  ] as [Tab, string][]).map(([t, label]) => (
+                    <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Tab content */}
+              <div className="flex-1 p-4 lg:p-6">
+                {tab === 'resumen'     && <TabResumen     data={simData} realChanges={realChanges} />}
+                {tab === 'adquisicion' && <TabAdquisicion data={simData} />}
+                {tab === 'engagement'  && <TabEngagement  data={simData} />}
+                {tab === 'demografia'  && <TabDemografia  data={simData} />}
               </div>
             </div>
           )}
         </div>
-
-        {/* ── Dashboard: hint when no period loaded ───────────────────────────── */}
-        {!simData && sortedPeriods.length > 0 && (
-          <div className="bg-white rounded-lg border border-[#e0e0e0] p-12 text-center">
-            <p className="text-[14px] text-[#5f6368]">
-              Haz clic en <strong className="text-[#1a73e8] font-medium">Cargar</strong> en un período para generar el informe.
-            </p>
-          </div>
-        )}
-
-        {/* ── Dashboard: tab bar + content ────────────────────────────────────── */}
-        {simData && mounted && (
-          <>
-            <div className="bg-white border-b border-[#e0e0e0] rounded-t-lg px-2 overflow-x-auto">
-              <div className="flex">
-                {([
-                  ['resumen',     'Resumen'],
-                  ['adquisicion', 'Adquisición'],
-                  ['engagement',  'Engagement'],
-                  ['demografia',  'Demografía'],
-                ] as [Tab, string][]).map(([t, label]) => (
-                  <TabBtn key={t} label={label} active={tab === t} onClick={() => setTab(t)} />
-                ))}
-              </div>
-            </div>
-
-            {tab === 'resumen'     && <TabResumen    data={simData} realChanges={realChanges} />}
-            {tab === 'adquisicion' && <TabAdquisicion data={simData} />}
-            {tab === 'engagement'  && <TabEngagement  data={simData} />}
-            {tab === 'demografia'  && <TabDemografia  data={simData} />}
-          </>
-        )}
-
       </div>
     </main>
+  );
+}
+
+// ── Mobile Add Form (extracted to avoid prop drilling in the JSX) ─────────────
+function MobileAddForm({ formFrom, formTo, formVisits, formError, setFormFrom, setFormTo, setFormVisits, onSave, onCancel }: {
+  formFrom: string; formTo: string; formVisits: number | '';
+  formError: string;
+  setFormFrom: (v: string) => void;
+  setFormTo: (v: string) => void;
+  setFormVisits: (v: number | '') => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-3 flex-wrap">
+        <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+          <label className="text-[11px] text-[#5f6368]">Desde</label>
+          <input type="date" value={formFrom} max={formTo || undefined}
+            onChange={e => setFormFrom(e.target.value)}
+            className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] w-full" />
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+          <label className="text-[11px] text-[#5f6368]">Hasta</label>
+          <input type="date" value={formTo} min={formFrom || undefined}
+            onChange={e => setFormTo(e.target.value)}
+            className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] w-full" />
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-[130px]">
+          <label className="text-[11px] text-[#5f6368]">Visitas totales</label>
+          <input type="number" min="1" value={formVisits} placeholder="ej. 10000"
+            onChange={e => setFormVisits(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value) || 1))}
+            className="border border-[#dadce0] rounded px-2.5 py-1.5 text-[13px] text-[#202124] focus:outline-none focus:border-[#1a73e8] w-full" />
+        </div>
+      </div>
+      {formError && <p className="text-[12px] text-[#ea4335]">{formError}</p>}
+      <div className="flex gap-2">
+        <button type="button" onClick={onSave}
+          className="flex-1 bg-[#1a73e8] text-white text-[13px] font-medium py-1.5 rounded hover:bg-[#1765cc] transition-colors">
+          Guardar
+        </button>
+        <button type="button" onClick={onCancel}
+          className="flex-1 border border-[#dadce0] text-[#5f6368] text-[13px] font-medium py-1.5 rounded hover:bg-[#f8f9fa] transition-colors">
+          Cancelar
+        </button>
+      </div>
+    </div>
   );
 }
