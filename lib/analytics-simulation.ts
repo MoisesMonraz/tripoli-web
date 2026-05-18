@@ -239,7 +239,7 @@ export function generateSummary(
   accumulatedUsers: number
 ): SimulationResult['summary'] {
   const uniqueUsers = Math.round(totalVisits * r(0.68, 0.76));
-  const pageViews = Math.round(totalVisits * r(2.1, 3.4));
+  const pageViews = Math.round(totalVisits * r(1.575, 2.55));
   const newSessions = calculateNewUsers(uniqueUsers, dateFrom, dateTo, accumulatedUsers);
   return {
     totalSessions: totalVisits,

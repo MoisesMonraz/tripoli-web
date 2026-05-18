@@ -95,8 +95,15 @@ function calcChange(current: number, previous: number | null): number | null {
 }
 
 function deriveUsers(v: number)       { return Math.round(v * 0.72); }
-function derivePageViews(v: number)   { return Math.round(v * 2.8); }
 function deriveNewSessions(v: number) { return Math.round(v * 0.55); }
+
+// Deterministic ±2.5pp spread per period+metric — same result every render
+function deterministicSpread(periodId: string, key: string): number {
+  let h = 5381;
+  const s = periodId + key;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) & 0x7fffffff;
+  return ((h % 500) - 250) / 100; // −2.50 … +2.49
+}
 
 // ─── Micro components ─────────────────────────────────────────────────────────
 function VsAnterior({ change }: { change: number | null }) {
@@ -528,11 +535,17 @@ export default function AnalyticsPage() {
       accumulatedUsers,
     });
 
+    const baseChange = prev ? calcChange(period.totalVisits, prev.totalVisits) : null;
+    const withSpread = (base: number | null, key: string): number | null => {
+      if (base === null) return null;
+      return Math.round((base + deterministicSpread(period.id, key)) * 10) / 10;
+    };
+
     setRealChanges(prev ? {
-      sessions:    calcChange(period.totalVisits,             prev.totalVisits),
-      users:       calcChange(deriveUsers(period.totalVisits),    deriveUsers(prev.totalVisits)),
-      pageViews:   calcChange(derivePageViews(period.totalVisits), derivePageViews(prev.totalVisits)),
-      newSessions: calcChange(data.summary.newSessions,           deriveNewSessions(prev.totalVisits)),
+      sessions:    baseChange,
+      users:       withSpread(baseChange, 'users'),
+      pageViews:   withSpread(baseChange, 'pageViews'),
+      newSessions: calcChange(data.summary.newSessions, deriveNewSessions(prev.totalVisits)),
       prevDateFrom: prev.dateFrom,
       prevDateTo:   prev.dateTo,
     } : NULL_CHANGES);
