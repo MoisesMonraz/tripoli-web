@@ -476,6 +476,9 @@ export default function AnalyticsPage() {
   const [formVisits, setFormVisits]       = useState<number | ''>('');
   const [formError, setFormError]         = useState('');
 
+  // Sidebar visibility
+  const [showSidebar, setShowSidebar]     = useState(true);
+
   // Confirmations
   const [showDeleteAll, setShowDeleteAll] = useState(false);
 
@@ -687,6 +690,22 @@ export default function AnalyticsPage() {
           <a href="/admin" className="text-[#5f6368] hover:text-[#202124] text-[13px] transition-colors">← Admin</a>
           <span className="text-[#e0e0e0] mx-1">/</span>
           <span className="text-[13px] text-[#202124]">Analytics</span>
+          <button
+            type="button"
+            onClick={() => setShowSidebar(v => !v)}
+            title={showSidebar ? 'Ocultar períodos' : 'Mostrar períodos'}
+            className={`ml-2 w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+              showSidebar
+                ? 'bg-[#1a73e8] text-white hover:bg-[#1765cc]'
+                : 'bg-white text-[#1a73e8] border border-[#dadce0] hover:bg-[#e8f0fe]'
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <rect x="1" y="10" width="3" height="5" rx="0.5" />
+              <rect x="6" y="6"  width="3" height="9" rx="0.5" />
+              <rect x="11" y="2" width="3" height="13" rx="0.5" />
+            </svg>
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-[#5f6368] border border-[#dadce0] rounded-full px-3 py-1 bg-[#f8f9fa]">tripoli.media</span>
@@ -705,7 +724,7 @@ export default function AnalyticsPage() {
         {/* ── SIDEBAR (desktop: fixed 280px, mobile: horizontal pill scroll) ── */}
 
         {/* Mobile pills */}
-        <div className="lg:hidden bg-white border-b border-[#e0e0e0] px-4 py-3">
+        <div className={`lg:hidden bg-white border-b border-[#e0e0e0] px-4 py-3 ${showSidebar ? '' : 'hidden'}`}>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {sorted.map((p, idx) => {
               const prev = idx > 0 ? sorted[idx - 1] : null;
@@ -747,7 +766,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Desktop sidebar */}
-        <aside className="hidden lg:flex flex-col w-[280px] shrink-0 bg-white border-r border-[#e0e0e0] overflow-y-auto">
+        <aside className={`flex-col w-[280px] shrink-0 bg-white border-r border-[#e0e0e0] overflow-y-auto ${showSidebar ? 'hidden lg:flex' : 'hidden'}`}>
           <div className="p-5 border-b border-[#f1f3f4]">
             <p className="text-[11px] text-[#5f6368] uppercase tracking-wide mb-0.5">Métricas — Tripoli Media</p>
             <h1 className="text-[16px] font-normal text-[#202124]">Períodos</h1>
